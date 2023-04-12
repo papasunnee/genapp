@@ -21,7 +21,7 @@ export default function App({ Component, pageProps }) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
-        <title>Notus NextJS by Creative Tim</title>
+        <title>Genesis Diagnostics Laboratory</title>
 
         {/* <Script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></Script> */}
       </Head>
