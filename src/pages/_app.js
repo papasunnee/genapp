@@ -1,5 +1,6 @@
 import React from "react";
 import Head from "next/head";
+import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
 import { Roboto } from "next/font/google";
 
@@ -22,7 +23,7 @@ export default function App({ Component, pageProps }) {
         />
         <title>Notus NextJS by Creative Tim</title>
 
-        <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
+        {/* <Script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></Script> */}
       </Head>
       <SessionProvider session={pageProps.session}>
         <main className={roboto.className}>
