@@ -3,7 +3,10 @@ import Image from "next/image";
 import { Roboto } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 
-const roboto = Roboto({ subsets: ["latin"] });
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["100", "300", "400", "900"],
+});
 
 export default function Home() {
   return (
