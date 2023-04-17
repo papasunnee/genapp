@@ -6,7 +6,7 @@ import TestCategory from "@/models/TestCategory";
 import TestType from "@/models/TestType";
 import TestParameter from "@/models/TestParameter";
 
-const authOptions = {
+export const authOptions = {
   session: {
     strategy: "jwt",
   },

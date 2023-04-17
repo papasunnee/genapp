@@ -1,5 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
-import Patient from "@/models/Patient";
+import User from "@/models/User";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -12,13 +12,13 @@ export default async function handler(req, res) {
     case "GET":
       try {
         if (id && (id != "undefined" || id != null || id != "null")) {
-          const singlePatient = await Patient.findOne({
+          const singleUser = await User.findOne({
             _id: id,
           });
-          return res.status(400).json({ success: true, data: singlePatient });
+          return res.status(400).json({ success: true, data: singleUser });
         }
 
-        const allRecords = await Patient.find().sort({ createdAt: -1 });
+        const allRecords = await User.find().sort({ createdAt: -1 });
         return res.status(400).json({ success: true, data: allRecords });
       } catch (error) {
         return res.status(400).json({ success: true, message: error.message });
@@ -27,8 +27,9 @@ export default async function handler(req, res) {
     case "POST":
       try {
         let newRecord;
-        newRecord = await Patient.create({
+        newRecord = await User.create({
           ...req.body,
+          password: "password",
         });
 
         console.log({ newRecord });
@@ -45,7 +46,7 @@ export default async function handler(req, res) {
           (put_id != "undefined" || put_id != null || put_id != "null")
         ) {
           delete req.body._id;
-          let updatePatient = await Patient.findOneAndUpdate(
+          let updateUser = await User.findOneAndUpdate(
             { _id: put_id },
             { title: req.body.title, paragraphs: req.body.paragraphs },
             {
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
             }
           );
 
-          return res.status(400).json({ success: true, data: updatePatient });
+          return res.status(400).json({ success: true, data: updateUser });
         } else {
           return res
             .status(400)
@@ -68,13 +69,13 @@ export default async function handler(req, res) {
           delete_id &&
           (delete_id != "undefined" || delete_id != null || delete_id != "null")
         ) {
-          const deletePatientResponse = await Patient.deleteOne({
+          const deleteUserResponse = await User.deleteOne({
             _id: delete_id,
           });
-          if (deletePatientResponse) {
+          if (deleteUserResponse) {
             return res
               .status(400)
-              .json({ success: true, data: deletePatientResponse });
+              .json({ success: true, data: deleteUserResponse });
           }
 
           return res.status(400).json({ success: false });

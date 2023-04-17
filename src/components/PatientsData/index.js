@@ -1,11 +1,17 @@
 import React from "react";
+import useSWR from "swr";
+import moment from "moment";
 import PropTypes from "prop-types";
 
 // components
 import TableDropdown from "../Dropdowns/TableDropdown";
 import Link from "next/link";
+import { fetcher } from "@/utils/fetcher";
 
 export default function PatientsData({ color, addButton }) {
+  const { data: patientData } = useSWR("/api/patients", fetcher);
+  const { data: dateData } = useSWR("/api/time", fetcher);
+
   return (
     <>
       <div
@@ -52,7 +58,7 @@ export default function PatientsData({ color, addButton }) {
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
                 >
-                  Project
+                  PATIENT
                 </th>
                 <th
                   className={
@@ -62,7 +68,7 @@ export default function PatientsData({ color, addButton }) {
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
                 >
-                  Budget
+                  Age
                 </th>
                 <th
                   className={
@@ -72,7 +78,7 @@ export default function PatientsData({ color, addButton }) {
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
                 >
-                  Status
+                  Email
                 </th>
                 <th
                   className={
@@ -82,9 +88,9 @@ export default function PatientsData({ color, addButton }) {
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
                 >
-                  Users
+                  Phone
                 </th>
-                <th
+                {/* <th
                   className={
                     "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
                     (color === "light"
@@ -93,7 +99,7 @@ export default function PatientsData({ color, addButton }) {
                   }
                 >
                   Completion
-                </th>
+                </th> */}
                 <th
                   className={
                     "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
@@ -101,74 +107,93 @@ export default function PatientsData({ color, addButton }) {
                       ? "bg-slate-50 text-slate-500 border-slate-100"
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
-                ></th>
+                >
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
-                  <img
-                    src="/img/bootstrap.jpg"
-                    className="h-12 w-12 bg-white rounded-full border"
-                    alt="..."
-                  ></img>{" "}
-                  <span
-                    className={
-                      "ml-3 font-bold " +
-                      +(color === "light" ? "text-slate-600" : "text-white")
-                    }
-                  >
-                    Argon Design System
-                  </span>
-                </th>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  $2,500 USD
-                </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  <i className="fas fa-circle text-orange-500 mr-2"></i> pending
-                </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  <div className="flex">
-                    <img
-                      src="/img/team-1-800x800.jpg"
-                      alt="..."
-                      className="w-10 h-10 rounded-full border-2 border-slate-50 shadow"
-                    ></img>
-                    <img
-                      src="/img/team-2-800x800.jpg"
-                      alt="..."
-                      className="w-10 h-10 rounded-full border-2 border-slate-50 shadow -ml-4"
-                    ></img>
-                    <img
-                      src="/img/team-3-800x800.jpg"
-                      alt="..."
-                      className="w-10 h-10 rounded-full border-2 border-slate-50 shadow -ml-4"
-                    ></img>
-                    <img
-                      src="/img/team-4-470x470.png"
-                      alt="..."
-                      className="w-10 h-10 rounded-full border-2 border-slate-50 shadow -ml-4"
-                    ></img>
-                  </div>
-                </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  <div className="flex items-center">
-                    <span className="mr-2">60%</span>
-                    <div className="relative w-full">
-                      <div className="overflow-hidden h-2 text-xs flex rounded bg-red-200">
-                        <div
-                          style={{ width: "60%" }}
-                          className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-500"
-                        ></div>
+              {patientData?.data?.map((item, index) => {
+                return (
+                  <tr key={index}>
+                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
+                      <div className="h-12 w-12 bg-white rounded-full border flex items-center justify-center">
+                        <i className="fas fa-user text-xl text-slate-300"></i>
                       </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
-                  <TableDropdown />
-                </td>
-              </tr>
-              <tr>
+                      {/* <img
+                        src="/img/bootstrap.jpg"
+                        className="h-12 w-12 bg-white rounded-full border"
+                        alt="..."
+                      ></img>{" "} */}
+                      <span
+                        className={
+                          "ml-3 font-bold " +
+                          +(color === "light" ? "text-slate-600" : "text-white")
+                        }
+                      >
+                        {item.firstname}
+                      </span>
+                    </th>
+                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                      {moment([
+                        dateData?.currentYear,
+                        dateData?.currentMonth,
+                        dateData?.currentDate,
+                      ]).diff(moment(item?.dob), "years")}{" "}
+                      years
+                    </td>
+                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                      {item?.email}
+                    </td>
+                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                      {/* <i className="fas fa-circle text-orange-500 mr-2"></i>{" "}
+                      pending */}
+                      {item?.phone}
+                    </td>
+                    {/* <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                      <div className="flex">
+                        <img
+                          src="/img/team-1-800x800.jpg"
+                          alt="..."
+                          className="w-10 h-10 rounded-full border-2 border-slate-50 shadow"
+                        ></img>
+                        <img
+                          src="/img/team-2-800x800.jpg"
+                          alt="..."
+                          className="w-10 h-10 rounded-full border-2 border-slate-50 shadow -ml-4"
+                        ></img>
+                        <img
+                          src="/img/team-3-800x800.jpg"
+                          alt="..."
+                          className="w-10 h-10 rounded-full border-2 border-slate-50 shadow -ml-4"
+                        ></img>
+                        <img
+                          src="/img/team-4-470x470.png"
+                          alt="..."
+                          className="w-10 h-10 rounded-full border-2 border-slate-50 shadow -ml-4"
+                        ></img>
+                      </div>
+                    </td>
+                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                      <div className="flex items-center">
+                        <span className="mr-2">60%</span>
+                        <div className="relative w-full">
+                          <div className="overflow-hidden h-2 text-xs flex rounded bg-red-200">
+                            <div
+                              style={{ width: "60%" }}
+                              className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-500"
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </td> */}
+                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                      <TableDropdown />
+                    </td>
+                  </tr>
+                );
+              })}
+              {/* <tr>
                 <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
                   <img
                     src="/img/angular.jpg"
@@ -422,7 +447,7 @@ export default function PatientsData({ color, addButton }) {
                 <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
                   <TableDropdown />
                 </td>
-              </tr>
+              </tr> */}
             </tbody>
           </table>
         </div>

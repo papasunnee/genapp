@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState, createRef, useRef } from "react";
 import { createPopper } from "@popperjs/core";
 
 const TableDropdown = () => {
   // dropdown props
-  const [dropdownPopoverShow, setDropdownPopoverShow] = React.useState(false);
-  const btnDropdownRef = React.createRef();
-  const popoverDropdownRef = React.createRef();
+  const [dropdownPopoverShow, setDropdownPopoverShow] = useState(false);
+  const btnDropdownRef = createRef();
+  const popoverDropdownRef = createRef();
   const openDropdownPopover = () => {
     createPopper(btnDropdownRef.current, popoverDropdownRef.current, {
       placement: "left-start",
@@ -16,7 +16,7 @@ const TableDropdown = () => {
     setDropdownPopoverShow(false);
   };
   return (
-    <>
+    <div className="relative">
       <a
         className="text-slate-500 py-1 px-3"
         href="#pablo"
@@ -63,7 +63,7 @@ const TableDropdown = () => {
           Something else here
         </a>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,7 +1,9 @@
 import cookie from "cookie";
 import mongoose from "mongoose";
+import { getServerSession } from "next-auth/next";
 import dbConnect from "@/lib/dbConnect";
 import Role from "@/models/Role";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -9,15 +11,17 @@ export default async function handler(req, res) {
   let delete_id = req?.body?.delete_id;
   let put_id = req?.body?.put_id;
   await dbConnect();
+  const session = await getServerSession(req, res, authOptions);
+  console.log(session);
 
   switch (method) {
     case "GET":
       try {
         if (id && (id != "undefined" || id != null || id != "null")) {
-          const singleNews = await Role.findOne({
+          const singleRole = await Role.findOne({
             _id: id,
           });
-          return res.status(400).json({ success: true, data: singleNews });
+          return res.status(400).json({ success: true, data: singleRole });
         }
 
         const allRecords = await Role.find({

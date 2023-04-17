@@ -26,7 +26,9 @@ const UserSchema = new mongoose.Schema({
       "Please fill a valid email address",
     ],
   },
-  password: {},
+  password: {
+    type: "String",
+  },
   image_url: {
     type: String,
     // required: [true, "Please provide an image url for this pet."],

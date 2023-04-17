@@ -8,7 +8,7 @@ import CardStats from "../Cards/CardStats";
 
 export default function HeaderStats() {
   const { data: patientData } = useSWR("/api/patients", fetcher);
-  console.log({ patientData });
+  const { data: userData } = useSWR("/api/users", fetcher);
   return (
     <>
       {/* Header */}
@@ -20,7 +20,7 @@ export default function HeaderStats() {
               <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="PATIENTS"
-                  statTitle={patientData?.data?.length}
+                  statTitle={patientData?.data?.length || 0}
                   statArrow="up"
                   statPercent="3.48"
                   statPercentColor="text-emerald-500"
@@ -32,7 +32,7 @@ export default function HeaderStats() {
               <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="STAFF / USERS"
-                  statTitle="2,356"
+                  statTitle={userData?.data?.length || 0}
                   statArrow="down"
                   statPercent="3.48"
                   statPercentColor="text-red-500"
@@ -44,7 +44,7 @@ export default function HeaderStats() {
               <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="RESULTS / SALES"
-                  statTitle="924"
+                  statTitle="0"
                   statArrow="down"
                   statPercent="1.10"
                   statPercentColor="text-orange-500"
@@ -56,7 +56,7 @@ export default function HeaderStats() {
               <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="TESTS"
-                  statTitle="49,65%"
+                  statTitle="0%"
                   statArrow="up"
                   statPercent="12"
                   statPercentColor="text-emerald-500"

@@ -57,7 +57,6 @@ const PatientSchema = new mongoose.Schema({
 
   image_url: {
     type: String,
-    required: [true, "Please provide an image url for this pet."],
   },
 });
 
