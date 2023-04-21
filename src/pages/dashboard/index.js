@@ -6,7 +6,6 @@ const Index = () => {
   const session = useSession();
   const { status, data } = session;
   const router = useRouter();
-  console.log(session);
   useEffect(() => {
     if (status == "unauthenticated") {
       router.replace("/");

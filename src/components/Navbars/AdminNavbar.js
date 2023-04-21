@@ -1,7 +1,7 @@
 import React from "react";
 import UserDropdown from "../Dropdowns/UserDropdown";
 
-export default function Navbar() {
+export default function Navbar({ breadCrumb }) {
   return (
     <>
       {/* Navbar */}
@@ -13,7 +13,12 @@ export default function Navbar() {
             href="#pablo"
             onClick={(e) => e.preventDefault()}
           >
-            Dashboard
+            {breadCrumb.map((item, index) => {
+              if (index > 0) {
+                return ` | ${item}`;
+              }
+              return item;
+            })}
           </a>
           {/* Form */}
           <form className="md:flex hidden flex-row flex-wrap items-center lg:ml-auto mr-3">
@@ -38,3 +43,7 @@ export default function Navbar() {
     </>
   );
 }
+
+Navbar.defaultProps = {
+  breadCrumb: ["Dashboard"],
+};

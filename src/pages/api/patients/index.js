@@ -1,11 +1,14 @@
+import mongoose, { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import Patient from "@/models/Patient";
 
 export default async function handler(req, res) {
+  const { ObjectId } = Types;
   const { method } = req;
   let id = req?.query?.id;
   let delete_id = req?.body?.delete_id;
   let put_id = req?.body?.put_id;
+
   await dbConnect();
 
   switch (method) {
@@ -13,8 +16,9 @@ export default async function handler(req, res) {
       try {
         if (id && (id != "undefined" || id != null || id != "null")) {
           const singlePatient = await Patient.findOne({
-            _id: id,
+            _id: new ObjectId(id),
           });
+
           return res.status(400).json({ success: true, data: singlePatient });
         }
 

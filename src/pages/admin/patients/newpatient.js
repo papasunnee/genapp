@@ -2,7 +2,7 @@ import React from "react";
 
 // components
 import PatientsData from "@/components/PatientsData";
-import NewPatientForm from "@/components/PatientsData/NewPatientForm";
+import Create from "@/components/PatientsData/create";
 
 // layout for page
 import Admin from "@/components/Layout/Admin";
@@ -12,7 +12,7 @@ export default function NewPatient() {
     <>
       <div className="flex flex-wrap mt-4">
         <div className="w-full mb-12 px-4">
-          <NewPatientForm />
+          <Create />
         </div>
         <div className="w-full mb-12 px-4">
           <PatientsData />

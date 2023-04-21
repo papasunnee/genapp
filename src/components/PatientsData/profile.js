@@ -1,11 +1,20 @@
+import { fetcher } from "@/utils/fetcher";
+import { getAge } from "@/utils/getAge";
+import { useRouter } from "next/router";
 import React from "react";
+import useSWR from "swr";
 
 // components
 
-export default function CardProfile() {
+export default function Profile() {
+  const router = useRouter();
+  const { data: patientData } = useSWR(
+    `/api/patients?id=${router?.query?.id}`,
+    fetcher
+  );
   return (
     <>
-      <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-xl rounded-lg">
+      <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-xl rounded-lg mt-16">
         <div className="px-6">
           <div className="flex flex-wrap justify-center">
             <div className="w-full px-4 flex justify-center">
@@ -21,9 +30,9 @@ export default function CardProfile() {
               <div className="flex justify-center py-4 lg:pt-4 pt-8">
                 <div className="mr-4 p-3 text-center">
                   <span className="text-xl font-bold block uppercase tracking-wide text-slate-600">
-                    22
+                    0
                   </span>
-                  <span className="text-sm text-slate-400">Friends</span>
+                  <span className="text-sm text-slate-400">Test Taken</span>
                 </div>
                 <div className="mr-4 p-3 text-center">
                   <span className="text-xl font-bold block uppercase tracking-wide text-slate-600">
@@ -40,40 +49,36 @@ export default function CardProfile() {
               </div>
             </div>
           </div>
-          <div className="text-center mt-12">
+          <div className="text-center mt-4">
             <h3 className="text-xl font-semibold leading-normal mb-2 text-slate-700">
-              Jenna Stones
+              {patientData?.data?.firstname + patientData?.data?.lastname}
             </h3>
-            <div className="text-sm leading-normal mt-0 mb-2 text-slate-400 font-bold uppercase">
+            <div className="text-sm leading-normal mt-0 mb-2 text-slate-400 font-bold">
               <i className="fas fa-map-marker-alt mr-2 text-lg text-slate-400"></i>{" "}
-              Los Angeles, California
+              {patientData?.data?.address}
             </div>
-            <div className="mb-2 text-slate-600 mt-10">
-              <i className="fas fa-briefcase mr-2 text-lg text-slate-400"></i>
-              Solution Manager - Creative Tim Officer
+            <div className="mb-2 text-slate-600 mt-10 flex justify-center items-center">
+              <i className="fas fa-child mr-2 text-lg text-slate-400"></i>
+              {getAge(patientData?.data?.dob)}
             </div>
             <div className="mb-2 text-slate-600">
-              <i className="fas fa-university mr-2 text-lg text-slate-400"></i>
-              University of Computer Science
+              <i className="fas fa-envelope mr-2 text-lg text-slate-400"></i>
+              {patientData?.data?.email}
             </div>
           </div>
           <div className="mt-10 py-10 border-t border-slate-200 text-center">
             <div className="flex flex-wrap justify-center">
               <div className="w-full lg:w-9/12 px-4">
                 <p className="mb-4 text-lg leading-relaxed text-slate-700">
-                  An artist of considerable range, Jenna the name taken by
-                  Melbourne-raised, Brooklyn-based Nick Murphy writes, performs
-                  and records all of his own music, giving it a warm, intimate
-                  feel with a solid groove structure. An artist of considerable
-                  range.
+                  {patientData?.data?.description}
                 </p>
-                <a
+                {/* <a
                   href="#pablo"
                   className="font-normal text-sky-500"
                   onClick={(e) => e.preventDefault()}
                 >
                   Show more
-                </a>
+                </a> */}
               </div>
             </div>
           </div>

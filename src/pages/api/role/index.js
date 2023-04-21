@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   let put_id = req?.body?.put_id;
   await dbConnect();
   const session = await getServerSession(req, res, authOptions);
-  console.log(session);
+  // console.log({ session });
 
   switch (method) {
     case "GET":

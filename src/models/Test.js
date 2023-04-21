@@ -1,31 +1,31 @@
 import mongoose from "mongoose";
 
-/* PetSchema will correspond to a collection in your MongoDB database. */
-const PetSchema = new mongoose.Schema(
+/* TestSchema will correspond to a collection in your MongoDB database. */
+const TestSchema = new mongoose.Schema(
   {
     name: {
-      /* The name of this pet */
+      /* The name of this test */
 
       type: String,
-      required: [true, "Please provide a name for this pet."],
+      required: [true, "Please provide a name for this test."],
       maxlength: [60, "Name cannot be more than 60 characters"],
     },
     owner_name: {
-      /* The owner of this pet */
+      /* The owner of this test */
 
       type: String,
-      required: [true, "Please provide the pet owner's name"],
+      required: [true, "Please provide the test owner's name"],
       maxlength: [60, "Owner's Name cannot be more than 60 characters"],
     },
     species: {
-      /* The species of your pet */
+      /* The species of your test */
 
       type: String,
-      required: [true, "Please specify the species of your pet."],
+      required: [true, "Please specify the species of your test."],
       maxlength: [40, "Species specified cannot be more than 40 characters"],
     },
     age: {
-      /* Pet's age, if applicable */
+      /* Test's age, if applicable */
 
       type: Number,
     },
@@ -40,18 +40,18 @@ const PetSchema = new mongoose.Schema(
       type: Array,
     },
     image_url: {
-      /* Url to pet image */
+      /* Url to test image */
 
-      required: [true, "Please provide an image url for this pet."],
+      required: [true, "Please provide an image url for this test."],
       type: String,
     },
     likes: {
-      /* List of things your pet likes to do */
+      /* List of things your test likes to do */
 
       type: Array,
     },
     dislikes: {
-      /* List of things your pet does not like to do */
+      /* List of things your test does not like to do */
 
       type: Array,
     },
@@ -59,4 +59,4 @@ const PetSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.Pet || mongoose.model("Pet", PetSchema);
+export default mongoose.models.Test || mongoose.model("Test", TestSchema);

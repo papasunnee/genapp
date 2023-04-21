@@ -14,7 +14,7 @@ export default function FooterAdmin() {
                   href="https://www.creative-tim.com?ref=nnjs-footer-admin"
                   className="text-slate-500 hover:text-slate-700 text-sm font-semibold py-1"
                 >
-                  Creative Tim
+                  Cradle of Innovation
                 </a>
               </div>
             </div>
