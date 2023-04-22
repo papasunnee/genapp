@@ -26,32 +26,18 @@ export default function Profile() {
                 />
               </div>
             </div>
-            <div className="w-full px-4 text-center mt-20">
-              <div className="flex justify-center py-4 lg:pt-4 pt-8">
-                <div className="mr-4 p-3 text-center">
-                  <span className="text-xl font-bold block uppercase tracking-wide text-slate-600">
-                    0
-                  </span>
-                  <span className="text-sm text-slate-400">Test Taken</span>
-                </div>
-                <div className="mr-4 p-3 text-center">
-                  <span className="text-xl font-bold block uppercase tracking-wide text-slate-600">
-                    10
-                  </span>
-                  <span className="text-sm text-slate-400">Photos</span>
-                </div>
-                <div className="lg:mr-4 p-3 text-center">
-                  <span className="text-xl font-bold block uppercase tracking-wide text-slate-600">
-                    89
-                  </span>
-                  <span className="text-sm text-slate-400">Comments</span>
-                </div>
-              </div>
-            </div>
           </div>
-          <div className="text-center mt-4">
+          <div className="text-center mt-24">
             <h3 className="text-xl font-semibold leading-normal mb-2 text-slate-700">
-              {patientData?.data?.firstname + patientData?.data?.lastname}
+              {`${
+                patientData?.data?.firstname || (
+                  <div className="shadow animate-pulse h-2 bg-gray-300 rounded-full dark:bg-gray-700 w-6"></div>
+                )
+              }  ${
+                patientData?.data?.lastname || (
+                  <div className="shadow animate-pulse h-2 bg-gray-300 rounded-full dark:bg-gray-700 w-6"></div>
+                )
+              }`}
             </h3>
             <div className="text-sm leading-normal mt-0 mb-2 text-slate-400 font-bold">
               <i className="fas fa-map-marker-alt mr-2 text-lg text-slate-400"></i>{" "}
