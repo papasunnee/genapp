@@ -1,4 +1,5 @@
 import React from "react";
+import { Tabs } from "flowbite";
 import Admin from "@/components/Layout/Admin";
 import PatientProfile from "@/components/PatientsData/profile";
 import Test from "@/components/PatientsData/test";
