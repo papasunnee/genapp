@@ -1,59 +1,45 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 /* TestSchema will correspond to a collection in your MongoDB database. */
 const TestSchema = new mongoose.Schema(
   {
-    name: {
+    test_title: {
       /* The name of this test */
-
       type: String,
-      required: [true, "Please provide a name for this test."],
-      maxlength: [60, "Name cannot be more than 60 characters"],
+      required: [true, "Please provide a title for this test."],
+      maxlength: [200, "Name cannot be more than 200 characters"],
     },
-    owner_name: {
-      /* The owner of this test */
-
+    test_data: {
       type: String,
-      required: [true, "Please provide the test owner's name"],
-      maxlength: [60, "Owner's Name cannot be more than 60 characters"],
+      required: [true, "Please provide data for this test"],
     },
-    species: {
-      /* The species of your test */
-
+    specimen: {
+      /* The specimen for the test */
       type: String,
-      required: [true, "Please specify the species of your test."],
-      maxlength: [40, "Species specified cannot be more than 40 characters"],
+      maxlength: [60, "Specimen cannot be more than 60 characters"],
     },
-    age: {
-      /* Test's age, if applicable */
-
-      type: Number,
-    },
-    poddy_trained: {
-      /* Boolean poddy_trained value, if applicable */
-
-      type: Boolean,
-    },
-    diet: {
-      /* List of dietary needs, if applicable */
-
-      type: Array,
-    },
-    image_url: {
-      /* Url to test image */
-
-      required: [true, "Please provide an image url for this test."],
+    clinical_address: {
       type: String,
+      maxlength: [
+        100,
+        "Clinical Address specified cannot be more than 100 characters",
+      ],
     },
-    likes: {
-      /* List of things your test likes to do */
-
-      type: Array,
+    clinical_diagnosis: {
+      type: String,
+      maxlength: [
+        100,
+        "Clinical Address specified cannot be more than 100 characters",
+      ],
     },
-    dislikes: {
-      /* List of things your test does not like to do */
-
-      type: Array,
+    status: {
+      type: String,
+      default: "Awaiting Payment",
+      enum: ["Awaiting Payment", "Awaiting Result", "Test Completed"],
+    },
+    user_id: {
+      type: Schema.Types.ObjectId,
+      ref: "Patient",
     },
   },
   { timestamps: true }

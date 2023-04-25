@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { validateEmail } from "@/utils/validateEmail";
 
 /* PatientSchema will correspond to a collection in your MongoDB database. */
@@ -59,6 +59,12 @@ const PatientSchema = new mongoose.Schema(
     image_url: {
       type: String,
     },
+    tests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Test",
+      },
+    ],
   },
   { timestamps: true }
 );

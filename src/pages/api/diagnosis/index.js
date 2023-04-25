@@ -1,5 +1,6 @@
 import mongoose, { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
+import Test from "@/models/Test";
 import Patient from "@/models/Patient";
 
 export default async function handler(req, res) {
@@ -15,14 +16,14 @@ export default async function handler(req, res) {
     case "GET":
       try {
         if (id && (id != "undefined" || id != null || id != "null")) {
-          const singlePatient = await Patient.findOne({
+          const singleTest = await Test.findOne({
             _id: new ObjectId(id),
-          }).populate("tests");
+          });
 
-          return res.status(400).json({ success: true, data: singlePatient });
+          return res.status(400).json({ success: true, data: singleTest });
         }
 
-        const allRecords = await Patient.find().sort({ createdAt: -1 });
+        const allRecords = await Test.find().sort({ createdAt: -1 });
         return res.status(400).json({ success: true, data: allRecords });
       } catch (error) {
         return res.status(400).json({ success: true, message: error.message });
@@ -31,11 +32,14 @@ export default async function handler(req, res) {
     case "POST":
       try {
         let newRecord;
-        newRecord = await Patient.create({
+        newRecord = await Test.create({
           ...req.body,
         });
 
-        console.log({ newRecord });
+        await Patient.findOneAndUpdate(
+          { _id: new ObjectId(req.body.user_id) },
+          { $push: { tests: newRecord._id } }
+        );
 
         return res.status(201).json({ success: true, data: newRecord });
       } catch (error) {
@@ -49,7 +53,7 @@ export default async function handler(req, res) {
           (put_id != "undefined" || put_id != null || put_id != "null")
         ) {
           delete req.body._id;
-          let updatePatient = await Patient.findOneAndUpdate(
+          let updateTest = await Test.findOneAndUpdate(
             { _id: put_id },
             { title: req.body.title, paragraphs: req.body.paragraphs },
             {
@@ -57,7 +61,7 @@ export default async function handler(req, res) {
             }
           );
 
-          return res.status(400).json({ success: true, data: updatePatient });
+          return res.status(400).json({ success: true, data: updateTest });
         } else {
           return res
             .status(400)
@@ -72,13 +76,13 @@ export default async function handler(req, res) {
           delete_id &&
           (delete_id != "undefined" || delete_id != null || delete_id != "null")
         ) {
-          const deletePatientResponse = await Patient.deleteOne({
+          const deleteTestResponse = await Test.deleteOne({
             _id: delete_id,
           });
-          if (deletePatientResponse) {
+          if (deleteTestResponse) {
             return res
               .status(400)
-              .json({ success: true, data: deletePatientResponse });
+              .json({ success: true, data: deleteTestResponse });
           }
 
           return res.status(400).json({ success: false });

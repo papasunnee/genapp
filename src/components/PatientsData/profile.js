@@ -28,16 +28,12 @@ export default function Profile() {
             </div>
           </div>
           <div className="text-center mt-24">
-            <h3 className="text-xl font-semibold leading-normal mb-2 text-slate-700">
-              {`${
-                patientData?.data?.firstname || (
-                  <div className="shadow animate-pulse h-2 bg-gray-300 rounded-full dark:bg-gray-700 w-6"></div>
-                )
-              }  ${
-                patientData?.data?.lastname || (
-                  <div className="shadow animate-pulse h-2 bg-gray-300 rounded-full dark:bg-gray-700 w-6"></div>
-                )
-              }`}
+            <h3 className="text-xl font-semibold leading-normal mb-2 text-slate-700 flex items-center justify-center">
+              {patientData ? (
+                patientData.data?.firstname + " " + patientData?.data?.lastname
+              ) : (
+                <div className="shadow animate-pulse h-3 bg-gray-300 rounded-full dark:bg-gray-700 w-32"></div>
+              )}
             </h3>
             <div className="text-sm leading-normal mt-0 mb-2 text-slate-400 font-bold">
               <i className="fas fa-map-marker-alt mr-2 text-lg text-slate-400"></i>{" "}
