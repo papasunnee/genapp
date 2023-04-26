@@ -41,6 +41,10 @@ const TestSchema = new mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: "Patient",
     },
+    total_cost: {
+      type: Number,
+      required: [true, "Cannot Compute Cost of the test"],
+    },
   },
   { timestamps: true }
 );

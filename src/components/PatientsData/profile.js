@@ -12,6 +12,7 @@ export default function Profile() {
     `/api/patients?id=${router?.query?.id}`,
     fetcher
   );
+  console.log(patientData);
   return (
     <>
       <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-xl rounded-lg mt-16">

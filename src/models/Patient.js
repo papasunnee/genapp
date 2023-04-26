@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { validateEmail } from "@/utils/validateEmail";
+import Test from "./Test";
 
 /* PatientSchema will correspond to a collection in your MongoDB database. */
 const PatientSchema = new mongoose.Schema(

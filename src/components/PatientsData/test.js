@@ -432,6 +432,7 @@ export default function Test({ color }) {
           clinical_address,
           clinical_diagnosis,
           user_id: router.query.id,
+          total_cost: totalCost,
         }),
       });
       const data = await res.json();
@@ -604,7 +605,7 @@ export default function Test({ color }) {
                       </span>
                     </th>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      NGN 3400
+                      NGN {item.total_cost}.00
                     </td>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                       <i className="fas fa-circle text-orange-500 mr-2"></i>{" "}
