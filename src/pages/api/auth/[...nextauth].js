@@ -9,6 +9,8 @@ import TestParameter from "@/models/TestParameter";
 export const authOptions = {
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60,
   },
   providers: [
     CredentialsProvider({
@@ -43,17 +45,23 @@ export const authOptions = {
       const { token, user } = params;
       if (user) {
         token.firstname = user?.firstname;
+        token._id = user?._id;
         token.lastname = user?.lastname;
         token.role = user?.role;
       }
       return token;
     },
     async session({ session, token, user }) {
-      session.user.role = user?.role ? user?.role : token.role;
-      session.user.firstname = user?.firstname
-        ? user?.firstname
-        : token.firstname;
-      session.user.lastname = user?.lastname ? user?.lastname : token.lastname;
+      // session.user.role = user?.role ? user?.role : token.role;
+      // session.user.firstname = user?.firstname
+      //   ? user?.firstname
+      //   : token.firstname;
+      // session.user.lastname = user?.lastname ? user?.lastname : token.lastname;
+      // session.user._id = user?._id ? user?._id : token._id;
+      if (!user) {
+        user = { ...token };
+      }
+      session.user = { ...token };
       return session;
     },
   },

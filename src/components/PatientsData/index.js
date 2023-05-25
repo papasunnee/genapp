@@ -115,9 +115,12 @@ export default function PatientsData({ color, addButton }) {
             <tbody>
               {patientData?.data?.map((item, index) => {
                 return (
-                  <tr key={index} className="hover:bg-slate-100/50">
-                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
-                      <div className="h-12 w-12 bg-white rounded-full border flex items-center justify-center">
+                  <tr
+                    key={index}
+                    className="hover:bg-slate-100/50 border-b border-gray-200"
+                  >
+                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-2 text-left flex items-center">
+                      <div className="h-10 w-10 bg-white rounded-full border flex items-center justify-center">
                         <i className="fas fa-user text-xl text-slate-300"></i>
                       </div>
                       {/* <img

@@ -1,38 +1,45 @@
 import mongoose, { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
-import Patient from "@/models/Patient";
+import Payment from "@/models/Payment";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]";
+import Test from "@/models/Test";
 
 export default async function handler(req, res) {
   const { ObjectId } = Types;
   const { method } = req;
   let id = req?.query?.id;
+  let test_id = req?.query?.test_id;
   let delete_id = req?.body?.delete_id;
   let put_id = req?.body?.put_id;
 
   await dbConnect();
 
+  const session = await getServerSession(req, res, authOptions);
+
   switch (method) {
     case "GET":
       try {
         if (id && (id != "undefined" || id != null || id != "null")) {
-          const singlePatient = await Patient.findOne({
+          const singlePayment = await Payment.findOne({
             _id: new ObjectId(id),
-          }).populate([
-            {
-              path: "tests",
-              populate: {
-                path: "payment",
-                populate: {
-                  path: "user",
-                },
-              },
-            },
-          ]);
+          }).populate(["user", "test"]);
 
-          return res.status(400).json({ success: true, data: singlePatient });
+          return res.status(400).json({ success: true, data: singlePayment });
+        } else if (
+          test_id &&
+          (test_id != "undefined" || test_id != null || test_id != "null")
+        ) {
+          const singlePaymentByTestId = await Payment.findOne({
+            test_id: new ObjectId(test_id),
+          }).populate(["user", "test"]);
+
+          return res
+            .status(400)
+            .json({ success: true, data: singlePaymentByTestId });
         }
 
-        const allRecords = await Patient.find().sort({ createdAt: -1 });
+        const allRecords = await Payment.find().sort({ createdAt: -1 });
         return res.status(400).json({ success: true, data: allRecords });
       } catch (error) {
         return res.status(400).json({ success: true, message: error.message });
@@ -41,13 +48,28 @@ export default async function handler(req, res) {
     case "POST":
       try {
         let newRecord;
-        newRecord = await Patient.create({
+        newRecord = await Payment.create({
           ...req.body,
+          user: session.user._id,
         });
+        const updatedTest = await Test.findOneAndUpdate(
+          { _id: new ObjectId(newRecord.test) },
+          {
+            status: "Awaiting Result",
+            payment: new ObjectId(newRecord._id),
+          },
+          { new: true }
+        ).populate([
+          {
+            path: "payment",
+            populate: {
+              path: "user",
+            },
+          },
+        ]);
 
-        console.log({ newRecord });
-
-        return res.status(201).json({ success: true, data: newRecord });
+        return res.status(201).json({ success: true, data: updatedTest });
+        // return res.status(201).json({ success: true });
       } catch (error) {
         console.log(error.message);
         return res.status(400).json({ success: false, error: error.message });
@@ -59,7 +81,7 @@ export default async function handler(req, res) {
           (put_id != "undefined" || put_id != null || put_id != "null")
         ) {
           delete req.body._id;
-          let updatePatient = await Patient.findOneAndUpdate(
+          let updatePayment = await Payment.findOneAndUpdate(
             { _id: put_id },
             { title: req.body.title, paragraphs: req.body.paragraphs },
             {
@@ -67,7 +89,7 @@ export default async function handler(req, res) {
             }
           );
 
-          return res.status(400).json({ success: true, data: updatePatient });
+          return res.status(400).json({ success: true, data: updatePayment });
         } else {
           return res
             .status(400)
@@ -82,13 +104,13 @@ export default async function handler(req, res) {
           delete_id &&
           (delete_id != "undefined" || delete_id != null || delete_id != "null")
         ) {
-          const deletePatientResponse = await Patient.deleteOne({
+          const deletePaymentResponse = await Payment.deleteOne({
             _id: delete_id,
           });
-          if (deletePatientResponse) {
+          if (deletePaymentResponse) {
             return res
               .status(400)
-              .json({ success: true, data: deletePatientResponse });
+              .json({ success: true, data: deletePaymentResponse });
           }
 
           return res.status(400).json({ success: false });

@@ -1,4 +1,6 @@
 import mongoose, { Schema } from "mongoose";
+import Patient from "./Patient";
+import Payment from "./Payment";
 
 /* TestSchema will correspond to a collection in your MongoDB database. */
 const TestSchema = new mongoose.Schema(
@@ -37,9 +39,13 @@ const TestSchema = new mongoose.Schema(
       default: "Awaiting Payment",
       enum: ["Awaiting Payment", "Awaiting Result", "Test Completed"],
     },
-    user_id: {
+    patient: {
       type: Schema.Types.ObjectId,
       ref: "Patient",
+    },
+    payment: {
+      type: Schema.Types.ObjectId,
+      ref: "Payment",
     },
     total_cost: {
       type: Number,

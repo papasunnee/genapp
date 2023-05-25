@@ -314,6 +314,12 @@ const TestCategory = [
   },
 ];
 
+const TestStatus = {
+  "Awaiting Payment": 50,
+  "Awaiting Result": 50,
+  "Test Completed": 100,
+};
+
 export default function Test({ color }) {
   const selectRef = useRef();
   const select2Ref = useRef();
@@ -328,11 +334,20 @@ export default function Test({ color }) {
   const [totalCost, setTotalCost] = useState(0);
   const [currentTestType, setCurrentTestType] = useState(testState[0]?.type[0]);
   const [showModal, setShowModal] = useState(false);
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [testData, setTestData] = useState({});
+  const [paymentData, setPaymentData] = useState({});
   const [proceedState, setProceedState] = useState(false);
   const [testStatsDisplay, setTestStatsDisplay] = useState(false);
   const [testAddonDisplay, setTestAddonDisplay] = useState(false);
+  const [currentTab, setCurrentTab] = useState(0);
+  const [paymentOption, setPaymentOption] = useState("cash");
 
+  const invoiceRef = useRef();
+  const amountPaidRef = useRef();
   const modalRef = useRef();
+  const testModalRef = useRef();
+
   const router = useRouter();
   const { data: patientData, mutate: mutatePatient } = useSWR(
     `/api/patients?id=${router.query?.id}`,
@@ -350,11 +365,9 @@ export default function Test({ color }) {
       setCurrentTestType(testState[e.target.value]);
     }
   };
-
   const handleChange2 = (e) => {
     setCurrentTestType(currentTest.type[e.target.value]);
   };
-
   const handleCheckbox = (args) => {
     const { currentTest, currentTestType, index } = args;
     const testCopy = [...testState];
@@ -386,7 +399,6 @@ export default function Test({ color }) {
     testCopy.splice(selectedTestIndex, 1, selectedTestData);
     setTestState(testCopy);
   };
-
   const handleCancelModal = (e) => {
     e.preventDefault();
     setProceedState(false);
@@ -399,6 +411,11 @@ export default function Test({ color }) {
     if (select2Ref?.current?.value) select2Ref.current.value = 0;
     setShowModal(false);
   };
+  const handleCancelTestModal = (e) => {
+    e.preventDefault();
+    setPaymentData({});
+    setShowTestModal(false);
+  };
   const handleShowModal = (e) => {
     e.preventDefault();
     setTestState(JSON.parse(JSON.stringify(TestCategory)));
@@ -408,6 +425,40 @@ export default function Test({ color }) {
     setTestAddonDisplay(false);
     setTestStatsDisplay(true);
     setShowModal(true);
+  };
+  const handleTestModal = async (item) => {
+    setShowTestModal(true);
+    setTestData(item);
+    console.log({ item });
+  };
+  const handlePaymentOption = (e) => {
+    const { value } = e.target;
+    setPaymentOption(value);
+  };
+  const handleSavePayment = async () => {
+    const invoice = invoiceRef.current.value;
+    const amountPaid = amountPaidRef.current.value;
+    if (amountPaid == testData.total_cost) {
+      try {
+        const res = await fetch("/api/payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            invoice,
+            amount_paid: amountPaid,
+            test: testData._id,
+            payment_option: paymentOption,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          mutatePatient();
+          setTestData(data.data);
+        }
+      } catch (error) {}
+    } else {
+      console.log("Amount Invalid");
+    }
   };
   const handleSaveModal = (e) => {
     setProceedState(false);
@@ -437,11 +488,10 @@ export default function Test({ color }) {
       });
       const data = await res.json();
       if (data.success) {
-        console.log(data);
         mutatePatient();
         handleCancelModal(e);
       } else {
-        console.log({ data });
+        console.log({ ss: "no success", data });
       }
     } catch (error) {
       console.log(error.message);
@@ -480,13 +530,11 @@ export default function Test({ color }) {
           const init0 = 0;
           const t_0 = test.parameters.reduce((t_, parameter) => {
             if (parameter.checked) {
-              console.log(t_, parameter.cost, "nest1 or 0");
               return t_ + parameter.cost;
             } else {
               return t_;
             }
           }, init0);
-          console.log({ t_0 });
           return acc + t_0;
         }
         return acc;
@@ -520,7 +568,6 @@ export default function Test({ color }) {
                 ) : (
                   <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full dark:bg-gray-700 w-32"></span>
                 )}
-                {/* {`${patientData?.data?.firstname}  ${patientData?.data?.lastname}`} */}
               </h3>
             </div>
             <div>
@@ -596,8 +643,9 @@ export default function Test({ color }) {
                   <tr key={index}>
                     <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
                       <span
+                        onClick={(e) => handleTestModal(item)}
                         className={
-                          "ml-3 font-bold " +
+                          "ml-3 font-bold cursor-pointer underline " +
                           +(color === "light" ? "text-slate-600" : "text-white")
                         }
                       >
@@ -613,11 +661,15 @@ export default function Test({ color }) {
                     </td>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                       <div className="flex items-center">
-                        <span className="mr-2">0%</span>
+                        <span className="mr-2">
+                          {item.status == "Awaiting Payment" && "0%"}
+                          {item.status == "Awaiting Result" && "50%"}
+                          {item.status == "Test Completed" && "100%"}
+                        </span>
                         <div className="relative w-full">
                           <div className="overflow-hidden h-2 text-xs flex rounded bg-red-200">
                             <div
-                              style={{ width: "60%" }}
+                              style={{ width: `${TestStatus[item.status]}%` }}
                               className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-500"
                             ></div>
                           </div>
@@ -1153,6 +1205,225 @@ export default function Test({ color }) {
           </div>
         )}
       </div>
+      <div
+        ref={testModalRef}
+        id="staticTestModal"
+        tabIndex="-1"
+        className={`${
+          showTestModal ? "block" : "hidden"
+        } bg-gray-900/80 flex items-center justify-center fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%)] max-h-full`}
+      >
+        <div className="relative w-full max-w-2xl max-h-full">
+          {/* Modal content */}
+          <div className="relative bg-white rounded-lg shadow">
+            {/* Modal header */}
+            <div className="flex items-start justify-between p-4 border-b rounded-t">
+              <div className="flex flex-grow flex-col items-center">
+                <h3 className="text-lg font-semibold text-gray-900 flex-grow">
+                  {testData.test_title}
+                </h3>
+                <div className="text-2xl font-bold">
+                  Total Cost :{" "}
+                  <span
+                    className={
+                      testData.status == "Awaiting Payment"
+                        ? "text-red-700"
+                        : "text-emerald-700"
+                    }
+                  >
+                    NGN {testData.total_cost}.00
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCancelTestModal}
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+                data-modal-hide="staticModal"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            {/* Modal body */}
+
+            <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700 px-8">
+              <ul className="flex flex-wrap -mb-px">
+                <li className="mr-2 flex-grow">
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentTab(0);
+                    }}
+                    className={
+                      currentTab == 0 ? "active_tab" : "non_active_tab"
+                    }
+                  >
+                    Payment
+                  </a>
+                </li>
+                <li className="mr-2 flex-grow">
+                  <a
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentTab(1);
+                    }}
+                    href="#"
+                    className={
+                      currentTab == 1 ? "active_tab" : "non_active_tab"
+                    }
+                  >
+                    Test Result
+                  </a>
+                </li>
+                <li className="mr-2 flex-grow">
+                  <a
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentTab(2);
+                    }}
+                    href="#"
+                    className={
+                      currentTab == 2 ? "active_tab" : "non_active_tab"
+                    }
+                  >
+                    Settings
+                  </a>
+                </li>
+                <li className="mr-2 flex-grow">
+                  <a
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentTab(3);
+                    }}
+                    href="#"
+                    className={
+                      currentTab == 3 ? "active_tab" : "non_active_tab"
+                    }
+                  >
+                    Contacts
+                  </a>
+                </li>
+              </ul>
+              {currentTab == 0 &&
+                (testData.status == "Awaiting Result" ? (
+                  <div className="flex flex-col items-start my-4 space-y-2">
+                    <div className="grid grid-cols-2 gap-5 text-left">
+                      <span className="font-bold">Invoice Number : </span>
+                      <span>{testData?.payment?.invoice}</span>
+                      <span className="font-bold">Amount Paid : </span>
+                      <span>{testData?.payment?.amount_paid}</span>
+                      <span className="font-bold">Date Paid : </span>
+                      <span>{testData?.payment?.createdAt}</span>
+                      <span className="font-bold">Received by : </span>
+                      <span>
+                        {testData?.payment?.user?.firstname}{" "}
+                        {testData?.payment?.user?.lastname}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <form className="border flex flex-col my-3 p-4 items-start space-y-4">
+                    <div className="flex flex-col w-full items-start">
+                      <label
+                        for="paymentOption"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Select payment option
+                      </label>
+                      <select
+                        onChange={handlePaymentOption}
+                        id="paymentOption"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"
+                      >
+                        <option value="cash">Cash</option>
+                        <option value="card">Card Payment</option>
+                      </select>
+                    </div>
+                    {paymentOption == "cash" && (
+                      <>
+                        <div className="flex flex-col w-full items-start">
+                          <label
+                            for="paymentOption"
+                            className="block mb-2 text-sm font-medium text-gray-900"
+                          >
+                            Invoice No.
+                          </label>
+                          <input
+                            ref={invoiceRef}
+                            type="text"
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"
+                          />
+                        </div>
+                        <div className="flex flex-col w-full items-start">
+                          <label
+                            for="paymentOption"
+                            className="block mb-2 text-sm font-medium text-gray-900"
+                          >
+                            Amount Paid
+                          </label>
+                          <input
+                            ref={amountPaidRef}
+                            type="text"
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleSavePayment}
+                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                        >
+                          Save Payment
+                        </button>
+                      </>
+                    )}
+                    {paymentOption == "card" && (
+                      <>
+                        <button
+                          type="button"
+                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                        >
+                          Paystack Option
+                        </button>
+                      </>
+                    )}
+                  </form>
+                ))}
+
+              {currentTab == 1 && (
+                <div className="border flex flex-col my-3">Tab 2</div>
+              )}
+              {currentTab == 2 && (
+                <div className="border flex flex-col my-3">Tab 3</div>
+              )}
+              {currentTab == 3 && (
+                <div className="border flex flex-col my-3">Tab 4</div>
+              )}
+            </div>
+
+            {/* Modal footer */}
+            <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b ">
+              <button
+                onClick={handleCancelTestModal}
+                className="text-white bg-emerald-600 disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-emerald-800 focus:ring-4 focus:outline-none focus:ring-emerald-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 focus:z-10 "
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
@@ -1164,3 +1435,256 @@ Test.defaultProps = {
 Test.propTypes = {
   color: PropTypes.oneOf(["light", "dark"]),
 };
+
+const xx = [
+  {
+    name: "Chemistry",
+    discrete: "true",
+    nest: 2,
+    type: [
+      {
+        name: "Renal/Electrolyte/Bone",
+        parameters: [
+          { name: "Sodium", unit: [], checked: false, cost: 1200 },
+          { name: "Potassium", unit: [], checked: true, cost: 1300 },
+          { name: "Chloride", unit: [], checked: false, cost: 1400 },
+          { name: "HCO3", unit: [], checked: false, cost: 1500 },
+          { name: "Urea", unit: [], checked: false, cost: 1500 },
+          { name: "Creatine", unit: [], checked: false, cost: 1700 },
+          { name: "Uric Acid", unit: [], checked: true, cost: 1800 },
+          { name: "Calcium", unit: [], checked: false, cost: 1900 },
+          { name: "Magnessium", unit: [], checked: false, cost: 2000 },
+          { name: "Phosphate", unit: [], checked: false, cost: 2100 },
+          { name: "Zinc", unit: [], checked: false, cost: 2200 },
+        ],
+      },
+      {
+        name: "Liver/Pancreas",
+        parameters: [
+          { name: "Bilirubin", unit: [], checked: false, cost: 200 },
+          { name: "Total Protein", unit: [], checked: false, cost: 2000 },
+          { name: "Albumin", unit: [], checked: false, cost: 1000 },
+          { name: "Pre-Albumin", unit: [], checked: false, cost: 2200 },
+          { name: "Globulin", unit: [], checked: false, cost: 1200 },
+          { name: "AST", unit: [], checked: false, cost: 5000 },
+          { name: "ALT", unit: [], checked: false, cost: 2200 },
+          { name: "GGT", unit: [], checked: false, cost: 3500 },
+          { name: "ALP", unit: [], checked: false, cost: 1500 },
+          { name: "LDH", unit: [], checked: false, cost: 2500 },
+          { name: "LPS", unit: [], checked: false, cost: 2800 },
+          { name: "AMS", unit: [], checked: false, cost: 2900 },
+        ],
+      },
+      {
+        name: "Cardiac Markers",
+        parameters: [
+          { name: "Myoglobin", unit: [], checked: false, cost: 2100 },
+          { name: "HS-CRP", unit: [], checked: false, cost: 2200 },
+          { name: "CK", unit: [], checked: false, cost: 2300 },
+          { name: "CK-MB", unit: [], checked: false, cost: 2400 },
+          { name: "Troponin I", unit: [], checked: false, cost: 2500 },
+        ],
+      },
+      {
+        name: "CSF",
+        parameters: [
+          { name: "Protein", unit: [], checked: false, cost: 1200 },
+          { name: "Glucose", unit: [], checked: false, cost: 2200 },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Haematology",
+    discrete: "true",
+    nest: 2,
+    type: [
+      {
+        name: "General",
+        parameters: [
+          { name: "PCV", unit: [], checked: false, cost: 2000 },
+          { name: "FBC", unit: [], checked: false, cost: 3000 },
+          { name: "WBC", unit: [], checked: false, cost: 4000 },
+          { name: "ESR", unit: [], checked: false, cost: 5000 },
+          { name: "Genotype", unit: [], checked: false, cost: 6000 },
+          { name: "Blood Grouping", unit: [], checked: false, cost: 7000 },
+          {
+            name: "Coombs Test",
+            type: [
+              { name: "Direct", unit: [], checked: false, cost: 1200 },
+              { name: "Indirect", unit: [], checked: false, cost: 2200 },
+            ],
+          },
+          { name: "Iron", unit: [], checked: false, cost: 2500 },
+          { name: "G6PD", unit: [], checked: false, cost: 2300 },
+          { name: "TIBC", unit: [], checked: false, cost: 2400 },
+        ],
+      },
+      {
+        name: "Coagulation",
+        parameters: [
+          { name: "PT + INR", unit: [], checked: false, cost: 1200 },
+          { name: "PTTK", unit: [], checked: false, cost: 1200 },
+          { name: "FIBRINOGEN", unit: [], checked: false, cost: 1200 },
+          { name: "D-DIMER", unit: [], checked: false, cost: 1500 },
+          { name: "THROMBIN TIME", unit: [], checked: false, cost: 1600 },
+          { name: "FACTOR ASSAY", unit: [], checked: false, cost: 1700 },
+        ],
+      },
+      {
+        name: "Serelogy",
+        parameters: [
+          { name: "Hepatitis B", unit: [], checked: false, cost: 1800 },
+          { name: "Hepatitis C", unit: [], checked: false, cost: 1900 },
+          { name: "HIV", unit: [], checked: false, cost: 3000 },
+          { name: "VDRL", unit: [], checked: false, cost: 3100 },
+          { name: "H-Pylopy-Serum", unit: [], checked: false, cost: 3100 },
+          { name: "C-Reactive Protein", unit: [], checked: false, cost: 3300 },
+          { name: "Hepatitis Profile", unit: [], checked: false, cost: 3400 },
+        ],
+      },
+      {
+        name: "Lipids",
+        parameters: [
+          { name: "Cholesterol", unit: [], checked: false, cost: 3500 },
+          { name: "Triglycerides", unit: [], checked: false, cost: 3600 },
+          { name: "HDL-C", unit: [], checked: false, cost: 3700 },
+          { name: "LDL-C", unit: [], checked: false, cost: 3800 },
+        ],
+      },
+      {
+        name: "Diabetes",
+        parameters: [
+          { name: "Glucose", unit: [], checked: false, cost: 3900 },
+          { name: "2HR PP, Glucose", unit: [], checked: false, cost: 4000 },
+          { name: "HbAIC", unit: [], checked: false, cost: 4100 },
+          {
+            name: "Microalbumin (Urine)",
+            unit: [],
+            checked: false,
+            cost: 4200,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Endocrinology",
+    discrete: "true",
+    nest: 2,
+    type: [
+      {
+        name: "Thyroid",
+        parameters: [
+          { name: "T3", unit: [], checked: false, cost: 4400 },
+          { name: "T4", unit: [], checked: false, cost: 4500 },
+          { name: "TSH", unit: [], checked: false, cost: 4600 },
+        ],
+      },
+      {
+        name: "Reproductive",
+        parameters: [
+          { name: "FSH", unit: [], checked: false, cost: 4700 },
+          { name: "LH", unit: [], checked: false, cost: 4800 },
+          {
+            name: "Oestrogen / Oestradiol",
+            unit: [],
+            checked: false,
+            cost: 200,
+          },
+          { name: "Progesterone", unit: [], checked: false, cost: 4900 },
+          { name: "Testosterone", unit: [], checked: false, cost: 5000 },
+          { name: "HCG", unit: [], checked: false, cost: 1000 },
+          { name: "Prolactin", unit: [], checked: false, cost: 1200 },
+          { name: "AMH", unit: [], checked: false, cost: 1100 },
+        ],
+      },
+      {
+        name: "Others",
+        parameters: [
+          { name: "Cortisol", unit: [], checked: false, cost: 1300 },
+        ],
+      },
+      {
+        name: "Tumor Markers",
+        parameters: [
+          { name: "PSA", unit: [], checked: false, cost: 1400 },
+          { name: "AFB", unit: [], checked: false, cost: 1600 },
+          { name: "CEA", unit: [], checked: false, cost: 1500 },
+          { name: "IFOB", unit: [], checked: false, cost: 1800 },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Microbiology",
+    discrete: "true",
+    nest: 2,
+    type: [
+      {
+        name: "Widal Test",
+        parameters: [
+          { name: "MP", unit: [], checked: false, cost: 1900 },
+          { name: "Stool MCS", unit: [], checked: false, cost: 2000 },
+          { name: "Stool Microscopy", unit: [], checked: false, cost: 2100 },
+          { name: "Urine Microscopy", unit: [], checked: false, cost: 2200 },
+          { name: "Urine MCS", unit: [], checked: false, cost: 2300 },
+          { name: "Swab MCS", unit: [], checked: false, cost: 2400 },
+          {
+            name: "Hvs / Endocervical MCS",
+            unit: [],
+            checked: false,
+            cost: 200,
+          },
+          { name: "Blood Culture", unit: [], checked: false, cost: 2500 },
+          { name: "Semen Analysis", unit: [], checked: false, cost: 2600 },
+          { name: "Semen MCS", unit: [], checked: false, cost: 2700 },
+          { name: "Pregnancy Test", unit: [], checked: false, cost: 2800 },
+          {
+            name: "CSF Analysis & Culture",
+            unit: [],
+            checked: false,
+            cost: 200,
+          },
+          { name: "TB Screening", unit: [], checked: false, cost: 2900 },
+          { name: "Urinalysis", unit: [], checked: false, cost: 3000 },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Histology",
+    discrete: false,
+    nest: 0,
+    parameters: [{ name: "Histology", unit: [], checked: false, cost: 3200 }],
+  },
+  {
+    name: "Ultrasound Services",
+    discrete: false,
+    nest: 0,
+    parameters: [
+      { name: "Ultrasound Services", unit: [], checked: false, cost: 3100 },
+    ],
+  },
+  {
+    name: "ECG",
+    discrete: false,
+    nest: 0,
+    parameters: [{ name: "ECG", unit: [], checked: false, cost: 3300 }],
+  },
+  {
+    name: "EEG",
+    discrete: false,
+    nest: 0,
+    parameters: [{ name: "EEG", unit: [], checked: false, cost: 3400 }],
+  },
+  {
+    name: "Cytology",
+    discrete: "true",
+    nest: 1,
+    parameters: [
+      { name: "Pap Smear (Cervical)", unit: [], checked: false, cost: 3500 },
+      { name: "FNAC Direct", unit: [], checked: false, cost: 3600 },
+    ],
+  },
+];
