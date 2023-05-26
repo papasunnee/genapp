@@ -9,7 +9,7 @@ import TableDropdown from "../Dropdowns/TableDropdown";
 const TestCategory = [
   {
     name: "Chemistry",
-    discrete: "true",
+    discrete: true,
     nest: 2,
     type: [
       {
@@ -85,7 +85,7 @@ const TestCategory = [
   },
   {
     name: "Haematology",
-    discrete: "true",
+    discrete: true,
     nest: 2,
     type: [
       {
@@ -164,7 +164,7 @@ const TestCategory = [
   },
   {
     name: "Endocrinology",
-    discrete: "true",
+    discrete: true,
     nest: 2,
     type: [
       {
@@ -212,7 +212,7 @@ const TestCategory = [
   },
   {
     name: "Microbiology",
-    discrete: "true",
+    discrete: true,
     nest: 2,
     type: [
       {
@@ -300,7 +300,7 @@ const TestCategory = [
   },
   {
     name: "Cytology",
-    discrete: "true",
+    discrete: true,
     nest: 1,
     parameters: [
       {
@@ -327,6 +327,7 @@ export default function Test({ color }) {
   const specimenRef = useRef();
   const clinicalAddressRef = useRef();
   const clinicalDiagnosisRef = useRef();
+  const test_result_form = useRef();
   const [testState, setTestState] = useState(
     JSON.parse(JSON.stringify(TestCategory))
   );
@@ -336,7 +337,7 @@ export default function Test({ color }) {
   const [showModal, setShowModal] = useState(false);
   const [showTestModal, setShowTestModal] = useState(false);
   const [testData, setTestData] = useState({});
-  const [paymentData, setPaymentData] = useState({});
+  const [resultForm, setResultForm] = useState({});
   const [proceedState, setProceedState] = useState(false);
   const [testStatsDisplay, setTestStatsDisplay] = useState(false);
   const [testAddonDisplay, setTestAddonDisplay] = useState(false);
@@ -413,7 +414,7 @@ export default function Test({ color }) {
   };
   const handleCancelTestModal = (e) => {
     e.preventDefault();
-    setPaymentData({});
+    setTestData({});
     setShowTestModal(false);
   };
   const handleShowModal = (e) => {
@@ -426,10 +427,13 @@ export default function Test({ color }) {
     setTestStatsDisplay(true);
     setShowModal(true);
   };
-  const handleTestModal = async (item) => {
+  const handleTestModal = (item) => {
+    const itemCopy = {
+      ...item,
+      test_data: JSON.parse(item.test_data),
+    };
+    setTestData(itemCopy);
     setShowTestModal(true);
-    setTestData(item);
-    console.log({ item });
   };
   const handlePaymentOption = (e) => {
     const { value } = e.target;
@@ -452,8 +456,12 @@ export default function Test({ color }) {
         });
         const data = await res.json();
         if (data.success) {
-          mutatePatient();
-          setTestData(data.data);
+          await mutatePatient();
+          const itemCopy = {
+            ...data.data,
+            test_data: JSON.parse(data.data.test_data),
+          };
+          setTestData(itemCopy);
         }
       } catch (error) {}
     } else {
@@ -542,6 +550,20 @@ export default function Test({ color }) {
       setTotalCost(total);
     }
   };
+  const handleResultFormChange = (e) => {
+    const { name, value } = e.target;
+    setResultForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTestDataForm = (e) => {
+    e.preventDefault();
+    const formElements = Array.from(test_result_form.current.elements);
+    const formObject = {};
+    formElements.forEach((element) => {
+      formObject[element.name] = element.value;
+    });
+    console.log(formObject);
+  };
 
   return (
     <>
@@ -627,14 +649,6 @@ export default function Test({ color }) {
                 >
                   Completion
                 </th>
-                <th
-                  className={
-                    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                    (color === "light"
-                      ? "bg-slate-50 text-slate-500 border-slate-100"
-                      : "bg-slate-600 text-slate-200 border-slate-500")
-                  }
-                ></th>
               </tr>
             </thead>
             <tbody>
@@ -675,9 +689,6 @@ export default function Test({ color }) {
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
-                      <TableDropdown />
                     </td>
                   </tr>
                 );
@@ -1401,8 +1412,73 @@ export default function Test({ color }) {
                   </form>
                 ))}
 
-              {currentTab == 1 && (
-                <div className="border flex flex-col my-3">Tab 2</div>
+              {currentTab == 1 && testData.status == "Awaiting Result" && (
+                <div className="flex flex-col items-start my-3">
+                  <form ref={test_result_form} onSubmit={handleTestDataForm}>
+                    {testData?.test_data?.map((test) => {
+                      if (test?.nest == 2) {
+                        return test?.type?.map((typ) => {
+                          return typ?.parameters?.map((parameter) => {
+                            if (parameter?.checked) {
+                              return (
+                                <div className="grid grid-cols-3 gap-3 space-y-4">
+                                  <div className="text-left flex items-center px-4">
+                                    {parameter.name}
+                                  </div>
+                                  <div className="text-left flex items-center flex-col">
+                                    <label
+                                      for="unit"
+                                      className="block mb-2 text-sm font-medium text-gray-900"
+                                    >
+                                      Select unit
+                                    </label>
+                                    <select
+                                      name={"unit" + [parameter.name]}
+                                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                    >
+                                      <option>mmHg</option>
+                                      {parameter.unit.map((val) => (
+                                        <option>{val}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="text-left flex items-center flex-col">
+                                    <label
+                                      for="unit"
+                                      className="block mb-2 text-sm font-medium text-gray-900"
+                                    >
+                                      Enter Value
+                                    </label>
+                                    {test.discrete ? (
+                                      <input
+                                        type="number"
+                                        required
+                                        name={[parameter.name]}
+                                        value={resultForm[parameter.name]}
+                                        onChange={handleResultFormChange}
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                      />
+                                    ) : (
+                                      <textarea></textarea>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            }
+                          });
+                        });
+                      }
+                    })}
+                    <div className="my-4">
+                      <button
+                        type="submit"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </form>
+                </div>
               )}
               {currentTab == 2 && (
                 <div className="border flex flex-col my-3">Tab 3</div>
@@ -1435,256 +1511,3 @@ Test.defaultProps = {
 Test.propTypes = {
   color: PropTypes.oneOf(["light", "dark"]),
 };
-
-const xx = [
-  {
-    name: "Chemistry",
-    discrete: "true",
-    nest: 2,
-    type: [
-      {
-        name: "Renal/Electrolyte/Bone",
-        parameters: [
-          { name: "Sodium", unit: [], checked: false, cost: 1200 },
-          { name: "Potassium", unit: [], checked: true, cost: 1300 },
-          { name: "Chloride", unit: [], checked: false, cost: 1400 },
-          { name: "HCO3", unit: [], checked: false, cost: 1500 },
-          { name: "Urea", unit: [], checked: false, cost: 1500 },
-          { name: "Creatine", unit: [], checked: false, cost: 1700 },
-          { name: "Uric Acid", unit: [], checked: true, cost: 1800 },
-          { name: "Calcium", unit: [], checked: false, cost: 1900 },
-          { name: "Magnessium", unit: [], checked: false, cost: 2000 },
-          { name: "Phosphate", unit: [], checked: false, cost: 2100 },
-          { name: "Zinc", unit: [], checked: false, cost: 2200 },
-        ],
-      },
-      {
-        name: "Liver/Pancreas",
-        parameters: [
-          { name: "Bilirubin", unit: [], checked: false, cost: 200 },
-          { name: "Total Protein", unit: [], checked: false, cost: 2000 },
-          { name: "Albumin", unit: [], checked: false, cost: 1000 },
-          { name: "Pre-Albumin", unit: [], checked: false, cost: 2200 },
-          { name: "Globulin", unit: [], checked: false, cost: 1200 },
-          { name: "AST", unit: [], checked: false, cost: 5000 },
-          { name: "ALT", unit: [], checked: false, cost: 2200 },
-          { name: "GGT", unit: [], checked: false, cost: 3500 },
-          { name: "ALP", unit: [], checked: false, cost: 1500 },
-          { name: "LDH", unit: [], checked: false, cost: 2500 },
-          { name: "LPS", unit: [], checked: false, cost: 2800 },
-          { name: "AMS", unit: [], checked: false, cost: 2900 },
-        ],
-      },
-      {
-        name: "Cardiac Markers",
-        parameters: [
-          { name: "Myoglobin", unit: [], checked: false, cost: 2100 },
-          { name: "HS-CRP", unit: [], checked: false, cost: 2200 },
-          { name: "CK", unit: [], checked: false, cost: 2300 },
-          { name: "CK-MB", unit: [], checked: false, cost: 2400 },
-          { name: "Troponin I", unit: [], checked: false, cost: 2500 },
-        ],
-      },
-      {
-        name: "CSF",
-        parameters: [
-          { name: "Protein", unit: [], checked: false, cost: 1200 },
-          { name: "Glucose", unit: [], checked: false, cost: 2200 },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Haematology",
-    discrete: "true",
-    nest: 2,
-    type: [
-      {
-        name: "General",
-        parameters: [
-          { name: "PCV", unit: [], checked: false, cost: 2000 },
-          { name: "FBC", unit: [], checked: false, cost: 3000 },
-          { name: "WBC", unit: [], checked: false, cost: 4000 },
-          { name: "ESR", unit: [], checked: false, cost: 5000 },
-          { name: "Genotype", unit: [], checked: false, cost: 6000 },
-          { name: "Blood Grouping", unit: [], checked: false, cost: 7000 },
-          {
-            name: "Coombs Test",
-            type: [
-              { name: "Direct", unit: [], checked: false, cost: 1200 },
-              { name: "Indirect", unit: [], checked: false, cost: 2200 },
-            ],
-          },
-          { name: "Iron", unit: [], checked: false, cost: 2500 },
-          { name: "G6PD", unit: [], checked: false, cost: 2300 },
-          { name: "TIBC", unit: [], checked: false, cost: 2400 },
-        ],
-      },
-      {
-        name: "Coagulation",
-        parameters: [
-          { name: "PT + INR", unit: [], checked: false, cost: 1200 },
-          { name: "PTTK", unit: [], checked: false, cost: 1200 },
-          { name: "FIBRINOGEN", unit: [], checked: false, cost: 1200 },
-          { name: "D-DIMER", unit: [], checked: false, cost: 1500 },
-          { name: "THROMBIN TIME", unit: [], checked: false, cost: 1600 },
-          { name: "FACTOR ASSAY", unit: [], checked: false, cost: 1700 },
-        ],
-      },
-      {
-        name: "Serelogy",
-        parameters: [
-          { name: "Hepatitis B", unit: [], checked: false, cost: 1800 },
-          { name: "Hepatitis C", unit: [], checked: false, cost: 1900 },
-          { name: "HIV", unit: [], checked: false, cost: 3000 },
-          { name: "VDRL", unit: [], checked: false, cost: 3100 },
-          { name: "H-Pylopy-Serum", unit: [], checked: false, cost: 3100 },
-          { name: "C-Reactive Protein", unit: [], checked: false, cost: 3300 },
-          { name: "Hepatitis Profile", unit: [], checked: false, cost: 3400 },
-        ],
-      },
-      {
-        name: "Lipids",
-        parameters: [
-          { name: "Cholesterol", unit: [], checked: false, cost: 3500 },
-          { name: "Triglycerides", unit: [], checked: false, cost: 3600 },
-          { name: "HDL-C", unit: [], checked: false, cost: 3700 },
-          { name: "LDL-C", unit: [], checked: false, cost: 3800 },
-        ],
-      },
-      {
-        name: "Diabetes",
-        parameters: [
-          { name: "Glucose", unit: [], checked: false, cost: 3900 },
-          { name: "2HR PP, Glucose", unit: [], checked: false, cost: 4000 },
-          { name: "HbAIC", unit: [], checked: false, cost: 4100 },
-          {
-            name: "Microalbumin (Urine)",
-            unit: [],
-            checked: false,
-            cost: 4200,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Endocrinology",
-    discrete: "true",
-    nest: 2,
-    type: [
-      {
-        name: "Thyroid",
-        parameters: [
-          { name: "T3", unit: [], checked: false, cost: 4400 },
-          { name: "T4", unit: [], checked: false, cost: 4500 },
-          { name: "TSH", unit: [], checked: false, cost: 4600 },
-        ],
-      },
-      {
-        name: "Reproductive",
-        parameters: [
-          { name: "FSH", unit: [], checked: false, cost: 4700 },
-          { name: "LH", unit: [], checked: false, cost: 4800 },
-          {
-            name: "Oestrogen / Oestradiol",
-            unit: [],
-            checked: false,
-            cost: 200,
-          },
-          { name: "Progesterone", unit: [], checked: false, cost: 4900 },
-          { name: "Testosterone", unit: [], checked: false, cost: 5000 },
-          { name: "HCG", unit: [], checked: false, cost: 1000 },
-          { name: "Prolactin", unit: [], checked: false, cost: 1200 },
-          { name: "AMH", unit: [], checked: false, cost: 1100 },
-        ],
-      },
-      {
-        name: "Others",
-        parameters: [
-          { name: "Cortisol", unit: [], checked: false, cost: 1300 },
-        ],
-      },
-      {
-        name: "Tumor Markers",
-        parameters: [
-          { name: "PSA", unit: [], checked: false, cost: 1400 },
-          { name: "AFB", unit: [], checked: false, cost: 1600 },
-          { name: "CEA", unit: [], checked: false, cost: 1500 },
-          { name: "IFOB", unit: [], checked: false, cost: 1800 },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Microbiology",
-    discrete: "true",
-    nest: 2,
-    type: [
-      {
-        name: "Widal Test",
-        parameters: [
-          { name: "MP", unit: [], checked: false, cost: 1900 },
-          { name: "Stool MCS", unit: [], checked: false, cost: 2000 },
-          { name: "Stool Microscopy", unit: [], checked: false, cost: 2100 },
-          { name: "Urine Microscopy", unit: [], checked: false, cost: 2200 },
-          { name: "Urine MCS", unit: [], checked: false, cost: 2300 },
-          { name: "Swab MCS", unit: [], checked: false, cost: 2400 },
-          {
-            name: "Hvs / Endocervical MCS",
-            unit: [],
-            checked: false,
-            cost: 200,
-          },
-          { name: "Blood Culture", unit: [], checked: false, cost: 2500 },
-          { name: "Semen Analysis", unit: [], checked: false, cost: 2600 },
-          { name: "Semen MCS", unit: [], checked: false, cost: 2700 },
-          { name: "Pregnancy Test", unit: [], checked: false, cost: 2800 },
-          {
-            name: "CSF Analysis & Culture",
-            unit: [],
-            checked: false,
-            cost: 200,
-          },
-          { name: "TB Screening", unit: [], checked: false, cost: 2900 },
-          { name: "Urinalysis", unit: [], checked: false, cost: 3000 },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Histology",
-    discrete: false,
-    nest: 0,
-    parameters: [{ name: "Histology", unit: [], checked: false, cost: 3200 }],
-  },
-  {
-    name: "Ultrasound Services",
-    discrete: false,
-    nest: 0,
-    parameters: [
-      { name: "Ultrasound Services", unit: [], checked: false, cost: 3100 },
-    ],
-  },
-  {
-    name: "ECG",
-    discrete: false,
-    nest: 0,
-    parameters: [{ name: "ECG", unit: [], checked: false, cost: 3300 }],
-  },
-  {
-    name: "EEG",
-    discrete: false,
-    nest: 0,
-    parameters: [{ name: "EEG", unit: [], checked: false, cost: 3400 }],
-  },
-  {
-    name: "Cytology",
-    discrete: "true",
-    nest: 1,
-    parameters: [
-      { name: "Pap Smear (Cervical)", unit: [], checked: false, cost: 3500 },
-      { name: "FNAC Direct", unit: [], checked: false, cost: 3600 },
-    ],
-  },
-];
