@@ -20,23 +20,16 @@ export default function UserData({ color, addButton }) {
           (color === "light" ? "bg-white" : "bg-slate-700 text-white")
         }
       >
-        <div className="rounded-t mb-0 px-4 py-3 border-0">
+        <div className="rounded-t mb-0 px-4 py-6 border-0">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3
-                className={
-                  "font-semibold text-lg " +
-                  (color === "light" ? "text-slate-700" : "text-white")
-                }
-              >
-                Staff List
-              </h3>
+              <h3 className="font-bold text-xl text-slate-700">Staff List</h3>
             </div>
 
             {addButton && (
               <div>
                 <Link href="/admin/users/newuser" legacyBehavior>
-                  <a className="bg-emerald-500 active:bg-emerald-400 rounded-lg px-4 py-2 text-xs text-white space-x-1">
+                  <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
                     <i className="fas fa-plus"></i>
                     <span>Add New User</span>
                   </a>
@@ -46,7 +39,7 @@ export default function UserData({ color, addButton }) {
           </div>
         </div>
         <div className="block w-full overflow-x-auto">
-          {/* Projects table */}
+          {/* Users table */}
           <table className="items-center w-full bg-transparent border-collapse">
             <thead>
               <tr>
@@ -115,13 +108,8 @@ export default function UserData({ color, addButton }) {
                         className="h-12 w-12 bg-white rounded-full border"
                         alt="..."
                       ></img>{" "} */}
-                      <span
-                        className={
-                          "ml-3 font-bold " +
-                          +(color === "light" ? "text-slate-600" : "text-white")
-                        }
-                      >
-                        {item.firstname}
+                      <span className="ml-3 font-bold text-slate-600">
+                        {item.firstname} {item.lastname}
                       </span>
                     </th>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">

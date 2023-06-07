@@ -1,323 +1,35 @@
 import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import useSWR from "swr";
-// import _ from lodash;
 import { fetcher } from "@/utils/fetcher";
 import { useRouter } from "next/router";
 import TableDropdown from "../Dropdowns/TableDropdown";
-
-const TestCategory = [
-  {
-    name: "Chemistry",
-    discrete: true,
-    nest: 2,
-    type: [
-      {
-        name: "Renal/Electrolyte/Bone",
-        parameters: [
-          { name: "Sodium", unit: [], checked: false, cost: 1200 },
-          { name: "Potassium", unit: [], checked: false, cost: 1300 },
-          { name: "Chloride", unit: [], checked: false, cost: 1400 },
-          { name: "HCO3", unit: [], checked: false, cost: 1500 },
-          { name: "Urea", unit: [], checked: false, cost: 1500 },
-          { name: "Creatine", unit: [], checked: false, cost: 1700 },
-          { name: "Uric Acid", unit: [], checked: false, cost: 1800 },
-          { name: "Calcium", unit: [], checked: false, cost: 1900 },
-          { name: "Magnessium", unit: [], checked: false, cost: 2000 },
-          { name: "Phosphate", unit: [], checked: false, cost: 2100 },
-          { name: "Zinc", unit: [], checked: false, cost: 2200 },
-        ],
-      },
-      {
-        name: "Liver/Pancreas",
-        parameters: [
-          {
-            name: "Bilirubin",
-            // type: [
-            //   {
-            //     name: "Total Bilirubin",
-            //     unit: [],
-            //     checked: false,
-            //     cost: 200,
-            //   },
-            //   {
-            //     name: "Conjugated Bilirubin",
-            //     unit: [],
-            //     checked: false,
-            //     cost: 200,
-            //   },
-            // ],
-            unit: [],
-            checked: false,
-            cost: 200,
-          },
-          { name: "Total Protein", unit: [], checked: false, cost: 2000 },
-          { name: "Albumin", unit: [], checked: false, cost: 1000 },
-          { name: "Pre-Albumin", unit: [], checked: false, cost: 2200 },
-          { name: "Globulin", unit: [], checked: false, cost: 1200 },
-          { name: "AST", unit: [], checked: false, cost: 5000 },
-          { name: "ALT", unit: [], checked: false, cost: 2200 },
-          { name: "GGT", unit: [], checked: false, cost: 3500 },
-          { name: "ALP", unit: [], checked: false, cost: 1500 },
-          { name: "LDH", unit: [], checked: false, cost: 2500 },
-          { name: "LPS", unit: [], checked: false, cost: 2800 },
-          { name: "AMS", unit: [], checked: false, cost: 2900 },
-        ],
-      },
-      {
-        name: "Cardiac Markers",
-        parameters: [
-          { name: "Myoglobin", unit: [], checked: false, cost: 2100 },
-          { name: "HS-CRP", unit: [], checked: false, cost: 2200 },
-          { name: "CK", unit: [], checked: false, cost: 2300 },
-          { name: "CK-MB", unit: [], checked: false, cost: 2400 },
-          { name: "Troponin I", unit: [], checked: false, cost: 2500 },
-        ],
-      },
-      {
-        name: "CSF",
-        parameters: [
-          { name: "Protein", unit: [], checked: false, cost: 1200 },
-          { name: "Glucose", unit: [], checked: false, cost: 2200 },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Haematology",
-    discrete: true,
-    nest: 2,
-    type: [
-      {
-        name: "General",
-        parameters: [
-          { name: "PCV", unit: [], checked: false, cost: 2000 },
-          { name: "FBC", unit: [], checked: false, cost: 3000 },
-          { name: "WBC", unit: [], checked: false, cost: 4000 },
-          { name: "ESR", unit: [], checked: false, cost: 5000 },
-          { name: "Genotype", unit: [], checked: false, cost: 6000 },
-          { name: "Blood Grouping", unit: [], checked: false, cost: 7000 },
-          {
-            name: "Coombs Test",
-            type: [
-              { name: "Direct", unit: [], checked: false, cost: 1200 },
-              { name: "Indirect", unit: [], checked: false, cost: 2200 },
-            ],
-          },
-          { name: "Iron", unit: [], checked: false, cost: 2500 },
-          { name: "G6PD", unit: [], checked: false, cost: 2300 },
-          { name: "TIBC", unit: [], checked: false, cost: 2400 },
-        ],
-      },
-      {
-        name: "Coagulation",
-        parameters: [
-          { name: "PT + INR", unit: [], checked: false, cost: 1200 },
-          { name: "PTTK", unit: [], checked: false, cost: 1200 },
-          { name: "FIBRINOGEN", unit: [], checked: false, cost: 1200 },
-          { name: "D-DIMER", unit: [], checked: false, cost: 1500 },
-          { name: "THROMBIN TIME", unit: [], checked: false, cost: 1600 },
-          { name: "FACTOR ASSAY", unit: [], checked: false, cost: 1700 },
-        ],
-      },
-      {
-        name: "Serelogy",
-        parameters: [
-          { name: "Hepatitis B", unit: [], checked: false, cost: 1800 },
-          { name: "Hepatitis C", unit: [], checked: false, cost: 1900 },
-          { name: "HIV", unit: [], checked: false, cost: 3000 },
-          { name: "VDRL", unit: [], checked: false, cost: 3100 },
-          { name: "H-Pylopy-Serum", unit: [], checked: false, cost: 3100 },
-          {
-            name: "C-Reactive Protein",
-            unit: [],
-            checked: false,
-            cost: 3300,
-          },
-          { name: "Hepatitis Profile", unit: [], checked: false, cost: 3400 },
-        ],
-      },
-      {
-        name: "Lipids",
-        parameters: [
-          { name: "Cholesterol", unit: [], checked: false, cost: 3500 },
-          { name: "Triglycerides", unit: [], checked: false, cost: 3600 },
-          { name: "HDL-C", unit: [], checked: false, cost: 3700 },
-          { name: "LDL-C", unit: [], checked: false, cost: 3800 },
-        ],
-      },
-      {
-        name: "Diabetes",
-        parameters: [
-          { name: "Glucose", unit: [], checked: false, cost: 3900 },
-          { name: "2HR PP, Glucose", unit: [], checked: false, cost: 4000 },
-          { name: "HbAIC", unit: [], checked: false, cost: 4100 },
-          {
-            name: "Microalbumin (Urine)",
-            unit: [],
-            checked: false,
-            cost: 4200,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Endocrinology",
-    discrete: true,
-    nest: 2,
-    type: [
-      {
-        name: "Thyroid",
-        parameters: [
-          { name: "T3", unit: [], checked: false, cost: 4400 },
-          { name: "T4", unit: [], checked: false, cost: 4500 },
-          { name: "TSH", unit: [], checked: false, cost: 4600 },
-        ],
-      },
-      {
-        name: "Reproductive",
-        parameters: [
-          { name: "FSH", unit: [], checked: false, cost: 4700 },
-          { name: "LH", unit: [], checked: false, cost: 4800 },
-          {
-            name: "Oestrogen / Oestradiol",
-            unit: [],
-            checked: false,
-            cost: 200,
-          },
-          { name: "Progesterone", unit: [], checked: false, cost: 4900 },
-          { name: "Testosterone", unit: [], checked: false, cost: 5000 },
-          { name: "HCG", unit: [], checked: false, cost: 1000 },
-          { name: "Prolactin", unit: [], checked: false, cost: 1200 },
-          { name: "AMH", unit: [], checked: false, cost: 1100 },
-        ],
-      },
-      {
-        name: "Others",
-        parameters: [
-          { name: "Cortisol", unit: [], checked: false, cost: 1300 },
-        ],
-      },
-      {
-        name: "Tumor Markers",
-        parameters: [
-          { name: "PSA", unit: [], checked: false, cost: 1400 },
-          { name: "AFB", unit: [], checked: false, cost: 1600 },
-          { name: "CEA", unit: [], checked: false, cost: 1500 },
-          { name: "IFOB", unit: [], checked: false, cost: 1800 },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Microbiology",
-    discrete: true,
-    nest: 2,
-    type: [
-      {
-        name: "Widal Test",
-        parameters: [
-          { name: "MP", unit: [], checked: false, cost: 1900 },
-          { name: "Stool MCS", unit: [], checked: false, cost: 2000 },
-          { name: "Stool Microscopy", unit: [], checked: false, cost: 2100 },
-          { name: "Urine Microscopy", unit: [], checked: false, cost: 2200 },
-          { name: "Urine MCS", unit: [], checked: false, cost: 2300 },
-          { name: "Swab MCS", unit: [], checked: false, cost: 2400 },
-          {
-            name: "Hvs / Endocervical MCS",
-            unit: [],
-            checked: false,
-            cost: 200,
-          },
-          { name: "Blood Culture", unit: [], checked: false, cost: 2500 },
-          { name: "Semen Analysis", unit: [], checked: false, cost: 2600 },
-          { name: "Semen MCS", unit: [], checked: false, cost: 2700 },
-          { name: "Pregnancy Test", unit: [], checked: false, cost: 2800 },
-          {
-            name: "CSF Analysis & Culture",
-            unit: [],
-            checked: false,
-            cost: 200,
-          },
-          { name: "TB Screening", unit: [], checked: false, cost: 2900 },
-          { name: "Urinalysis", unit: [], checked: false, cost: 3000 },
-        ],
-      },
-    ],
-  },
-  {
-    name: "Histology",
-    discrete: false,
-    nest: 0,
-    parameters: [
-      {
-        name: "Histology",
-        unit: [],
-        checked: false,
-        cost: 3200,
-      },
-    ],
-  },
-  {
-    name: "Ultrasound Services",
-    discrete: false,
-    nest: 0,
-    parameters: [
-      {
-        name: "Ultrasound Services",
-        unit: [],
-        checked: false,
-        cost: 3100,
-      },
-    ],
-  },
-  {
-    name: "ECG",
-    discrete: false,
-    nest: 0,
-    parameters: [
-      {
-        name: "ECG",
-        unit: [],
-        checked: false,
-        cost: 3300,
-      },
-    ],
-  },
-  {
-    name: "EEG",
-    discrete: false,
-    nest: 0,
-    parameters: [
-      {
-        name: "EEG",
-        unit: [],
-        checked: false,
-        cost: 3400,
-      },
-    ],
-  },
-  {
-    name: "Cytology",
-    discrete: true,
-    nest: 1,
-    parameters: [
-      {
-        name: "Pap Smear (Cervical)",
-        unit: [],
-        checked: false,
-        cost: 3500,
-      },
-      { name: "FNAC Direct", unit: [], checked: false, cost: 3600 },
-    ],
-  },
-];
+import {
+  assignValuesToTest,
+  displayTestResult,
+  filterRegisteredTestOnly,
+} from "@/utils/functions";
+import TestCategory from "@/data/TestCategory";
 
 const TestStatus = {
-  "Awaiting Payment": 50,
-  "Awaiting Result": 50,
-  "Test Completed": 100,
+  "Awaiting Payment": {
+    value: 0,
+    lightcolor: "bg-red-200",
+    deepcolor: "bg-red-500",
+    textcolor: "text-red-500",
+  },
+  "Awaiting Result": {
+    value: 50,
+    lightcolor: "bg-orange-200",
+    deepcolor: "bg-orange-500",
+    textcolor: "text-orange-500",
+  },
+  "Test Completed": {
+    value: 100,
+    lightcolor: "bg-green-200",
+    deepcolor: "bg-green-500",
+    textcolor: "text-green-500",
+  },
 };
 
 export default function Test({ color }) {
@@ -339,6 +51,7 @@ export default function Test({ color }) {
   const [testData, setTestData] = useState({});
   const [resultForm, setResultForm] = useState({});
   const [proceedState, setProceedState] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [testStatsDisplay, setTestStatsDisplay] = useState(false);
   const [testAddonDisplay, setTestAddonDisplay] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
@@ -428,6 +141,7 @@ export default function Test({ color }) {
     setShowModal(true);
   };
   const handleTestModal = (item) => {
+    setCurrentTab(0);
     const itemCopy = {
       ...item,
       test_data: JSON.parse(item.test_data),
@@ -440,6 +154,7 @@ export default function Test({ color }) {
     setPaymentOption(value);
   };
   const handleSavePayment = async () => {
+    setLoading(true);
     const invoice = invoiceRef.current.value;
     const amountPaid = amountPaidRef.current.value;
     if (amountPaid == testData.total_cost) {
@@ -467,6 +182,7 @@ export default function Test({ color }) {
     } else {
       console.log("Amount Invalid");
     }
+    setLoading(false);
   };
   const handleSaveModal = (e) => {
     setProceedState(false);
@@ -476,6 +192,7 @@ export default function Test({ color }) {
   };
   const handleFinish = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const test_title = testTitleRef.current.value;
     const specimen = specimenRef.current.value;
     const clinical_address = clinicalAddressRef.current.value;
@@ -486,7 +203,7 @@ export default function Test({ color }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           test_title,
-          test_data: JSON.stringify(testState),
+          test_data: JSON.stringify(filterRegisteredTestOnly(testState)),
           specimen,
           clinical_address,
           clinical_diagnosis,
@@ -499,11 +216,12 @@ export default function Test({ color }) {
         mutatePatient();
         handleCancelModal(e);
       } else {
-        console.log({ ss: "no success", data });
+        console.log({ data });
       }
     } catch (error) {
       console.log(error.message);
     }
+    setLoading(false);
   };
   const handleProceed = (e) => {
     e.preventDefault();
@@ -554,15 +272,50 @@ export default function Test({ color }) {
     const { name, value } = e.target;
     setResultForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  const handleTestDataForm = (e) => {
+  const handleTestDataForm = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const formElements = Array.from(test_result_form.current.elements);
     const formObject = {};
     formElements.forEach((element) => {
       formObject[element.name] = element.value;
     });
-    console.log(formObject);
+    let nullTestValuesCount = 0;
+    Object.values(formElements).forEach((item) => {
+      if (item == "" || item == null || item == "undefined") {
+        ++nullTestValuesCount;
+      }
+    });
+    const resp = assignValuesToTest(testData.test_data, formObject);
+    setTestData((prev) => ({
+      ...prev,
+      test_data: resp,
+      nullTestValuesCount,
+    }));
+    try {
+      const res = await fetch("/api/diagnosis", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          put_id: testData._id,
+          test_data: JSON.stringify(resp),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        mutatePatient();
+        setTestData({
+          ...data.data,
+          test_data: JSON.parse(data.data.test_data),
+        });
+        // handleCancelModal(e);
+      } else {
+        console.log({ data });
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+    setLoading(false);
   };
 
   return (
@@ -573,22 +326,17 @@ export default function Test({ color }) {
           (color === "light" ? "bg-white" : "bg-slate-700 text-white")
         }
       >
-        <div className="rounded-t mb-0 px-4 py-3 border-0">
+        <div className="rounded-t mb-0 px-4 py-6 border-0">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3
-                className={
-                  "font-semibold text-lg " +
-                  (color === "light" ? "text-slate-700" : "text-white")
-                }
-              >
+              <h3 className="font-semibold text-lg text-slate-700">
                 Test Taken By{" "}
                 {patientData ? (
                   patientData.data?.firstname +
                   " " +
                   patientData?.data?.lastname
                 ) : (
-                  <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full dark:bg-gray-700 w-32"></span>
+                  <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full  w-32"></span>
                 )}
               </h3>
             </div>
@@ -596,7 +344,7 @@ export default function Test({ color }) {
               <button
                 type="button"
                 onClick={handleShowModal}
-                className="text-white bg-emerald-700 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-300 font-medium rounded-full text-sm px-5 py-2 text-center mr-2 mb-2 "
+                className="bg-emerald-700 active:bg-emerald-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
               >
                 Add New Test
               </button>
@@ -670,21 +418,31 @@ export default function Test({ color }) {
                       NGN {item.total_cost}.00
                     </td>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      <i className="fas fa-circle text-orange-500 mr-2"></i>{" "}
+                      <i
+                        className={`fas fa-circle ${
+                          TestStatus[item.status].textcolor
+                        } mr-2`}
+                      ></i>{" "}
                       {item.status}
                     </td>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                       <div className="flex items-center">
                         <span className="mr-2">
-                          {item.status == "Awaiting Payment" && "0%"}
-                          {item.status == "Awaiting Result" && "50%"}
-                          {item.status == "Test Completed" && "100%"}
+                          {TestStatus[item.status].value + "%"}
                         </span>
                         <div className="relative w-full">
-                          <div className="overflow-hidden h-2 text-xs flex rounded bg-red-200">
+                          <div
+                            className={`overflow-hidden h-2 text-xs flex rounded ${
+                              TestStatus[item.status].lightcolor
+                            }`}
+                          >
                             <div
-                              style={{ width: `${TestStatus[item.status]}%` }}
-                              className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-500"
+                              style={{
+                                width: `${TestStatus[item.status].value}%`,
+                              }}
+                              className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
+                                TestStatus[item.status].deepcolor
+                              }`}
                             ></div>
                           </div>
                         </div>
@@ -977,10 +735,10 @@ export default function Test({ color }) {
                               className="block text-slate-600 text-sm font-bold mb-2"
                               htmlFor="grid-password"
                             >
-                              Nature Specimen
+                              Nature of Specimen
                             </label>
                             <input
-                              type="email"
+                              type="text"
                               ref={specimenRef}
                               className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                             />
@@ -1023,9 +781,29 @@ export default function Test({ color }) {
                 {/* Modal footer */}
                 <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b ">
                   <button
+                    disabled={loading}
                     type="submit"
                     className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center "
                   >
+                    {loading && (
+                      <svg
+                        aria-hidden="true"
+                        role="status"
+                        className="inline w-4 h-4 mr-3 text-white animate-spin"
+                        viewBox="0 0 100 101"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                          fill="#E5E7EB"
+                        />
+                        <path
+                          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    )}
                     Save
                   </button>
                   <button
@@ -1184,18 +962,6 @@ export default function Test({ color }) {
                     </>
                   )}
                 </div>
-
-                {/* <div className="text-base leading-relaxed text-gray-500 space-x-4">
-               
-              </div> */}
-
-                {/* <p className="text-base leading-relaxed text-gray-500 ">
-                The European Union’s General Data Protection Regulation
-                (G.D.P.R.) goes into effect on May 25 and is meant to ensure a
-                common set of data rights in the European Union. It requires
-                organizations to notify users as soon as possible of high-risk
-                data breaches that could personally affect them.
-              </p> */}
               </div>
               {/* Modal footer */}
               <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b ">
@@ -1268,7 +1034,7 @@ export default function Test({ color }) {
             </div>
             {/* Modal body */}
 
-            <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700 px-8">
+            <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200  px-8">
               <ul className="flex flex-wrap -mb-px">
                 <li className="mr-2 flex-grow">
                   <a
@@ -1327,159 +1093,200 @@ export default function Test({ color }) {
                   </a>
                 </li>
               </ul>
-              {currentTab == 0 &&
-                (testData.status == "Awaiting Result" ? (
-                  <div className="flex flex-col items-start my-4 space-y-2">
-                    <div className="grid grid-cols-2 gap-5 text-left">
-                      <span className="font-bold">Invoice Number : </span>
-                      <span>{testData?.payment?.invoice}</span>
-                      <span className="font-bold">Amount Paid : </span>
-                      <span>{testData?.payment?.amount_paid}</span>
-                      <span className="font-bold">Date Paid : </span>
-                      <span>{testData?.payment?.createdAt}</span>
-                      <span className="font-bold">Received by : </span>
-                      <span>
-                        {testData?.payment?.user?.firstname}{" "}
-                        {testData?.payment?.user?.lastname}
-                      </span>
-                    </div>
+              {currentTab == 0 && testData.status === "Awaiting Payment" && (
+                <form className="border flex flex-col my-3 p-4 items-start space-y-4">
+                  <div className="flex flex-col w-full items-start">
+                    <label
+                      for="paymentOption"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Select payment option
+                    </label>
+                    <select
+                      onChange={handlePaymentOption}
+                      id="paymentOption"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    >
+                      <option value="cash">Cash</option>
+                      <option value="card">Card Payment</option>
+                    </select>
                   </div>
-                ) : (
-                  <form className="border flex flex-col my-3 p-4 items-start space-y-4">
-                    <div className="flex flex-col w-full items-start">
-                      <label
-                        for="paymentOption"
-                        className="block mb-2 text-sm font-medium text-gray-900"
-                      >
-                        Select payment option
-                      </label>
-                      <select
-                        onChange={handlePaymentOption}
-                        id="paymentOption"
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"
-                      >
-                        <option value="cash">Cash</option>
-                        <option value="card">Card Payment</option>
-                      </select>
-                    </div>
-                    {paymentOption == "cash" && (
-                      <>
-                        <div className="flex flex-col w-full items-start">
-                          <label
-                            for="paymentOption"
-                            className="block mb-2 text-sm font-medium text-gray-900"
-                          >
-                            Invoice No.
-                          </label>
-                          <input
-                            ref={invoiceRef}
-                            type="text"
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"
-                          />
-                        </div>
-                        <div className="flex flex-col w-full items-start">
-                          <label
-                            for="paymentOption"
-                            className="block mb-2 text-sm font-medium text-gray-900"
-                          >
-                            Amount Paid
-                          </label>
-                          <input
-                            ref={amountPaidRef}
-                            type="text"
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleSavePayment}
-                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                  {paymentOption == "cash" && (
+                    <>
+                      <div className="flex flex-col w-full items-start">
+                        <label
+                          for="paymentOption"
+                          className="block mb-2 text-sm font-medium text-gray-900"
                         >
-                          Save Payment
-                        </button>
-                      </>
-                    )}
-                    {paymentOption == "card" && (
-                      <>
-                        <button
-                          type="button"
-                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                          Invoice No.
+                        </label>
+                        <input
+                          ref={invoiceRef}
+                          type="text"
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                        />
+                      </div>
+                      <div className="flex flex-col w-full items-start">
+                        <label
+                          for="paymentOption"
+                          className="block mb-2 text-sm font-medium text-gray-900"
                         >
-                          Paystack Option
-                        </button>
-                      </>
-                    )}
-                  </form>
-                ))}
-
-              {currentTab == 1 && testData.status == "Awaiting Result" && (
-                <div className="flex flex-col items-start my-3">
-                  <form ref={test_result_form} onSubmit={handleTestDataForm}>
-                    {testData?.test_data?.map((test) => {
-                      if (test?.nest == 2) {
-                        return test?.type?.map((typ) => {
-                          return typ?.parameters?.map((parameter) => {
-                            if (parameter?.checked) {
-                              return (
-                                <div className="grid grid-cols-3 gap-3 space-y-4">
-                                  <div className="text-left flex items-center px-4">
-                                    {parameter.name}
-                                  </div>
-                                  <div className="text-left flex items-center flex-col">
-                                    <label
-                                      for="unit"
-                                      className="block mb-2 text-sm font-medium text-gray-900"
-                                    >
-                                      Select unit
-                                    </label>
-                                    <select
-                                      name={"unit" + [parameter.name]}
-                                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                    >
-                                      <option>mmHg</option>
-                                      {parameter.unit.map((val) => (
-                                        <option>{val}</option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="text-left flex items-center flex-col">
-                                    <label
-                                      for="unit"
-                                      className="block mb-2 text-sm font-medium text-gray-900"
-                                    >
-                                      Enter Value
-                                    </label>
-                                    {test.discrete ? (
-                                      <input
-                                        type="number"
-                                        required
-                                        name={[parameter.name]}
-                                        value={resultForm[parameter.name]}
-                                        onChange={handleResultFormChange}
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                      />
-                                    ) : (
-                                      <textarea></textarea>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            }
-                          });
-                        });
-                      }
-                    })}
-                    <div className="my-4">
+                          Amount Paid
+                        </label>
+                        <input
+                          ref={amountPaidRef}
+                          type="text"
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                        />
+                      </div>
                       <button
-                        type="submit"
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
+                        disabled={loading}
+                        type="button"
+                        onClick={handleSavePayment}
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
                       >
-                        Save
+                        {loading && (
+                          <svg
+                            aria-hidden="true"
+                            role="status"
+                            className="inline w-4 h-4 mr-3 text-white animate-spin"
+                            viewBox="0 0 100 101"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                              fill="#E5E7EB"
+                            />
+                            <path
+                              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        )}
+                        Save Payment
                       </button>
-                    </div>
-                  </form>
+                    </>
+                  )}
+                  {paymentOption == "card" && (
+                    <>
+                      <button
+                        type="button"
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
+                      >
+                        Paystack Option
+                      </button>
+                    </>
+                  )}
+                </form>
+              )}
+              {currentTab == 0 && testData.status !== "Awaiting Payment" && (
+                <div className="flex flex-col items-start my-4 space-y-2">
+                  <div className="grid grid-cols-2 gap-5 text-left">
+                    <span className="font-bold">Invoice Number : </span>
+                    <span>{testData?.payment?.invoice}</span>
+                    <span className="font-bold">Amount Paid : </span>
+                    <span>{testData?.payment?.amount_paid}</span>
+                    <span className="font-bold">Date Paid : </span>
+                    <span>{testData?.payment?.createdAt}</span>
+                    <span className="font-bold">Received by : </span>
+                    <span>
+                      {testData?.payment?.user?.firstname}{" "}
+                      {testData?.payment?.user?.lastname}
+                    </span>
+                  </div>
                 </div>
               )}
+
+              {currentTab == 1 && testData.status === "Awaiting Result" && (
+                <form
+                  ref={test_result_form}
+                  onSubmit={handleTestDataForm}
+                  className="w-full border p-6"
+                >
+                  <table className="w-full p-4">
+                    {testData?.test_data?.map((test, i) => {
+                      let { parameter = {} } = test;
+                      return (
+                        <tr className="text-left mb-6 w-full" key={i}>
+                          <td className="w-1/2">
+                            <label
+                              for="unit"
+                              className="block mb-2 text-sm font-medium text-gray-900"
+                            >
+                              Select unit for {parameter.name}
+                            </label>
+                            <select
+                              name={`select${parameter.id}`}
+                              className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            >
+                              <option>mmHg</option>
+                              {parameter.unit.map((val) => (
+                                <option>{val}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="w-1/2">
+                            <label
+                              for="unit"
+                              className="block mb-2 text-sm font-medium text-gray-900"
+                            >
+                              Enter Value for {parameter.name}
+                            </label>
+                            {test.discrete ? (
+                              <input
+                                type="number"
+                                required
+                                name={parameter.id}
+                                value={resultForm[parameter.name]}
+                                onChange={handleResultFormChange}
+                                className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                              />
+                            ) : (
+                              <textarea className="h-full w-full"></textarea>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    <tr>
+                      <td className="text-left">
+                        <button
+                          disabled={loading}
+                          type="submit"
+                          name="submitbutton"
+                          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
+                        >
+                          {loading && (
+                            <svg
+                              aria-hidden="true"
+                              role="status"
+                              className="inline w-4 h-4 mr-3 text-white animate-spin"
+                              viewBox="0 0 100 101"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="#E5E7EB"
+                              />
+                              <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          )}
+                          Save Test Value/Result
+                        </button>
+                      </td>
+                    </tr>
+                  </table>
+                </form>
+              )}
+
+              {currentTab == 1 &&
+                testData.status === "Test Completed" &&
+                displayTestResult(testData, patientData)}
               {currentTab == 2 && (
                 <div className="border flex flex-col my-3">Tab 3</div>
               )}

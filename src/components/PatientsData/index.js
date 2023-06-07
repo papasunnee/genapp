@@ -20,15 +20,10 @@ export default function PatientsData({ color, addButton }) {
           (color === "light" ? "bg-white" : "bg-slate-700 text-white")
         }
       >
-        <div className="rounded-t mb-0 px-4 py-3 border-0">
+        <div className="rounded-t mb-0 px-4 py-6 border-0">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3
-                className={
-                  "font-semibold text-lg " +
-                  (color === "light" ? "text-slate-700" : "text-white")
-                }
-              >
+              <h3 className="font-bold text-xl text-slate-700">
                 Patients List
               </h3>
             </div>
@@ -36,7 +31,7 @@ export default function PatientsData({ color, addButton }) {
             {addButton && (
               <div>
                 <Link href="/admin/patients/newpatient" legacyBehavior>
-                  <a className="bg-emerald-500 active:bg-emerald-400 rounded-lg px-4 py-2 text-xs text-white space-x-1">
+                  <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
                     <i className="fas fa-plus"></i>
                     <span>Add New Patient</span>
                   </a>
@@ -132,15 +127,8 @@ export default function PatientsData({ color, addButton }) {
                         href={`/admin/patients/${item._id}`}
                         className="underline text-blue-800"
                       >
-                        <span
-                          className={
-                            "ml-3 font-bold " +
-                            +(color === "light"
-                              ? "text-slate-600"
-                              : "text-white")
-                          }
-                        >
-                          {item.firstname}
+                        <span className="ml-3 font-bold text-slate-600">
+                          {item.firstname} {item.lastname}
                         </span>
                       </Link>
                     </th>

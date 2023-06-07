@@ -18,8 +18,14 @@ export default async function handler(req, res) {
         if (id && (id != "undefined" || id != null || id != "null")) {
           const singleTest = await Test.findOne({
             _id: new ObjectId(id),
-          });
-
+          }).populate([
+            {
+              path: "payment",
+              populate: {
+                path: "user",
+              },
+            },
+          ]);
           return res.status(400).json({ success: true, data: singleTest });
         }
 
@@ -53,13 +59,38 @@ export default async function handler(req, res) {
           (put_id != "undefined" || put_id != null || put_id != "null")
         ) {
           delete req.body._id;
-          let updateTest = await Test.findOneAndUpdate(
-            { _id: put_id },
-            { title: req.body.title, paragraphs: req.body.paragraphs },
-            {
-              new: true,
-            }
-          );
+          let updateTest;
+          if (req.body.nullTestValuesCount > 1) {
+            updateTest = await Test.findOneAndUpdate(
+              { _id: put_id },
+              { test_data: req.body.test_data },
+              {
+                new: true,
+              }
+            ).populate([
+              {
+                path: "payment",
+                populate: {
+                  path: "user",
+                },
+              },
+            ]);
+          } else {
+            updateTest = await Test.findOneAndUpdate(
+              { _id: put_id },
+              { test_data: req.body.test_data, status: "Test Completed" },
+              {
+                new: true,
+              }
+            ).populate([
+              {
+                path: "payment",
+                populate: {
+                  path: "user",
+                },
+              },
+            ]);
+          }
 
           return res.status(400).json({ success: true, data: updateTest });
         } else {

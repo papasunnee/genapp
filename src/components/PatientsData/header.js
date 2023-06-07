@@ -16,7 +16,6 @@ export default function Header() {
     fetcher
   );
   const { data: userData } = useSWR("/api/users", fetcher);
-  console.log({ patientData });
   return (
     <>
       {/* Header */}

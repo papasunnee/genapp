@@ -20,6 +20,7 @@ export default async function handler(req, res) {
           }).populate([
             {
               path: "tests",
+              options: { sort: { createdAt: -1 } },
               populate: {
                 path: "payment",
                 populate: {

@@ -19,6 +19,9 @@ const PatientSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide date of birth for this user."],
     },
+    gender: {
+      type: String,
+    },
     address: {
       type: String,
       required: [true, "Please provide address for this user."],

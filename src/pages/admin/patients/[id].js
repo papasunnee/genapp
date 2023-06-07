@@ -1,5 +1,4 @@
 import React from "react";
-import { Tabs } from "flowbite";
 import Admin from "@/components/Layout/Admin";
 import PatientProfile from "@/components/PatientsData/profile";
 import Test from "@/components/PatientsData/test";
@@ -17,10 +16,10 @@ const Patient = () => {
     // </div>
 
     <div className="flex flex-wrap">
-      <div className="w-full lg:w-4/12 px-4">
+      <div className="w-full xl:w-4/12 px-4">
         <PatientProfile />
       </div>
-      <div className="w-full lg:w-8/12 px-4">
+      <div className="w-full xl:w-8/12 px-4">
         <Test color="light" />
       </div>
       <div className="w-full  px-4">

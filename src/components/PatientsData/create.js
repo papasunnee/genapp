@@ -121,40 +121,12 @@ export default function Create() {
                   />
                 </div>
               </div>
-              {/* <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
-                  >
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
-              </div>
+
               <div className="w-full lg:w-6/12 px-4">
                 <div className="relative w-full mb-3">
                   <label
                     className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
-                  >
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
-              </div> */}
-
-              <div className="w-full lg:w-5/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
+                    htmlFor="grid-dob"
                   >
                     Date of Birth
                   </label>
@@ -167,34 +139,22 @@ export default function Create() {
                 </div>
               </div>
 
-              <div className="w-full lg:w-2/12 px-4">
+              <div className="w-full lg:w-6/12 px-4">
                 <div className="relative w-full mb-3">
                   <label
                     className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
+                    htmlFor="grid-gender"
                   >
-                    Age
+                    GENDER
                   </label>
-                  <input
-                    type="text"
-                    readOnly
+                  <select
+                    ref={genderRef}
                     className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
-              </div>
-              <div className="w-full lg:w-5/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
                   >
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    ref={emailRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Others">Prefer not to say</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -209,7 +169,7 @@ export default function Create() {
                 <div className="relative w-full mb-3">
                   <label
                     className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
+                    htmlFor="grid-address"
                   >
                     Address
                   </label>
@@ -220,11 +180,41 @@ export default function Create() {
                   />
                 </div>
               </div>
-              <div className="w-full lg:w-4/12 px-4">
+              <div className="w-full lg:w-6/12 px-4">
                 <div className="relative w-full mb-3">
                   <label
                     className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
+                    htmlFor="grid-email"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    ref={emailRef}
+                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                  />
+                </div>
+              </div>
+              <div className="w-full lg:w-6/12 px-4">
+                <div className="relative w-full mb-3">
+                  <label
+                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
+                    htmlFor="grid-phone-number"
+                  >
+                    Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    ref={phoneRef}
+                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                  />
+                </div>
+              </div>
+              <div className="w-full lg:w-6/12 px-4">
+                <div className="relative w-full mb-3">
+                  <label
+                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
+                    htmlFor="grid-city"
                   >
                     City
                   </label>
@@ -235,32 +225,17 @@ export default function Create() {
                   />
                 </div>
               </div>
-              <div className="w-full lg:w-4/12 px-4">
+              <div className="w-full lg:w-6/12 px-4">
                 <div className="relative w-full mb-3">
                   <label
                     className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
+                    htmlFor="grid-country"
                   >
                     Country
                   </label>
                   <input
                     type="text"
                     ref={countryRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
-              </div>
-              <div className="w-full lg:w-4/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
-                  >
-                    Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    ref={phoneRef}
                     className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                   />
                 </div>
