@@ -69,9 +69,9 @@ export const displayTestResult = (testData = [], patientData) => {
           {testData.test_title}
         </h1>
         <div className="w-full">
-          {testData.test_data.map((item) => {
+          {testData.test_data.map((item, index) => {
             return (
-              <div className="w-full flex space-y-0 mt-0">
+              <div className="w-full flex space-y-0 mt-0" key={index}>
                 <div className="text-left flex-grow w-1/2 border px-2">
                   {item.parameter.name}
                 </div>

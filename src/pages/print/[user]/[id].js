@@ -100,9 +100,9 @@ const TestId = () => {
             <td className="flex-grow w-1/2 border font-semibold">UNIT</td>
             <td className="flex-grow w-1/2 border font-semibold">REF. RANGE</td>
           </tr>
-          {testData?.resultArray?.map((item) => {
+          {testData?.resultArray?.map((item, index) => {
             return (
-              <tr className="w-full flex space-y-0 mt-0">
+              <tr className="w-full flex space-y-0 mt-0" key={index}>
                 <td className="text-left flex-grow w-1/2 border px-2">
                   {item.parameter.name}
                 </td>
