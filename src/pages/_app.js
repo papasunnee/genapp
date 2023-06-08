@@ -22,7 +22,6 @@ export default function App({ Component, pageProps }) {
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
         <title>Genesis Diagnostics Laboratory</title>
-        {/* <Script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></Script> */}
       </Head>
       <SessionProvider session={pageProps.session}>
         <main className={roboto.className}>

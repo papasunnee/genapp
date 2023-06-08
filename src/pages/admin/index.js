@@ -9,7 +9,7 @@ import CardSocialTraffic from "@/components/Cards/CardSocialTraffic";
 // layout for page
 import Admin from "@/components/Layout/Admin";
 
-export default function Dashboard() {
+export default function Index() {
   return (
     <>
       <div className="flex flex-wrap">
@@ -32,4 +32,4 @@ export default function Dashboard() {
   );
 }
 
-Dashboard.layout = Admin;
+Index.layout = Admin;

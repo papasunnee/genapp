@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import NotificationDropdown from "../Dropdowns/NotificationDropdown";
@@ -6,7 +6,7 @@ import UserDropdown from "../Dropdowns/UserDropdown";
 import { signOut } from "next-auth/react";
 
 export default function Sidebar() {
-  const [collapseShow, setCollapseShow] = React.useState("hidden");
+  const [collapseShow, setCollapseShow] = useState("hidden");
   const router = useRouter();
   return (
     <>
@@ -23,7 +23,7 @@ export default function Sidebar() {
           {/* Brand */}
           <Link legacyBehavior href="/">
             <a
-              href="#pablo"
+              href="#"
               className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block  text-sm uppercase font-bold p-4 px-0"
             >
               GENESIS MEDICAL DIAGNOSTICS LABORATORY
@@ -51,7 +51,7 @@ export default function Sidebar() {
                 <div className="w-6/12">
                   <Link legacyBehavior href="/">
                     <a
-                      href="#pablo"
+                      href="#"
                       className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
                     >
                       GENESIS DIAGNOSTICS LABORATORY
@@ -75,7 +75,7 @@ export default function Sidebar() {
                 <input
                   type="text"
                   placeholder="Search"
-                  className="border-0 px-3 py-2 h-12 border border-solid  border-slate-500 placeholder-slate-300 text-slate-600 bg-white rounded text-base leading-snug shadow-none outline-none focus:outline-none w-full font-normal"
+                  className="px-3 py-2 h-12 border border-solid  border-slate-500 placeholder-slate-300 text-slate-600 bg-white rounded text-base leading-snug shadow-none outline-none focus:outline-none w-full font-normal"
                 />
               </div>
             </form>
@@ -90,128 +90,138 @@ export default function Sidebar() {
 
             <ul className="md:flex-col md:min-w-full flex flex-col list-none">
               <li className="items-center">
-                <Link legacyBehavior href="/admin">
-                  <a
-                    href="#pablo"
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCollapseShow("hidden");
+                    router.push("/admin");
+                  }}
+                  className={
+                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                    (router.pathname == "/admin"
+                      ? "text-sky-500 hover:text-sky-600"
+                      : "text-slate-700 hover:text-slate-500")
+                  }
+                >
+                  <i
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
+                      "fas fa-tv mr-2 text-sm " +
                       (router.pathname == "/admin"
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
+                        ? "opacity-75"
+                        : "text-slate-300")
                     }
-                  >
-                    <i
-                      className={
-                        "fas fa-tv mr-2 text-sm " +
-                        (router.pathname == "/admin"
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Dashboard
-                  </a>
-                </Link>
+                  ></i>{" "}
+                  Dashboard
+                </span>
               </li>
               <li className="items-center">
-                <Link legacyBehavior href="/admin/patients">
-                  <a
-                    href="#pablo"
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCollapseShow("hidden");
+                    router.push("/admin/patients");
+                  }}
+                  className={
+                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                    (router.pathname.indexOf("/admin/patients") !== -1
+                      ? "text-sky-500 hover:text-sky-600"
+                      : "text-slate-700 hover:text-slate-500")
+                  }
+                >
+                  <i
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
+                      "fas fa-user mr-2 text-sm " +
                       (router.pathname.indexOf("/admin/patients") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
+                        ? "opacity-75"
+                        : "text-slate-300")
                     }
-                  >
-                    <i
-                      className={
-                        "fas fa-user mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/patients") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Patients
-                  </a>
-                </Link>
+                  ></i>{" "}
+                  Patients
+                </span>
               </li>
 
               <li className="items-center">
-                <Link legacyBehavior href="/admin/users">
-                  <a
-                    href="#pablo"
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCollapseShow("hidden");
+                    router.push("/admin/users");
+                  }}
+                  className={
+                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                    (router.pathname.indexOf("/admin/users") !== -1
+                      ? "text-sky-500 hover:text-sky-600"
+                      : "text-slate-700 hover:text-slate-500")
+                  }
+                >
+                  <i
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
+                      "fas fa-users mr-2 text-sm " +
                       (router.pathname.indexOf("/admin/users") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
+                        ? "opacity-75"
+                        : "text-slate-300")
                     }
-                  >
-                    <i
-                      className={
-                        "fas fa-users mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/users") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Staff/Users
-                  </a>
-                </Link>
+                  ></i>{" "}
+                  Staff/Users
+                </span>
               </li>
 
               <li className="items-center">
-                <Link legacyBehavior href="/admin">
-                  <a
-                    href="#pablo"
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCollapseShow("hidden");
+                    router.push("/admin");
+                  }}
+                  className={
+                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                    (router.pathname.indexOf("/admin/dashboard") !== -1
+                      ? "text-sky-500 hover:text-sky-600"
+                      : "text-slate-700 hover:text-slate-500")
+                  }
+                >
+                  <i
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
+                      "fas fa-list mr-2 text-sm " +
                       (router.pathname.indexOf("/admin/dashboard") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
+                        ? "opacity-75"
+                        : "text-slate-300")
                     }
-                  >
-                    <i
-                      className={
-                        "fas fa-list mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/dashboard") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Results
-                  </a>
-                </Link>
+                  ></i>{" "}
+                  Results
+                </span>
               </li>
 
               <li className="items-center">
-                <Link legacyBehavior href="/admin">
-                  <a
-                    href="#pablo"
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCollapseShow("hidden");
+                    router.push("/admin/patients");
+                  }}
+                  className={
+                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                    (router.pathname.indexOf("/admin/dashboard") !== -1
+                      ? "text-sky-500 hover:text-sky-600"
+                      : "text-slate-700 hover:text-slate-500")
+                  }
+                >
+                  <i
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
+                      "fas fa-fingerprint mr-2 text-sm " +
                       (router.pathname.indexOf("/admin/dashboard") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
+                        ? "opacity-75"
+                        : "text-slate-300")
                     }
-                  >
-                    <i
-                      className={
-                        "fas fa-fingerprint mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/dashboard") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Diagnostics
-                  </a>
-                </Link>
+                  ></i>{" "}
+                  Diagnostics
+                </span>
               </li>
 
               {/* <li className="items-center">
                 <Link legacyBehavior href="/admin/settings">
                   <a
-                    href="#pablo"
+                    href="#"
                     className={
                       "text-xs uppercase py-3 font-bold block " +
                       (router.pathname.indexOf("/admin/settings") !== -1
@@ -235,7 +245,7 @@ export default function Sidebar() {
               <li className="items-center">
                 <Link legacyBehavior href="/admin/tables">
                   <a
-                    href="#pablo"
+                    href="#"
                     className={
                       "text-xs uppercase py-3 font-bold block " +
                       (router.pathname.indexOf("/admin/tables") !== -1
@@ -259,7 +269,7 @@ export default function Sidebar() {
               <li className="items-center">
                 <Link legacyBehavior href="/admin/maps">
                   <a
-                    href="#pablo"
+                    href="#"
                     className={
                       "text-xs uppercase py-3 font-bold block " +
                       (router.pathname.indexOf("/admin/maps") !== -1
@@ -293,7 +303,7 @@ export default function Sidebar() {
               <li className="items-center">
                 <Link legacyBehavior href="#">
                   <a
-                    href="#pablo"
+                    href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       signOut({
@@ -321,7 +331,7 @@ export default function Sidebar() {
               <li className="items-center">
                 <Link legacyBehavior href="/landing">
                   <a
-                    href="#pablo"
+                    href="#"
                     className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
                   >
                     <i className="fas fa-newspaper text-slate-400 mr-2 text-sm"></i>{" "}
@@ -333,7 +343,7 @@ export default function Sidebar() {
               <li className="items-center">
                 <Link legacyBehavior href="/profile">
                   <a
-                    href="#pablo"
+                    href="#"
                     className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
                   >
                     <i className="fas fa-user-circle text-slate-400 mr-2 text-sm"></i>{" "}
