@@ -99,7 +99,7 @@ export default function UserData({ color, addButton }) {
               {userData?.data?.map((item, index) => {
                 return (
                   <tr key={index}>
-                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
+                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-sm whitespace-nowrap p-4 text-left flex items-center">
                       <div className="h-12 w-12 bg-white rounded-full border flex items-center justify-center">
                         <i className="fas fa-user text-xl text-slate-300"></i>
                       </div>
@@ -108,9 +108,14 @@ export default function UserData({ color, addButton }) {
                         className="h-12 w-12 bg-white rounded-full border"
                         alt="..."
                       ></img>{" "} */}
-                      <span className="ml-3 font-bold text-slate-600">
-                        {item.firstname} {item.lastname}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="ml-3 font-bold text-slate-600">
+                          {item.firstname} {item.lastname}
+                        </span>
+                        <span className="text-xs ml-3 font-thin text-slate-400">
+                          {item.role.name}
+                        </span>
+                      </div>
                     </th>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                       {moment([

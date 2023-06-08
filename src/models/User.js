@@ -27,14 +27,14 @@ const UserSchema = new mongoose.Schema(
         "Please fill a valid email address",
       ],
     },
-    password: {
-      type: String,
-      required: [true, "Please provide password for this user."],
-    },
     dob: {
       type: Date,
       required: [true, "Please provide date of birth for this user."],
       max: Date.now(),
+    },
+    phone: {
+      type: String,
+      required: [true, "Please provide phone number for this user."],
     },
     lab_no: {
       type: String,
@@ -59,25 +59,5 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-UserSchema.pre("save", function (next) {
-  if (this.isModified("password")) {
-    bcrypt.hash(this.password, 8, (err, hash) => {
-      if (err) return next(err);
-      this.password = hash;
-      next();
-    });
-  }
-});
-
-UserSchema.methods.comparePassword = async function (password) {
-  if (!password) throw new Error("Password is missing");
-  try {
-    const result = await bcrypt.compare(password, this.password);
-    return result;
-  } catch (error) {
-    console.log("Error while comparing pasword!", error.message);
-  }
-};
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

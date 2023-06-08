@@ -5,6 +5,7 @@ import User from "@/models/User";
 import TestCategory from "@/models/TestCategory";
 import TestType from "@/models/TestType";
 import TestParameter from "@/models/TestParameter";
+import Access from "@/models/Access";
 
 export const authOptions = {
   session: {
@@ -31,11 +32,16 @@ export const authOptions = {
         if (!user) {
           throw new Error("Invalid Login Credentials");
         }
-        const passwordCompare = await user.comparePassword(password);
+        const access = await Access.findOne({ user: user._id });
+
+        if (!access) {
+          throw new Error("Invalid Login Credentials");
+        }
+
+        const passwordCompare = await access.comparePassword(password);
         if (!passwordCompare) {
           throw new Error("Invalid Login Credentials");
         }
-        delete user._doc.password;
         return user;
       },
     }),

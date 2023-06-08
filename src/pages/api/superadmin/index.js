@@ -2,13 +2,14 @@ import cookie from "cookie";
 import mongoose from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
+import Access from "@/models/Access";
 
 export default async function handler(req, res) {
   const { method } = req;
   //   let id = req?.query?.id;
   //   let delete_id = req?.body?.delete_id;
   //   let put_id = req?.body?.put_id;
-  await dbConnect();
+  const conn = await dbConnect();
 
   switch (method) {
     // case "GET":
@@ -28,12 +29,24 @@ export default async function handler(req, res) {
     //   break;
     case "POST":
       try {
-        let newRecord;
-        newRecord = await User.create({
-          ...req.body,
-        });
+        let password;
+        const session = await conn.startSession();
+        const user = await session.withTransaction(async () => {
+          password = req.body.password;
+          delete req.body.password;
+          const userData = await User.create({ ...req.body }, { session });
 
-        return res.status(201).json({ success: true, data: newRecord });
+          const access = await Access.create(
+            { password, user: userData },
+            { session }
+          );
+          console.log({ access });
+
+          return { userData, access };
+        });
+        session.endSession();
+
+        return res.status(201).json({ success: true, data: user.userData });
       } catch (error) {
         return res.status(400).json({ success: false, error: error.message });
       }

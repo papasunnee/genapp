@@ -1,4 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
+import Access from "@/models/Access";
 import User from "@/models/User";
 
 export default async function handler(req, res) {
@@ -6,7 +7,8 @@ export default async function handler(req, res) {
   let id = req?.query?.id;
   let delete_id = req?.body?.delete_id;
   let put_id = req?.body?.put_id;
-  await dbConnect();
+
+  const conn = await dbConnect();
 
   switch (method) {
     case "GET":
@@ -18,7 +20,9 @@ export default async function handler(req, res) {
           return res.status(400).json({ success: true, data: singleUser });
         }
 
-        const allRecords = await User.find().sort({ createdAt: -1 });
+        const allRecords = await User.find()
+          .populate([{ path: "role" }])
+          .sort({ createdAt: -1 });
         return res.status(400).json({ success: true, data: allRecords });
       } catch (error) {
         return res.status(400).json({ success: true, message: error.message });
@@ -26,17 +30,26 @@ export default async function handler(req, res) {
       break;
     case "POST":
       try {
-        let newRecord;
-        newRecord = await User.create({
-          ...req.body,
-          password: "password",
+        let password,
+          userData = [],
+          access;
+        const session = await conn.startSession();
+        const user = await session.withTransaction(async () => {
+          userData = await User.create([{ ...req.body }], { session });
+          password = "password";
+          access = await Access.create([{ password, user: userData[0]._id }], {
+            session,
+          });
+
+          return userData;
         });
-
-        console.log({ newRecord });
-
-        return res.status(201).json({ success: true, data: newRecord });
+        session.endSession();
+        console.log({ user });
+        if (user.ok) {
+          return res.status(201).json({ success: true, data: userData[0] });
+        }
+        throw new Error("Error Creating User");
       } catch (error) {
-        console.log(error.message);
         return res.status(400).json({ success: false, error: error.message });
       }
     case "PUT":
