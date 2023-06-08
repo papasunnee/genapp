@@ -29,7 +29,6 @@ export default async function handler(req, res) {
               },
             },
           ]);
-
           return res.status(400).json({ success: true, data: singlePatient });
         }
 
@@ -45,9 +44,6 @@ export default async function handler(req, res) {
         newRecord = await Patient.create({
           ...req.body,
         });
-
-        console.log({ newRecord });
-
         return res.status(201).json({ success: true, data: newRecord });
       } catch (error) {
         console.log(error.message);

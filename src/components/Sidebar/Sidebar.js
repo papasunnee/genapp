@@ -49,11 +49,8 @@ export default function Sidebar() {
             <div className="md:min-w-full md:hidden block pb-4 mb-4 border-b border-solid border-slate-200">
               <div className="flex flex-wrap">
                 <div className="w-6/12">
-                  <Link legacyBehavior href="/">
-                    <a
-                      href="#"
-                      className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
-                    >
+                  <Link legacyBehavior href="">
+                    <a className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0">
                       GENESIS DIAGNOSTICS LABORATORY
                     </a>
                   </Link>

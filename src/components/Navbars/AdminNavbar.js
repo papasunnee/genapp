@@ -1,7 +1,7 @@
 import React from "react";
 import UserDropdown from "../Dropdowns/UserDropdown";
 
-export default function Navbar({ breadCrumb }) {
+export default function AdminNavbar({ breadCrumb }) {
   return (
     <>
       {/* Navbar */}
@@ -10,7 +10,7 @@ export default function Navbar({ breadCrumb }) {
           {/* Brand */}
           <a
             className="text-white text-sm uppercase hidden lg:inline-block font-semibold"
-            href="#pablo"
+            href=""
             onClick={(e) => e.preventDefault()}
           >
             {breadCrumb.map((item, index) => {
@@ -44,6 +44,6 @@ export default function Navbar({ breadCrumb }) {
   );
 }
 
-Navbar.defaultProps = {
+AdminNavbar.defaultProps = {
   breadCrumb: ["Dashboard"],
 };
