@@ -7,13 +7,33 @@ export default async function handler(req, res) {
   const { ObjectId } = Types;
   const { method } = req;
   let testId = req?.query?.testId;
+  let id = req?.query?.id;
   let patientId = req?.query?.patientId;
 
   await dbConnect();
 
   if (method == "GET") {
     try {
-      if (
+      if (id && (id != "undefined" || id != null || id != "null")) {
+        const singleTest = await Test.findOne({
+          _id: new ObjectId(id),
+        }).populate([
+          {
+            path: "payment",
+            populate: {
+              path: "user",
+              populate: {
+                path: "role",
+              },
+            },
+          },
+        ]);
+        const resultArray = JSON.parse(singleTest.test_data);
+
+        return res
+          .status(400)
+          .json({ success: true, data: singleTest, resultArray });
+      } else if (
         testId &&
         (testId != "undefined" || testId != null || testId != "null") &&
         patientId &&

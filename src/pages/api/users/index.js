@@ -1,9 +1,11 @@
+import mongoose, { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import Access from "@/models/Access";
 import User from "@/models/User";
 
 export default async function handler(req, res) {
   const { method } = req;
+  const { ObjectId } = Types;
   let id = req?.query?.id;
   let delete_id = req?.body?.delete_id;
   let put_id = req?.body?.put_id;
@@ -35,7 +37,10 @@ export default async function handler(req, res) {
           access;
         const session = await conn.startSession();
         const user = await session.withTransaction(async () => {
-          userData = await User.create([{ ...req.body }], { session });
+          userData = await User.create(
+            [{ ...req.body, role: new ObjectId(req.body.role) }],
+            { session }
+          );
           password = "password";
           access = await Access.create([{ password, user: userData[0]._id }], {
             session,

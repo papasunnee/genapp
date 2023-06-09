@@ -1,31 +1,29 @@
 import React from "react";
 import PatientProfile from "@/components/PatientsData/profile";
 import Test from "@/components/PatientsData/test";
-import PatientsData from "@/components/PatientsData";
 import AdminWitoutStats from "@/components/Layout/AdminWithoutStats";
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
+import PaymentsData from "@/components/PaymentsData";
+import SingleTest from "@/components/PaymentsData/singleTest";
 
 const Patient = () => {
   return (
     <>
-      <AdminNavbar breadCrumb={["Dashboard", "Patient"]} />
+      <AdminNavbar breadCrumb={["Dashboard", "Payments"]} />
       <div className="relative bg-slate-800 md:pt-32 pb-32 pt-12">
         <div className="px-4 md:px-10 mx-auto w-full">
-          <div></div>
+          <div>
+            <SingleTest />
+          </div>
         </div>
       </div>
-      <div className="px-4 md:px-10 mx-auto w-full -m-24">
-        <div className="flex flex-wrap">
-          <div className="w-full xl:w-4/12 px-4">
-            <PatientProfile />
-          </div>
-          <div className="w-full xl:w-8/12 px-4">
-            <Test color="light" />
-          </div>
-          <div className="w-full  px-4">
-            <PatientsData />
-          </div>
+      <div className="flex flex-wrap px-4 md:px-10 mx-auto w-full -m-24">
+        <div className="w-full mb-12">
+          <PaymentsData addButton />
         </div>
+        {/* <div className="w-full mb-12 px-4">
+          <CardTable color="dark" />
+        </div> */}
       </div>
     </>
   );

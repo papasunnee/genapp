@@ -23,6 +23,9 @@ export default async function handler(req, res) {
               path: "payment",
               populate: {
                 path: "user",
+                populate: {
+                  path: "role",
+                },
               },
             },
           ]);
