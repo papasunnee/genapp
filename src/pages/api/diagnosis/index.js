@@ -29,7 +29,20 @@ export default async function handler(req, res) {
           return res.status(400).json({ success: true, data: singleTest });
         }
 
-        const allRecords = await Test.find().sort({ createdAt: -1 });
+        const allRecords = await Test.find()
+          .populate([
+            { path: "patient" },
+            {
+              path: "payment",
+              populate: {
+                path: "user",
+                populate: {
+                  path: "role",
+                },
+              },
+            },
+          ])
+          .sort({ createdAt: -1 });
         return res.status(400).json({ success: true, data: allRecords });
       } catch (error) {
         return res.status(400).json({ success: true, message: error.message });
