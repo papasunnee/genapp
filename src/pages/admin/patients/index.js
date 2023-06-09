@@ -18,7 +18,7 @@ export default function Index() {
         </div>
       </div>
       <div className="flex flex-wrap px-4 md:px-10 mx-auto w-full -m-24">
-        <div className="w-full mb-12 px-4">
+        <div className="w-full mb-12">
           <PatientsData addButton />
         </div>
         {/* <div className="w-full mb-12 px-4">

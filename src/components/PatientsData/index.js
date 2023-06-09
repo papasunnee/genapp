@@ -25,7 +25,7 @@ export default function PatientsData({ color, addButton }) {
         <div className="rounded-t mb-0 px-4 py-6 border-0">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3 className="font-bold text-xl text-slate-700">
+              <h3 className="font-bold text-sm sm:text-xl text-slate-700">
                 Patients List
               </h3>
             </div>
@@ -34,9 +34,14 @@ export default function PatientsData({ color, addButton }) {
               [100, 200, 500].includes(data?.user?.role?.weight) && (
                 <div>
                   <Link href="/admin/patients/newpatient" legacyBehavior>
-                    <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
+                    <a
+                      className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1"
+                      title="Add New Patient"
+                    >
                       <i className="fas fa-plus"></i>
-                      <span>Add New Patient</span>
+                      <span className="hidden sm:inline-block">
+                        Add New Patient
+                      </span>
                     </a>
                   </Link>
                 </div>
