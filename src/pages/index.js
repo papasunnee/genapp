@@ -42,6 +42,7 @@ export default function Index() {
     if (data?.user?.role?.name == "Super Admin") {
       router.push("/admin");
     }
+    router.push("/admin");
   }
   if (status == "unauthenticated") {
     return (

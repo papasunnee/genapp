@@ -44,7 +44,6 @@ export default async function handler(req, res) {
           return userData;
         });
         session.endSession();
-        console.log({ user });
         if (user.ok) {
           return res.status(201).json({ success: true, data: userData[0] });
         }

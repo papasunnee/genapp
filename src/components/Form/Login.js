@@ -17,14 +17,13 @@ const Login = () => {
         password: passwordRef.current.value,
         redirect: false,
       });
-      console.log(res);
+      //handle failure message
       if (res.error && !res.ok) {
         if (res.error.includes("getaddrinfo")) {
           setErrorMessage("Please check your network connection");
         } else setErrorMessage(res.error);
       }
       //redirect on success
-      //handle failure message
       passwordRef.current.value = "";
       emailRef.current.value = "";
     } catch (error) {

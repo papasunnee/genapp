@@ -7,8 +7,10 @@ import PropTypes from "prop-types";
 import TableDropdown from "../Dropdowns/TableDropdown";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
+import { useSession } from "next-auth/react";
 
 export default function UserData({ color, addButton }) {
+  const { data, status } = useSession();
   const { data: userData } = useSWR("/api/users", fetcher);
   const { data: dateData } = useSWR("/api/time", fetcher);
 
@@ -26,16 +28,17 @@ export default function UserData({ color, addButton }) {
               <h3 className="font-bold text-xl text-slate-700">Staff List</h3>
             </div>
 
-            {addButton && (
-              <div>
-                <Link href="/admin/users/newuser" legacyBehavior>
-                  <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
-                    <i className="fas fa-plus"></i>
-                    <span>Add New User</span>
-                  </a>
-                </Link>
-              </div>
-            )}
+            {addButton &&
+              [100, 200, 500].includes(data?.user?.role?.weight) && (
+                <div>
+                  <Link href="/admin/users/newuser" legacyBehavior>
+                    <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
+                      <i className="fas fa-plus"></i>
+                      <span>Add New User</span>
+                    </a>
+                  </Link>
+                </div>
+              )}
           </div>
         </div>
         <div className="block w-full overflow-x-auto">
@@ -51,7 +54,7 @@ export default function UserData({ color, addButton }) {
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
                 >
-                  PATIENT
+                  NAME
                 </th>
                 <th
                   className={
@@ -61,7 +64,7 @@ export default function UserData({ color, addButton }) {
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
                 >
-                  Age
+                  Age | Gender
                 </th>
                 <th
                   className={
@@ -100,7 +103,7 @@ export default function UserData({ color, addButton }) {
                 return (
                   <tr key={index}>
                     <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-sm whitespace-nowrap p-4 text-left flex items-center">
-                      <div className="h-12 w-12 bg-white rounded-full border flex items-center justify-center">
+                      <div className="hidden h-12 w-12 bg-white rounded-full border md:flex items-center justify-center">
                         <i className="fas fa-user text-xl text-slate-300"></i>
                       </div>
                       {/* <img
@@ -109,10 +112,10 @@ export default function UserData({ color, addButton }) {
                         alt="..."
                       ></img>{" "} */}
                       <div className="flex flex-col">
-                        <span className="ml-3 font-bold text-slate-600">
+                        <span className="ml-0 md:ml-3 font-bold text-slate-600">
                           {item.firstname} {item.lastname}
                         </span>
-                        <span className="text-xs ml-3 font-thin text-slate-400">
+                        <span className="text-xs ml-0 md:ml-3 italic font-thin text-slate-400">
                           {item.role.name}
                         </span>
                       </div>
@@ -123,7 +126,7 @@ export default function UserData({ color, addButton }) {
                         dateData?.currentMonth,
                         dateData?.currentDate,
                       ]).diff(moment(item?.dob), "years")}{" "}
-                      years
+                      years | {item.gender}
                     </td>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                       {item?.email}

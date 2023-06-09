@@ -1,5 +1,6 @@
 import React from "react";
-
+import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 // components
 import Create from "@/components/UserData/create";
 import UserData from "@/components/UserData";
@@ -9,6 +10,8 @@ import AdminWitoutStats from "@/components/Layout/AdminWithoutStats";
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
 
 export default function NewUser() {
+  const router = useRouter();
+  const { data, status } = useSession();
   return (
     <>
       <AdminNavbar breadCrumb={["Dashboard", "Create Staff"]} />

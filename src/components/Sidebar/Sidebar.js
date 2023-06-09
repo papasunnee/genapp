@@ -3,9 +3,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import NotificationDropdown from "../Dropdowns/NotificationDropdown";
 import UserDropdown from "../Dropdowns/UserDropdown";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 export default function Sidebar() {
+  const { data, status } = useSession();
   const [collapseShow, setCollapseShow] = useState("hidden");
   const router = useRouter();
   return (
@@ -317,27 +318,33 @@ export default function Sidebar() {
             </ul>
 
             {/* Divider */}
-            {/* <hr className="my-4 md:min-w-full" /> */}
+            <hr className="my-4 md:min-w-full" />
             {/* Heading */}
-            {/* <h6 className="md:min-w-full text-slate-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">
-              No Layout Pages
-            </h6> */}
+            <h6 className="md:min-w-full text-slate-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">
+              Logged in As
+            </h6>
             {/* Navigation */}
 
-            {/* <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
+            <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
               <li className="items-center">
-                <Link legacyBehavior href="/landing">
-                  <a
+                <div className="flex flex-col">
+                  <span
                     href="#"
-                    className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
+                    className="text-slate-500 text-sm py-1 font-bold block"
                   >
-                    <i className="fas fa-newspaper text-slate-400 mr-2 text-sm"></i>{" "}
-                    Landing Page
-                  </a>
-                </Link>
+                    {data.user.role.name}
+                  </span>
+                  <span
+                    href="#"
+                    className="text-slate-400 text-xs py-1 font-bold block"
+                  >
+                    {data.user.firstname.toString().toUpperCase()}{" "}
+                    {data.user.lastname.toString().toUpperCase()}
+                  </span>
+                </div>
               </li>
 
-              <li className="items-center">
+              {/* <li className="items-center">
                 <Link legacyBehavior href="/profile">
                   <a
                     href="#"
@@ -347,8 +354,8 @@ export default function Sidebar() {
                     Profile Page
                   </a>
                 </Link>
-              </li>
-            </ul> */}
+              </li> */}
+            </ul>
           </div>
         </div>
       </nav>

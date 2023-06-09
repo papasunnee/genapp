@@ -25,7 +25,7 @@ export default function Create() {
     e.preventDefault();
     const firstname = firstnameRef.current.value;
     const lastname = lastnameRef.current.value;
-    const email = emailRef.current.value;
+    const email = emailRef.current.value.toString().toLowerCase();
     const dob = dobRef.current.value;
     const address = addressRef.current.value;
     const phone = phoneRef.current.value;
@@ -171,7 +171,7 @@ export default function Create() {
                     htmlFor="phone"
                   >
                     Phone Number{" "}
-                    <small className="text-slate-400">
+                    <small className="text-slate-400 lowercase">
                       <i>eg. 08023454545</i>
                     </small>
                   </label>

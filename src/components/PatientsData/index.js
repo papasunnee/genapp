@@ -7,8 +7,10 @@ import PropTypes from "prop-types";
 import TableDropdown from "../Dropdowns/TableDropdown";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
+import { useSession } from "next-auth/react";
 
 export default function PatientsData({ color, addButton }) {
+  const { data } = useSession();
   const { data: patientData } = useSWR("/api/patients", fetcher);
   const { data: dateData } = useSWR("/api/time", fetcher);
 
@@ -28,16 +30,17 @@ export default function PatientsData({ color, addButton }) {
               </h3>
             </div>
 
-            {addButton && (
-              <div>
-                <Link href="/admin/patients/newpatient" legacyBehavior>
-                  <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
-                    <i className="fas fa-plus"></i>
-                    <span>Add New Patient</span>
-                  </a>
-                </Link>
-              </div>
-            )}
+            {addButton &&
+              [100, 200, 500].includes(data?.user?.role?.weight) && (
+                <div>
+                  <Link href="/admin/patients/newpatient" legacyBehavior>
+                    <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
+                      <i className="fas fa-plus"></i>
+                      <span>Add New Patient</span>
+                    </a>
+                  </Link>
+                </div>
+              )}
           </div>
         </div>
         <div className="block w-full overflow-x-auto">
@@ -53,7 +56,7 @@ export default function PatientsData({ color, addButton }) {
                       : "bg-slate-600 text-slate-200 border-slate-500")
                   }
                 >
-                  PATIENT
+                  NAME
                 </th>
                 <th
                   className={
@@ -114,8 +117,8 @@ export default function PatientsData({ color, addButton }) {
                     key={index}
                     className="hover:bg-slate-100/50 border-b border-gray-200"
                   >
-                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-2 text-left flex items-center">
-                      <div className="h-10 w-10 bg-white rounded-full border flex items-center justify-center">
+                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-sm whitespace-nowrap p-2 text-left flex items-center">
+                      <div className="hidden h-10 w-10 bg-white rounded-full border md:flex items-center justify-center">
                         <i className="fas fa-user text-xl text-slate-300"></i>
                       </div>
                       {/* <img
@@ -123,14 +126,19 @@ export default function PatientsData({ color, addButton }) {
                         className="h-12 w-12 bg-white rounded-full border"
                         alt="..."
                       ></img>{" "} */}
-                      <Link
-                        href={`/admin/patients/${item._id}`}
-                        className="underline text-blue-800"
-                      >
-                        <span className="ml-3 font-bold text-slate-600">
-                          {item.firstname} {item.lastname}
+                      <div>
+                        <Link
+                          href={`/admin/patients/${item._id}`}
+                          className="underline text-blue-800"
+                        >
+                          <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                            {item.firstname} {item.lastname}
+                          </span>
+                        </Link>
+                        <span className="ml-0 md:ml-3 font-thin text-xs italic text-slate-400 block no-underline">
+                          {item.gender}
                         </span>
-                      </Link>
+                      </div>
                     </th>
                     <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                       {moment([

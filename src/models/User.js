@@ -39,6 +39,9 @@ const UserSchema = new mongoose.Schema(
     lab_no: {
       type: String,
     },
+    gender: {
+      type: String,
+    },
     image_url: {
       type: String,
       // required: [true, "Please provide an image url for this pet."],
