@@ -10,6 +10,7 @@ import {
   filterRegisteredTestOnly,
 } from "@/utils/functions";
 import TestCategory from "@/data/TestCategory";
+import { useSession } from "next-auth/react";
 
 const TestStatus = {
   "Awaiting Payment": {
@@ -33,6 +34,7 @@ const TestStatus = {
 };
 
 export default function Test({ color }) {
+  const { data: sessionData } = useSession();
   const selectRef = useRef();
   const select2Ref = useRef();
   const testTitleRef = useRef();
@@ -340,15 +342,17 @@ export default function Test({ color }) {
                 )}
               </h3>
             </div>
-            <div>
-              <button
-                type="button"
-                onClick={handleShowModal}
-                className="bg-emerald-700 active:bg-emerald-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
-              >
-                Add New Test
-              </button>
-            </div>
+            {[100, 200, 500].includes(sessionData?.user?.role?.weight) && (
+              <div>
+                <button
+                  type="button"
+                  onClick={handleShowModal}
+                  className="bg-emerald-700 active:bg-emerald-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+                >
+                  Add New Test
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div className="block w-full overflow-x-auto">

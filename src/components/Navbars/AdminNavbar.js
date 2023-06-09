@@ -9,7 +9,7 @@ export default function AdminNavbar({ breadCrumb }) {
         <div className="w-full mx-auto items-center flex justify-between md:flex-nowrap flex-wrap md:px-10 px-4">
           {/* Brand */}
           <a
-            className="text-white text-sm uppercase hidden lg:inline-block font-semibold"
+            className="text-white text-sm uppercase inline-block font-semibold"
             href=""
             onClick={(e) => e.preventDefault()}
           >
@@ -21,7 +21,7 @@ export default function AdminNavbar({ breadCrumb }) {
             })}
           </a>
           {/* Form */}
-          <form className="md:flex hidden flex-row flex-wrap items-center lg:ml-auto mr-3">
+          <form className="hidden flex-row flex-wrap items-center lg:ml-auto mr-3">
             <div className="relative flex w-full flex-wrap items-stretch">
               <span className="z-10 h-full leading-snug font-normal absolute text-center text-slate-300 bg-transparent rounded text-base items-center justify-center w-8 pl-3 py-3">
                 <i className="fas fa-search"></i>

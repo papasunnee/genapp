@@ -169,11 +169,11 @@ export default function Sidebar() {
                   onClick={(e) => {
                     e.preventDefault();
                     setCollapseShow("hidden");
-                    router.push("/admin");
+                    router.push("/admin/results");
                   }}
                   className={
                     "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname.indexOf("/admin/dashboard") !== -1
+                    (router.pathname.indexOf("/admin/results") !== -1
                       ? "text-sky-500 hover:text-sky-600"
                       : "text-slate-700 hover:text-slate-500")
                   }
@@ -181,7 +181,7 @@ export default function Sidebar() {
                   <i
                     className={
                       "fas fa-list mr-2 text-sm " +
-                      (router.pathname.indexOf("/admin/dashboard") !== -1
+                      (router.pathname.indexOf("/admin/results") !== -1
                         ? "opacity-75"
                         : "text-slate-300")
                     }
@@ -195,11 +195,11 @@ export default function Sidebar() {
                   onClick={(e) => {
                     e.preventDefault();
                     setCollapseShow("hidden");
-                    router.push("/admin/patients");
+                    router.push("/admin/payments");
                   }}
                   className={
                     "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname.indexOf("/admin/dashboard") !== -1
+                    (router.pathname.indexOf("/admin/payments") !== -1
                       ? "text-sky-500 hover:text-sky-600"
                       : "text-slate-700 hover:text-slate-500")
                   }
@@ -207,39 +207,43 @@ export default function Sidebar() {
                   <i
                     className={
                       "fas fa-fingerprint mr-2 text-sm " +
-                      (router.pathname.indexOf("/admin/dashboard") !== -1
+                      (router.pathname.indexOf("/admin/payments") !== -1
                         ? "opacity-75"
                         : "text-slate-300")
                     }
                   ></i>{" "}
-                  Diagnostics
+                  Payments
                 </span>
               </li>
 
-              {/* <li className="items-center">
-                <Link legacyBehavior href="/admin/settings">
-                  <a
-                    href="#"
+              <li className="items-center">
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCollapseShow("hidden");
+                    router.push("/admin/profile");
+                  }}
+                  className={
+                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                    (router.pathname.indexOf("/admin/profile") !== -1
+                      ? "text-sky-500 hover:text-sky-600"
+                      : "text-slate-700 hover:text-slate-500")
+                  }
+                >
+                  <i
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
-                      (router.pathname.indexOf("/admin/settings") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
+                      "fas fa-user mr-2 text-sm " +
+                      (router.pathname.indexOf("/admin/profile") !== -1
+                        ? "opacity-75"
+                        : "text-slate-300")
                     }
-                  >
-                    <i
-                      className={
-                        "fas fa-tools mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/settings") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Settings
-                  </a>
-                </Link>
+                  ></i>{" "}
+                  My Profile
+                </span>
               </li>
 
+              {/* 
+              
               <li className="items-center">
                 <Link legacyBehavior href="/admin/tables">
                   <a

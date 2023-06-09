@@ -39,7 +39,17 @@ export default async function handler(req, res) {
             .json({ success: true, data: singlePaymentByTestId });
         }
 
-        const allRecords = await Payment.find().sort({ createdAt: -1 });
+        const allRecords = await Payment.find()
+          .populate([
+            { path: "test" },
+            {
+              path: "user",
+              populate: {
+                path: "role",
+              },
+            },
+          ])
+          .sort({ createdAt: -1 });
         return res.status(400).json({ success: true, data: allRecords });
       } catch (error) {
         return res.status(400).json({ success: true, message: error.message });
