@@ -15,7 +15,7 @@ export default function Sidebar() {
         <div className="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto">
           {/* Toggler */}
           <button
-            className="cursor-pointer text-black opacity-50 md:hidden px-3 py-1 text-xl leading-none bg-transparent rounded border border-solid border-transparent"
+            className="cursor-pointer text-black opacity-50 md:hidden pr-3 py-1 text-xl leading-none bg-transparent rounded border border-solid border-transparent"
             type="button"
             onClick={() => setCollapseShow("bg-white m-2 py-3 px-6")}
           >
@@ -25,13 +25,14 @@ export default function Sidebar() {
           <Link legacyBehavior href="/">
             <a
               href="#"
-              className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block  text-sm uppercase font-bold p-4 px-0"
+              className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block text-xs  md:text-sm uppercase font-bold p-4 px-0"
             >
               GENESIS MEDICAL DIAGNOSTICS LABORATORY
             </a>
           </Link>
           {/* User */}
-          <ul className="md:hidden items-center flex flex-wrap list-none">
+          {/* <ul className="md:hidden items-center flex flex-wrap list-none"> */}
+          <ul className="hidden items-center flex-wrap list-none">
             <li className="inline-block relative">
               <NotificationDropdown />
             </li>
@@ -68,7 +69,7 @@ export default function Sidebar() {
               </div>
             </div>
             {/* Form */}
-            <form className="mt-6 mb-4 md:hidden">
+            <form className="mt-6 mb-4 hidden">
               <div className="mb-3 pt-0">
                 <input
                   type="text"
