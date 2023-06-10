@@ -1068,7 +1068,7 @@ export default function Test({ color }) {
                     Test Result
                   </a>
                 </li>
-                <li className="mr-2 flex-grow">
+                {/* <li className="mr-2 flex-grow">
                   <a
                     onClick={(e) => {
                       e.preventDefault();
@@ -1095,7 +1095,7 @@ export default function Test({ color }) {
                   >
                     Contacts
                   </a>
-                </li>
+                </li> */}
               </ul>
               {currentTab == 0 && testData.status === "Awaiting Payment" && (
                 <form className="border flex flex-col my-3 p-4 items-start space-y-4">
