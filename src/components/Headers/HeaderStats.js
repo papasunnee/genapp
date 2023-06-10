@@ -9,6 +9,7 @@ import CardStats from "../Cards/CardStats";
 export default function HeaderStats({ muteStats }) {
   const { data: patientsData } = useSWR("/api/patients", fetcher);
   const { data: userData } = useSWR("/api/users", fetcher);
+  const { data: testData } = useSWR("/api/diagnosis", fetcher);
   return (
     <>
       {/* Header */}
@@ -44,7 +45,7 @@ export default function HeaderStats({ muteStats }) {
               <div className="w-full sm:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="RESULTS / SALES"
-                  statTitle="0"
+                  statTitle={testData?.data.length || 0}
                   statArrow="down"
                   statPercent="1.10"
                   statPercentColor="text-orange-500"
