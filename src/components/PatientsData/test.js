@@ -11,6 +11,8 @@ import {
 } from "@/utils/functions";
 import TestCategory from "@/data/TestCategory";
 import { useSession } from "next-auth/react";
+import Pagination from "react-js-pagination";
+import PatientsData from ".";
 
 const TestStatus = {
   "Awaiting Payment": {
@@ -35,6 +37,7 @@ const TestStatus = {
 
 export default function Test({ color }) {
   const { data: sessionData } = useSession();
+  const resPerPage = 5;
   const selectRef = useRef();
   const select2Ref = useRef();
   const testTitleRef = useRef();
@@ -58,6 +61,9 @@ export default function Test({ color }) {
   const [testAddonDisplay, setTestAddonDisplay] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
   const [paymentOption, setPaymentOption] = useState("cash");
+  const [testPage, setTestPage] = useState(1);
+  const [startIndex, setStartIndex] = useState(0);
+  const [endIndex, setEndIndex] = useState(resPerPage);
 
   const invoiceRef = useRef();
   const amountPaidRef = useRef();
@@ -69,6 +75,8 @@ export default function Test({ color }) {
     `/api/patients?id=${router.query?.id}`,
     fetcher
   );
+
+  useEffect(() => {}, [testPage]);
 
   const handleChange = (e) => {
     setCurrentTest(testState[e.target.value]);
@@ -320,6 +328,12 @@ export default function Test({ color }) {
     setLoading(false);
   };
 
+  const handlePageChange = (currentPage) => {
+    setTestPage(currentPage);
+    setStartIndex((currentPage - 1) * resPerPage);
+    setEndIndex(currentPage * resPerPage);
+  };
+
   return (
     <>
       <div
@@ -331,14 +345,17 @@ export default function Test({ color }) {
         <div className="rounded-t mb-0 px-4 py-6 border-0">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3 className="font-semibold text-lg text-slate-700">
-                Test Taken By{" "}
+              <h3 className="font-medium text-md text-slate-700">
+                Test(s) Taken By{" "}
                 {patientData ? (
-                  patientData.data?.firstname +
-                  " " +
-                  patientData?.data?.lastname
+                  patientData?.data?.firstname +
+                  " (" +
+                  patientData?.data?.tests?.length +
+                  ")"
                 ) : (
-                  <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full  w-32"></span>
+                  <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full  w-32">
+                    sss
+                  </span>
                 )}
               </h3>
             </div>
@@ -346,10 +363,12 @@ export default function Test({ color }) {
               <div>
                 <button
                   type="button"
+                  title="Add New Test"
                   onClick={handleShowModal}
-                  className="bg-emerald-700 active:bg-emerald-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+                  className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1"
                 >
-                  Add New Test
+                  <i className="fas fa-plus"></i>
+                  <span className="hidden sm:inline-block"> Add New Test</span>
                 </button>
               </div>
             )}
@@ -357,106 +376,141 @@ export default function Test({ color }) {
         </div>
         <div className="block w-full overflow-x-auto">
           {/* Projects table */}
-          <table className="items-center w-full bg-transparent border-collapse">
-            <thead>
-              <tr>
-                <th
-                  className={
-                    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                    (color === "light"
-                      ? "bg-slate-50 text-slate-500 border-slate-100"
-                      : "bg-slate-600 text-slate-200 border-slate-500")
-                  }
-                >
-                  Name
-                </th>
-                <th
-                  className={
-                    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                    (color === "light"
-                      ? "bg-slate-50 text-slate-500 border-slate-100"
-                      : "bg-slate-600 text-slate-200 border-slate-500")
-                  }
-                >
-                  Total Cost
-                </th>
-                <th
-                  className={
-                    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                    (color === "light"
-                      ? "bg-slate-50 text-slate-500 border-slate-100"
-                      : "bg-slate-600 text-slate-200 border-slate-500")
-                  }
-                >
-                  Status
-                </th>
-
-                <th
-                  className={
-                    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                    (color === "light"
-                      ? "bg-slate-50 text-slate-500 border-slate-100"
-                      : "bg-slate-600 text-slate-200 border-slate-500")
-                  }
-                >
-                  Completion
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {patientData?.data?.tests?.map((item, index) => {
-                return (
-                  <tr key={index}>
-                    <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
-                      <span
-                        onClick={(e) => handleTestModal(item)}
-                        className={
-                          "ml-3 font-bold cursor-pointer underline " +
-                          +(color === "light" ? "text-slate-600" : "text-white")
-                        }
-                      >
-                        {item.test_title}
-                      </span>
+          {patientData?.data?.tests?.length > 0 ? (
+            <>
+              <table className="items-center w-full bg-transparent border-collapse">
+                <thead>
+                  <tr>
+                    <th
+                      className={
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        (color === "light"
+                          ? "bg-slate-50 text-slate-500 border-slate-100"
+                          : "bg-slate-600 text-slate-200 border-slate-500")
+                      }
+                    >
+                      Name
                     </th>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      NGN {item.total_cost}.00
-                    </td>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      <i
-                        className={`fas fa-circle ${
-                          TestStatus[item.status].textcolor
-                        } mr-2`}
-                      ></i>{" "}
-                      {item.status}
-                    </td>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      <div className="flex items-center">
-                        <span className="mr-2">
-                          {TestStatus[item.status].value + "%"}
-                        </span>
-                        <div className="relative w-full">
-                          <div
-                            className={`overflow-hidden h-2 text-xs flex rounded ${
-                              TestStatus[item.status].lightcolor
-                            }`}
-                          >
-                            <div
-                              style={{
-                                width: `${TestStatus[item.status].value}%`,
-                              }}
-                              className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
-                                TestStatus[item.status].deepcolor
-                              }`}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+                    <th
+                      className={
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        (color === "light"
+                          ? "bg-slate-50 text-slate-500 border-slate-100"
+                          : "bg-slate-600 text-slate-200 border-slate-500")
+                      }
+                    >
+                      Total Cost
+                    </th>
+                    <th
+                      className={
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        (color === "light"
+                          ? "bg-slate-50 text-slate-500 border-slate-100"
+                          : "bg-slate-600 text-slate-200 border-slate-500")
+                      }
+                    >
+                      Status
+                    </th>
+
+                    <th
+                      className={
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        (color === "light"
+                          ? "bg-slate-50 text-slate-500 border-slate-100"
+                          : "bg-slate-600 text-slate-200 border-slate-500")
+                      }
+                    >
+                      Completion
+                    </th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {patientData?.data?.tests
+                    ?.slice(startIndex, endIndex)
+                    .map((item, index) => {
+                      return (
+                        <tr
+                          key={index}
+                          className="transition duration-300 ease-in-out hover:bg-gray-200"
+                        >
+                          <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
+                            <span
+                              onClick={(e) => handleTestModal(item)}
+                              className={
+                                "font-bold cursor-pointer underline " +
+                                +(color === "light"
+                                  ? "text-slate-600"
+                                  : "text-white")
+                              }
+                            >
+                              {item.test_title}
+                            </span>
+                          </th>
+                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                            NGN {item.total_cost}.00
+                          </td>
+                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                            <i
+                              className={`fas fa-circle ${
+                                TestStatus[item.status].textcolor
+                              } mr-2`}
+                            ></i>{" "}
+                            {item.status}
+                          </td>
+                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                            <div className="flex items-center">
+                              <span className="mr-2">
+                                {TestStatus[item.status].value + "%"}
+                              </span>
+                              <div className="relative w-full">
+                                <div
+                                  className={`overflow-hidden h-2 text-xs flex rounded ${
+                                    TestStatus[item.status].lightcolor
+                                  }`}
+                                >
+                                  <div
+                                    style={{
+                                      width: `${
+                                        TestStatus[item.status].value
+                                      }%`,
+                                    }}
+                                    className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
+                                      TestStatus[item.status].deepcolor
+                                    }`}
+                                  ></div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+              <div className="flex justify-center my-5">
+                <Pagination
+                  activePage={testPage}
+                  itemsCountPerPage={resPerPage}
+                  totalItemsCount={patientData?.data?.tests?.length}
+                  pageRangeDisplayed={4}
+                  nextPageText={"Next"}
+                  prevPageText={"Prev"}
+                  firstPageText={"First"}
+                  lastPageText={"Last"}
+                  onChange={handlePageChange}
+                  itemClass="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-200 focus:z-20"
+                  activeLinkClassName="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
+                  activeClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
+                />
+              </div>
+            </>
+          ) : (
+            <div className="my-5">
+              <p className="text-center">
+                You have not added a test, please click on add new test to begin
+              </p>
+            </div>
+          )}
         </div>
       </div>
       <div
