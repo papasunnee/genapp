@@ -13,6 +13,7 @@ export default function ResultsData({ color, addButton }) {
   const [testPage, setTestPage] = useState(1);
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(resPerPage);
+  const [selectFilter, setSelectFilter] = useState("All");
 
   const [testDataList, setTestDataList] = useState([]);
   const { data: testData } = useSWR("/api/diagnosis", fetcher);
@@ -27,6 +28,10 @@ export default function ResultsData({ color, addButton }) {
         if (value == "All") return true;
         return item.status == value;
       });
+      setSelectFilter(value);
+      setTestPage(1);
+      setStartIndex(0);
+      setEndIndex(resPerPage);
       setTestDataList(filtered);
     } catch (error) {
       console.log(error);
@@ -51,12 +56,17 @@ export default function ResultsData({ color, addButton }) {
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
               <h3 className="font-bold text-xl text-slate-700">
-                Result List ({testDataList?.length || 0})
+                Result List ({testDataList?.length || 0}) <br />
+                <span className="font-thin text-sm">
+                  Page {testPage} of{" "}
+                  {Math.ceil(testDataList?.length / resPerPage)}
+                </span>
               </h3>
             </div>
             <form>
               <select
                 onChange={handleSelectChange}
+                value={selectFilter}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               >
                 <option value="All">All Records</option>
@@ -139,21 +149,21 @@ export default function ResultsData({ color, addButton }) {
                           <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                             {item?.payment ? (
                               <div>
-                                <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                                <span className="font-bold text-slate-600">
                                   NGN {item?.payment?.amount_paid}
                                 </span>
 
-                                <span className="ml-0 md:ml-3 font-thin text-xs italic text-slate-400 block no-underline">
+                                <span className="font-thin text-xs italic text-slate-400 block no-underline">
                                   Invoice No. {item?.payment?.invoice}
                                 </span>
-                                <span className="ml-0 md:ml-3 font-thin text-xs text-slate-500 block no-underline">
+                                <span className="font-thin text-xs text-slate-500 block no-underline">
                                   {item?.payment?.payment_option
                                     ?.toString()
                                     .toUpperCase()}
                                 </span>
                               </div>
                             ) : (
-                              <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                              <span className="font-bold text-slate-600">
                                 {item?.status}
                               </span>
                             )}
@@ -161,16 +171,16 @@ export default function ResultsData({ color, addButton }) {
                           <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                             {item?.payment ? (
                               <div>
-                                <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                                <span className="font-bold text-slate-600">
                                   {item?.payment?.user?.firstname}{" "}
                                   {item?.payment?.user?.lastname}
                                 </span>
-                                <span className="ml-0 md:ml-3 font-thin text-xs italic text-slate-400 block no-underline">
+                                <span className="font-thin text-xs italic text-slate-400 block no-underline">
                                   {item?.payment?.user?.role?.name}
                                 </span>
                               </div>
                             ) : (
-                              <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                              <span className="font-bold text-slate-600">
                                 {item?.status}
                               </span>
                             )}
