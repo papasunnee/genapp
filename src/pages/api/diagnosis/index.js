@@ -1,7 +1,9 @@
 import mongoose, { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
+import { getServerSession } from "next-auth";
 import Test from "@/models/Test";
 import Patient from "@/models/Patient";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
   const { ObjectId } = Types;
@@ -10,7 +12,9 @@ export default async function handler(req, res) {
   let delete_id = req?.body?.delete_id;
   let put_id = req?.body?.put_id;
 
-  await dbConnect();
+  const conn = await dbConnect();
+
+  const session = await getServerSession(req, res, authOptions);
 
   switch (method) {
     case "GET":
@@ -21,6 +25,7 @@ export default async function handler(req, res) {
           }).populate([
             {
               path: "payment",
+              path: "user",
               populate: {
                 path: "user",
                 populate: {
@@ -35,6 +40,7 @@ export default async function handler(req, res) {
         const allRecords = await Test.find()
           .populate([
             { path: "patient" },
+            { path: "user" },
             {
               path: "payment",
               populate: {
@@ -53,17 +59,27 @@ export default async function handler(req, res) {
       break;
     case "POST":
       try {
-        let newRecord;
-        newRecord = await Test.create({
-          ...req.body,
-        });
+        const transactionSession = await conn.startSession();
+        const testProcess = await transactionSession.withTransaction(
+          async () => {
+            const testData = await Test.create({
+              ...req.body,
+              user: session.user._id,
+            });
 
-        await Patient.findOneAndUpdate(
-          { _id: new ObjectId(req.body.user_id) },
-          { $push: { tests: newRecord._id } }
+            const updatePatient = await Patient.findOneAndUpdate(
+              { _id: new ObjectId(req.body.patient) },
+              { $push: { tests: testData._id } }
+            );
+
+            console.log({ updatePatient });
+
+            return { testData, updatePatient };
+          }
         );
-
-        return res.status(201).json({ success: true, data: newRecord });
+        transactionSession.endSession();
+        console.log({ testProcess });
+        return res.status(201).json({ success: true, data: testProcess });
       } catch (error) {
         console.log(error.message);
         return res.status(400).json({ success: false, error: error.message });

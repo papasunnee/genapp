@@ -187,10 +187,23 @@ export default function Test({ color }) {
             test_data: JSON.parse(data.data.test_data),
           };
           setTestData(itemCopy);
+          toast.success("Payment for test successful");
+        } else {
+          if (data?.error?.includes("getaddrinfo ENOTFOUND")) {
+            throw new Error(
+              "Something went wrong, please check your internet connection!"
+            );
+          }
+
+          throw new Error("Something went wrong, please try again!");
         }
-      } catch (error) {}
+      } catch (error) {
+        console.log(error.message);
+        toast.error(error.message);
+      }
     } else {
       console.log("Amount Invalid");
+      toast.error("Invalid Amount for this test");
     }
     setLoading(false);
   };
@@ -217,7 +230,7 @@ export default function Test({ color }) {
           specimen,
           clinical_address,
           clinical_diagnosis,
-          user_id: router.query.id,
+          patient: router.query.id,
           total_cost: totalCost,
         }),
       });

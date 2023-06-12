@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import Patient from "./Patient";
+import User from "./User";
 import Payment from "./Payment";
 
 /* TestSchema will correspond to a collection in your MongoDB database. */
@@ -42,6 +43,10 @@ const TestSchema = new mongoose.Schema(
     patient: {
       type: Schema.Types.ObjectId,
       ref: "Patient",
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     payment: {
       type: Schema.Types.ObjectId,

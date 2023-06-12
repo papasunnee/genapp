@@ -72,12 +72,11 @@ export default function Create() {
             "Something went wrong, please check your internet connection!"
           );
         }
-        
+
         throw new Error("Something went wrong, please try again!");
       }
     } catch (error) {
       toast.error(error.message);
-      console.log(error.message, "koo");
     }
     setLoading(false);
   };

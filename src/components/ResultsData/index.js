@@ -130,6 +130,7 @@ export default function ResultsData({ color, addButton }) {
                   {testDataList
                     ?.slice(startIndex, endIndex)
                     ?.map((item, index) => {
+                      console.log({ item });
                       return (
                         <tr
                           key={index}
@@ -145,6 +146,11 @@ export default function ResultsData({ color, addButton }) {
                                   {item?.test_title}
                                 </span>
                               </Link>
+                              <span className="font-thin text-xs italic text-slate-500 block no-underline">
+                                {`${item?.patient?.firstname ?? ""} ${
+                                  item?.patient?.latname ?? ""
+                                }`}
+                              </span>
                             </div>
                           </th>
                           <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">

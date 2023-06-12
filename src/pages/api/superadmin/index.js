@@ -40,7 +40,6 @@ export default async function handler(req, res) {
             { password, user: userData },
             { session }
           );
-          console.log({ access });
 
           return { userData, access };
         });
