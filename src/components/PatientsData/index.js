@@ -25,7 +25,7 @@ export default function PatientsData({ color, addButton }) {
         <div className="rounded-t mb-0 px-4 py-6 border-0">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3 className="font-bold text-sm sm:text-xl text-slate-700">
+              <h3 className="font-medium text-sm sm:text-xl text-slate-700">
                 Patients List
               </h3>
             </div>

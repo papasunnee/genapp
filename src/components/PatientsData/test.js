@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import useSWR from "swr";
 import { fetcher } from "@/utils/fetcher";
 import { useRouter } from "next/router";
-import TableDropdown from "../Dropdowns/TableDropdown";
 import {
   assignValuesToTest,
   displayTestResult,
@@ -12,7 +11,6 @@ import {
 import TestCategory from "@/data/TestCategory";
 import { useSession } from "next-auth/react";
 import Pagination from "react-js-pagination";
-import PatientsData from ".";
 
 const TestStatus = {
   "Awaiting Payment": {
@@ -37,7 +35,7 @@ const TestStatus = {
 
 export default function Test({ color }) {
   const { data: sessionData } = useSession();
-  const resPerPage = 5;
+  const resPerPage = 6;
   const selectRef = useRef();
   const select2Ref = useRef();
   const testTitleRef = useRef();

@@ -48,12 +48,12 @@ export default function Profile() {
               {patientData?.data?.email}
             </div>
           </div>
-          <div className="mt-10 py-10 border-t border-slate-200 text-center">
+          <div className="mt-10 py-3 border-t border-slate-200 text-center">
             <div className="flex flex-wrap justify-center">
               <div className="w-full lg:w-9/12 px-4">
-                <p className="mb-4 text-lg leading-relaxed text-slate-700">
+                {/* <p className="mb-4 text-lg leading-relaxed text-slate-700">
                   {patientData?.data?.description}
-                </p>
+                </p> */}
                 {/* <a
                   href="#pablo"
                   className="font-normal text-sky-500"

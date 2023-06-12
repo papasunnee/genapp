@@ -22,11 +22,8 @@ export default function Sidebar() {
             <i className="fas fa-bars"></i>
           </button>
           {/* Brand */}
-          <Link legacyBehavior href="/">
-            <a
-              href="#"
-              className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block text-xs  md:text-sm uppercase font-bold p-4 px-0"
-            >
+          <Link legacyBehavior href="">
+            <a className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block text-xs  md:text-sm uppercase font-bold p-4 px-0">
               GENESIS MEDICAL DIAGNOSTICS LABORATORY
             </a>
           </Link>
