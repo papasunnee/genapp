@@ -1,12 +1,15 @@
 import React, { useRef, useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
+import { toast } from "react-toastify";
+import DatePicker from "react-date-picker";
 import { fetcher } from "@/utils/fetcher";
 
 // components
 
 export default function Create() {
   const [loading, setLoading] = useState(false);
+  const [dob, onChange] = useState(new Date("1/1/2020"));
   const { mutate } = useSWR("/api/patients", fetcher);
   const firstnameRef = useRef();
   const lastnameRef = useRef();
@@ -25,7 +28,7 @@ export default function Create() {
     const firstname = firstnameRef.current.value;
     const lastname = lastnameRef.current.value;
     const email = emailRef.current.value;
-    const dob = dobRef.current.value;
+    // const dob = dobRef.current.value;
     const address = addressRef.current.value;
     const phone = phoneRef.current.value;
     const city = cityRef.current.value;
@@ -56,16 +59,24 @@ export default function Create() {
         firstnameRef.current.value = "";
         lastnameRef.current.value = "";
         emailRef.current.value = "";
-        dobRef.current.value = "";
         addressRef.current.value = "";
         phoneRef.current.value = "";
         cityRef.current.value = "";
         countryRef.current.value = "";
         descriptionRef.current.value = "";
+        onChange(new Date("1/1/2020"));
+        toast.success("🦄 New Patient successfully created");
       } else {
-        throw new Error("Something went wrong");
+        if (data?.error?.includes("getaddrinfo ENOTFOUND")) {
+          throw new Error(
+            "Something went wrong, please check your internet connection!"
+          );
+        }
+        
+        throw new Error("Something went wrong, please try again!");
       }
     } catch (error) {
+      toast.error(error.message);
       console.log(error.message, "koo");
     }
     setLoading(false);
@@ -75,13 +86,16 @@ export default function Create() {
       <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-slate-100 border-0">
         <div className="rounded-t bg-white mb-0 px-6 py-6">
           <div className="text-center flex justify-between">
-            <h6 className="text-slate-700 text-xl font-bold">New Patient</h6>
+            <h6 className="text-slate-700 text-md md:text-lg font-semibold">
+              New Patient
+            </h6>
             <Link href="/admin/patients" legacyBehavior>
               <a
-                className="bg-slate-700 active:bg-slate-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+                className="bg-slate-700 active:bg-slate-600 text-white text-md font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 space-x-1"
                 type="button"
               >
-                Patient List
+                <i className="fas fa-list"></i>
+                <span className="hidden sm:inline-block">Patients List</span>
               </a>
             </Link>
           </div>
@@ -133,10 +147,19 @@ export default function Create() {
                   >
                     Date of Birth
                   </label>
-                  <input
+                  {/* <input
                     type="date"
                     ref={dobRef}
+                    max={new Date()}
                     required
+                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                  /> */}
+                  <DatePicker
+                    onChange={onChange}
+                    value={dob}
+                    maxDate={new Date()}
+                    required
+                    format="dd-MM-yyyy"
                     className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                   />
                 </div>
@@ -252,7 +275,7 @@ export default function Create() {
             <hr className="mt-6 border-b-1 border-slate-300" />
 
             <h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
-              About Me
+              Patient Additional Info
             </h6>
             <div className="flex flex-wrap">
               <div className="w-full lg:w-12/12 px-4">
@@ -261,7 +284,7 @@ export default function Create() {
                     className="block uppercase text-slate-600 text-xs font-bold mb-2"
                     htmlFor="grid-password"
                   >
-                    About me
+                    About Patient
                   </label>
                   <textarea
                     type="text"
@@ -273,7 +296,7 @@ export default function Create() {
                   <div className="text-center flex justify-between">
                     <button
                       disabled={loading}
-                      className="bg-slate-700 active:bg-slate-600 text-white font-bold uppercase text-xs p-4 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 flex-grow"
+                      className="bg-slate-700 active:bg-slate-600 disabled:bg-slate-400 text-white font-bold uppercase text-xs p-4 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 flex-grow"
                     >
                       {loading && (
                         <svg

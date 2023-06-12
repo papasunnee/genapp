@@ -11,6 +11,7 @@ import {
 import TestCategory from "@/data/TestCategory";
 import { useSession } from "next-auth/react";
 import Pagination from "react-js-pagination";
+import { toast } from "react-toastify";
 
 const TestStatus = {
   "Awaiting Payment": {
@@ -35,7 +36,7 @@ const TestStatus = {
 
 export default function Test({ color }) {
   const { data: sessionData } = useSession();
-  const resPerPage = 6;
+  const resPerPage = 5;
   const selectRef = useRef();
   const select2Ref = useRef();
   const testTitleRef = useRef();
@@ -73,6 +74,7 @@ export default function Test({ color }) {
     `/api/patients?id=${router.query?.id}`,
     fetcher
   );
+  const { mutate } = useSWR(`/api/patients`, fetcher);
 
   useEffect(() => {}, [testPage]);
 
@@ -222,11 +224,20 @@ export default function Test({ color }) {
       const data = await res.json();
       if (data.success) {
         mutatePatient();
+        mutate();
         handleCancelModal(e);
+        toast.success("Test successfully created");
       } else {
-        console.log({ data });
+        if (data?.error?.includes("getaddrinfo ENOTFOUND")) {
+          throw new Error(
+            "Something went wrong, please check your internet connection!"
+          );
+        }
+
+        throw new Error("Something went wrong, please try again!");
       }
     } catch (error) {
+      toast.error(error.message);
       console.log(error.message);
     }
     setLoading(false);
@@ -344,16 +355,10 @@ export default function Test({ color }) {
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
               <h3 className="font-medium text-md text-slate-700">
-                Test(s) Taken By{" "}
                 {patientData ? (
-                  patientData?.data?.firstname +
-                  " (" +
-                  patientData?.data?.tests?.length +
-                  ")"
+                  `Test(s) Taken By ${patientData?.data?.firstname} (${patientData?.data?.tests?.length})`
                 ) : (
-                  <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full  w-32">
-                    sss
-                  </span>
+                  <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full  w-32"></span>
                 )}
               </h3>
             </div>
@@ -490,7 +495,7 @@ export default function Test({ color }) {
                   activePage={testPage}
                   itemsCountPerPage={resPerPage}
                   totalItemsCount={patientData?.data?.tests?.length}
-                  pageRangeDisplayed={4}
+                  pageRangeDisplayed={5}
                   nextPageText={"Next"}
                   prevPageText={"Prev"}
                   firstPageText={"First"}
@@ -499,6 +504,7 @@ export default function Test({ color }) {
                   itemClass="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-200 focus:z-20"
                   activeLinkClassName="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
                   activeClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
+                  disabledClass="cursor-not-allowed"
                 />
               </div>
             </>
@@ -1228,6 +1234,9 @@ export default function Test({ color }) {
                     <>
                       <button
                         type="button"
+                        onClick={() =>
+                          alert("Feature not yet active, please pay cash")
+                        }
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
                       >
                         Paystack Option

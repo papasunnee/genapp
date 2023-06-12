@@ -2,9 +2,13 @@ import React from "react";
 import Head from "next/head";
 import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
+import { ToastContainer } from "react-toastify";
 import { Roboto } from "next/font/google";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import "react-toastify/dist/ReactToastify.css";
+import "react-date-picker/dist/DatePicker.css";
+import "react-calendar/dist/Calendar.css";
 import "@/styles/globals.css";
 
 const roboto = Roboto({
@@ -24,6 +28,7 @@ export default function App({ Component, pageProps }) {
         <title>Genesis Diagnostics Laboratory</title>
       </Head>
       <SessionProvider session={pageProps.session}>
+        <ToastContainer position="top-right" />
         <main className={roboto.className}>
           <Layout>
             <Component {...pageProps} />

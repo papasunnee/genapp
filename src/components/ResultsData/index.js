@@ -58,8 +58,8 @@ export default function ResultsData({ color, addButton }) {
               <h3 className="font-bold text-xl text-slate-700">
                 Result List ({testDataList?.length || 0}) <br />
                 <span className="font-thin text-sm">
-                  Page {testPage} of{" "}
-                  {Math.ceil(testDataList?.length / resPerPage)}
+                  Page {testDataList ? testPage : 0} of{" "}
+                  {Math.ceil(testDataList?.length / resPerPage) || 0}
                 </span>
               </h3>
             </div>
@@ -71,6 +71,7 @@ export default function ResultsData({ color, addButton }) {
               >
                 <option value="All">All Records</option>
                 <option value="Test Completed">Test Completed</option>
+                <option value="Awaiting Result">Awaiting Result</option>
                 <option value="Awaiting Payment">Awaiting Payment</option>
               </select>
             </form>
@@ -134,8 +135,8 @@ export default function ResultsData({ color, addButton }) {
                           key={index}
                           className="hover:bg-slate-100/50 border-b border-gray-200 transition duration-300 ease-in-out hover:bg-gray-200"
                         >
-                          <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-sm whitespace-nowrap p-2 text-left flex items-center">
-                            <div>
+                          <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-sm whitespace-nowrap p-4 text-left flex items-center">
+                            <div className="">
                               <Link
                                 href={`/admin/results/${item._id}`}
                                 className="underline text-blue-800"
@@ -213,7 +214,7 @@ export default function ResultsData({ color, addButton }) {
                   activePage={testPage}
                   itemsCountPerPage={resPerPage}
                   totalItemsCount={testDataList?.length}
-                  pageRangeDisplayed={4}
+                  pageRangeDisplayed={5}
                   nextPageText={"Next"}
                   prevPageText={"Prev"}
                   firstPageText={"First"}
