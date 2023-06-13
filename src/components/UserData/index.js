@@ -43,7 +43,7 @@ export default function UserData({ color, addButton }) {
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
               <h3 className="font-bold text-xl text-slate-700">
-                Staff List <br />
+                Staff List ({userDataList?.length || 0}) <br />
                 <span className="font-thin text-sm">
                   Page {userDataList ? userPage : 0} of{" "}
                   {Math.ceil((userDataList?.length || 0) / resPerPage) || 0}
