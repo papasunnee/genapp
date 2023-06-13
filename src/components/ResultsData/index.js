@@ -59,7 +59,7 @@ export default function ResultsData({ color, addButton }) {
                 Result List ({testDataList?.length || 0}) <br />
                 <span className="font-thin text-sm">
                   Page {testDataList ? testPage : 0} of{" "}
-                  {Math.ceil(testDataList?.length / resPerPage) || 0}
+                  {Math.ceil((testDataList?.length || 0) / resPerPage) || 0}
                 </span>
               </h3>
             </div>
