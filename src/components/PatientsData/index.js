@@ -40,7 +40,8 @@ export default function PatientsData({ color, addButton }) {
                 Patients List ({patientData?.data.length || 0}) <br />
                 <span className="font-thin text-sm">
                   Page {patientData ? testPage : 0} of{" "}
-                  {Math.ceil(patientData?.data?.length || 0 / resPerPage) || 0}
+                  {Math.ceil((patientData?.data?.length || 0) / resPerPage) ||
+                    0}
                 </span>
               </h6>
             </div>
