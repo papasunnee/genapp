@@ -390,10 +390,11 @@ export default function Test({ color }) {
             )}
           </div>
         </div>
-        <div className="block w-full overflow-x-auto">
-          {/* Projects table */}
-          {patientData?.data?.tests?.length > 0 ? (
-            <>
+
+        {/* Projects table */}
+        {patientData?.data?.tests?.length > 0 ? (
+          <>
+            <div className="block w-full overflow-x-auto">
               <table className="items-center w-full bg-transparent border-collapse">
                 <thead>
                   <tr>
@@ -503,7 +504,9 @@ export default function Test({ color }) {
                     })}
                 </tbody>
               </table>
-              <div className="flex justify-center my-5">
+            </div>
+            <div className="block w-full overflow-x-auto">
+              <div className="flex justify-center my-5 px-2">
                 <Pagination
                   activePage={testPage}
                   itemsCountPerPage={resPerPage}
@@ -520,15 +523,17 @@ export default function Test({ color }) {
                   disabledClass="cursor-not-allowed"
                 />
               </div>
-            </>
-          ) : (
+            </div>
+          </>
+        ) : (
+          <div className="block w-full overflow-x-auto">
             <div className="my-5">
               <p className="text-center">
                 You have not added a test, please click on add new test to begin
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       <div
         ref={modalRef}

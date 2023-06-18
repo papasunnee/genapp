@@ -8,8 +8,9 @@ import CardSocialTraffic from "@/components/Cards/CardSocialTraffic";
 
 // layout for page
 import Admin from "@/components/Layout/Admin";
+import withRole from "@/hoc/withRole";
 
-export default function Index() {
+function Index() {
   return (
     <>
       <div className="flex flex-wrap">
@@ -33,3 +34,5 @@ export default function Index() {
 }
 
 Index.layout = Admin;
+
+export default Index;

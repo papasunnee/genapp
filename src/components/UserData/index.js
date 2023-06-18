@@ -42,32 +42,38 @@ export default function UserData({ color, addButton }) {
         <div className="rounded-t mb-0 px-4 py-6 border-0">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3 className="font-bold text-xl text-slate-700">
+              <h6 className="text-slate-700 text-md md:text-lg font-semibold">
                 Staff List ({userDataList?.length || 0}) <br />
-                <span className="font-thin text-sm">
+                <span className="font-thin text-xs md:text-sm">
                   Page {userDataList ? userPage : 0} of{" "}
                   {Math.ceil((userDataList?.length || 0) / resPerPage) || 0}
                 </span>
-              </h3>
+              </h6>
             </div>
 
             {addButton &&
               [100, 200, 500].includes(data?.user?.role?.weight) && (
                 <div>
                   <Link href="/admin/users/newuser" legacyBehavior>
-                    <a className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1">
+                    <a
+                      className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1"
+                      title="Add New Staff"
+                    >
                       <i className="fas fa-plus"></i>
-                      <span>Add New Staff</span>
+                      <span className="hidden sm:inline-block">
+                        Add New Staff
+                      </span>
                     </a>
                   </Link>
                 </div>
               )}
           </div>
         </div>
-        <div className="block w-full overflow-x-auto">
-          {/* Users table */}
-          {userDataList?.length > 0 ? (
-            <>
+
+        {/* Users table */}
+        {userDataList?.length > 0 ? (
+          <>
+            <div className="block w-full overflow-x-auto">
               <table className="items-center w-full bg-transparent border-collapse">
                 <thead>
                   <tr>
@@ -172,7 +178,9 @@ export default function UserData({ color, addButton }) {
                     })}
                 </tbody>
               </table>
-              <div className="flex justify-center my-5">
+            </div>
+            <div className="block w-full overflow-x-auto">
+              <div className="flex justify-center my-5 px-2">
                 <Pagination
                   activePage={userPage}
                   itemsCountPerPage={resPerPage}
@@ -188,13 +196,15 @@ export default function UserData({ color, addButton }) {
                   activeClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
                 />
               </div>
-            </>
-          ) : (
+            </div>
+          </>
+        ) : (
+          <div className="block w-full overflow-x-auto">
             <div className="my-5">
               <p className="text-center">No Test Record Found at the moment</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );

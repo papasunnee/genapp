@@ -1,6 +1,5 @@
 import React from "react";
 import Head from "next/head";
-import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
 import { ToastContainer } from "react-toastify";
 import { Roboto } from "next/font/google";

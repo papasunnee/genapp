@@ -77,10 +77,11 @@ export default function ResultsData({ color, addButton }) {
             </form>
           </div>
         </div>
-        <div className="block w-full overflow-x-auto">
-          {/* Projects table */}
-          {testDataList?.length > 0 ? (
-            <>
+
+        {/* Projects table */}
+        {testDataList?.length > 0 ? (
+          <>
+            <div className="block w-full overflow-x-auto">
               <table className="items-center w-full bg-transparent border-collapse">
                 <thead>
                   <tr>
@@ -215,7 +216,9 @@ export default function ResultsData({ color, addButton }) {
                     })}
                 </tbody>
               </table>
-              <div className="flex justify-center my-5">
+            </div>
+            <div className="block w-full overflow-x-auto">
+              <div className="flex justify-center my-5 px-2">
                 <Pagination
                   activePage={testPage}
                   itemsCountPerPage={resPerPage}
@@ -231,13 +234,15 @@ export default function ResultsData({ color, addButton }) {
                   activeClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
                 />
               </div>
-            </>
-          ) : (
+            </div>
+          </>
+        ) : (
+          <div className="block w-full overflow-x-auto">
             <div className="my-5">
               <p className="text-center">No Test Record Found at the moment</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );

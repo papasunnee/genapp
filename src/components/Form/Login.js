@@ -18,19 +18,20 @@ const Login = () => {
         redirect: false,
       });
       //handle failure message
+      console.log({ res });
       if (res.error && !res.ok) {
         if (res.error.includes("getaddrinfo")) {
-          setErrorMessage("Please check your network connection");
-        } else setErrorMessage(res.error);
+          throw new Error("Please check your network connection");
+        } else if (res.error.includes("querySrv")) {
+          throw new Error("Cannot Connect to database, please try again later");
+        } else throw new Error(res.error);
       }
       //redirect on success
       passwordRef.current.value = "";
       emailRef.current.value = "";
     } catch (error) {
-      console.log(error.message);
-      if (error.message.includes("getaddressinfo")) {
-        setErrorMessage("Please check your network connection");
-      }
+      setErrorMessage(error.message);
+      passwordRef.current.value = "**************************";
     }
     setLoading(false);
   };

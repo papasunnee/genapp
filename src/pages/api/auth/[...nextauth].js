@@ -58,12 +58,6 @@ export const authOptions = {
       return token;
     },
     async session({ session, token, user }) {
-      // session.user.role = user?.role ? user?.role : token.role;
-      // session.user.firstname = user?.firstname
-      //   ? user?.firstname
-      //   : token.firstname;
-      // session.user.lastname = user?.lastname ? user?.lastname : token.lastname;
-      // session.user._id = user?._id ? user?._id : token._id;
       if (!user) {
         user = { ...token };
       }

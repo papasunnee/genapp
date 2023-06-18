@@ -8,7 +8,7 @@ import Sidebar from "../Sidebar/Sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
-export default function Admin({ children }) {
+export default function Personnel({ children }) {
   const session = useSession();
   const { status, data } = session;
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function Admin({ children }) {
     if (status == "unauthenticated") {
       router.replace("/");
     }
-    if (data?.user?.role?.weight > 200) {
+    if (data?.user?.role?.weight !== 500) {
       router.replace("/unauthorized");
     }
   }, [status, data]);
@@ -25,7 +25,7 @@ export default function Admin({ children }) {
     status == "authenticated" &&
     data != "undefined" &&
     data != undefined &&
-    data?.user?.role?.weight < 300
+    data?.user?.role?.weight == 500
   ) {
     return (
       <>

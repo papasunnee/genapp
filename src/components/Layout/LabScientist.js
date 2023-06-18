@@ -8,7 +8,7 @@ import Sidebar from "../Sidebar/Sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
-export default function Admin({ children }) {
+export default function LabScientist({ children }) {
   const session = useSession();
   const { status, data } = session;
   const router = useRouter();
