@@ -13,6 +13,8 @@ export default function PaymentsData({ color, addButton }) {
   const [testDataList, setTestDataList] = useState([]);
   const { data: testData } = useSWR("/api/diagnosis", fetcher);
 
+  console.log({ testData });
+
   const [testPage, setTestPage] = useState(1);
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(resPerPage);
@@ -53,7 +55,7 @@ export default function PaymentsData({ color, addButton }) {
           <div className="flex flex-wrap items-center">
             <div className="relative w-full px-4 max-w-full flex-grow flex-1">
               <h6 className="text-slate-700 text-md md:text-lg font-semibold">
-                Payment List <br />
+                Payment List ({testDataList?.length})<br />
                 <span className="font-thin text-xs md:text-sm">
                   Page {testData ? testPage : 0} of{" "}
                   {Math.ceil((testDataList?.length || 0) / resPerPage) || 0}
@@ -67,6 +69,7 @@ export default function PaymentsData({ color, addButton }) {
               >
                 <option value="All">All Records</option>
                 <option value="Test Completed">Test Completed</option>
+                <option value="Awaiting Result">Awaiting Result</option>
                 <option value="Awaiting Payment">Awaiting Payment</option>
               </select>
             </form>
@@ -140,26 +143,33 @@ export default function PaymentsData({ color, addButton }) {
                                   {item?.test_title}
                                 </span>
                               </Link>
+                              <span className="ml-0 font-thin text-xs italic text-slate-500 block no-underline">
+                                {item?.patient?.firstname}{" "}
+                                {item?.patient?.lastname}
+                              </span>
+                              <span className="ml-0 font-thin text-xs italic text-slate-500 block no-underline">
+                                {item?.status}
+                              </span>
                             </div>
                           </th>
                           <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                             {item?.payment ? (
                               <div>
-                                <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                                <span className="ml-0 font-bold text-slate-600">
                                   NGN {item?.payment?.amount_paid}
                                 </span>
 
-                                <span className="ml-0 md:ml-3 font-thin text-xs italic text-slate-400 block no-underline">
+                                <span className="ml-0 font-thin text-xs italic text-slate-400 block no-underline">
                                   Invoice No. {item?.payment?.invoice}
                                 </span>
-                                <span className="ml-0 md:ml-3 font-thin text-xs text-slate-500 block no-underline">
+                                <span className="ml-0 font-thin text-xs text-slate-500 block no-underline">
                                   {item?.payment?.payment_option
                                     ?.toString()
                                     .toUpperCase()}
                                 </span>
                               </div>
                             ) : (
-                              <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                              <span className="ml-0 font-bold text-slate-600">
                                 {item?.status}
                               </span>
                             )}
@@ -167,16 +177,16 @@ export default function PaymentsData({ color, addButton }) {
                           <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                             {item?.payment ? (
                               <div>
-                                <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                                <span className="ml-0 font-bold text-slate-600">
                                   {item?.payment?.user?.firstname}{" "}
                                   {item?.payment?.user?.lastname}
                                 </span>
-                                <span className="ml-0 md:ml-3 font-thin text-xs italic text-slate-400 block no-underline">
+                                <span className="ml-0 font-thin text-xs italic text-slate-400 block no-underline">
                                   {item?.payment?.user?.role?.name}
                                 </span>
                               </div>
                             ) : (
-                              <span className="ml-0 md:ml-3 font-bold text-slate-600">
+                              <span className="ml-0 font-bold text-slate-600">
                                 {item?.status}
                               </span>
                             )}

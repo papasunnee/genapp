@@ -139,18 +139,27 @@ export default function ResultsData({ color, addButton }) {
                         >
                           <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-sm whitespace-nowrap p-4 text-left flex items-center">
                             <div className="">
-                              <Link
-                                href={`/admin/results/${item._id}`}
-                                className="underline text-blue-800"
-                              >
-                                <span className="font-bold text-slate-600">
+                              {item?.status != "Awaiting Payment" ? (
+                                <Link
+                                  href={`/admin/results/${item._id}`}
+                                  className="underline text-blue-800"
+                                >
+                                  <span className="font-bold text-slate-600">
+                                    {item?.test_title}
+                                  </span>
+                                </Link>
+                              ) : (
+                                <span className="font-bold text-slate-600 block no-underline">
                                   {item?.test_title}
                                 </span>
-                              </Link>
+                              )}
                               <span className="font-thin text-xs italic text-slate-500 block no-underline">
                                 {`${item?.patient?.firstname ?? ""} ${
                                   item?.patient?.latname ?? ""
                                 }`}
+                              </span>
+                              <span className="font-thin text-xs italic text-slate-500 block no-underline">
+                                {item?.status ?? ""}
                               </span>
                             </div>
                           </th>

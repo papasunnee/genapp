@@ -13,7 +13,11 @@ const SingleTest = () => {
 
   const invoiceRef = useRef();
   const amountPaidRef = useRef();
-  const { data } = useSWR(`/api/diagnosis/test?id=${router.query.id}`, fetcher);
+  const { data, mutate: mutateTest } = useSWR(
+    `/api/diagnosis/test?id=${router.query.id}`,
+    fetcher
+  );
+  const { mutate: mutateDiagnosis } = useSWR("/api/diagnosis", fetcher);
 
   useEffect(() => {
     setTestData(data?.data);
@@ -42,7 +46,8 @@ const SingleTest = () => {
         });
         const data = await res.json();
         if (data.success) {
-          await mutatePatient();
+          mutateTest();
+          mutateDiagnosis();
           const itemCopy = {
             ...data.data,
             test_data: JSON.parse(data.data.test_data),
