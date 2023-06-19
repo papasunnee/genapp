@@ -27,9 +27,11 @@ export default async function handler(req, res) {
               },
             },
           },
+          {
+            path: "patient",
+          },
         ]);
         const resultArray = JSON.parse(singleTest.test_data);
-
         return res
           .status(400)
           .json({ success: true, data: singleTest, resultArray });

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { fetcher } from "@/utils/fetcher";
-import useSWR from "swr";
 import { useRouter } from "next/router";
-import { displayTestResult } from "@/utils/functions";
+import useSWR from "swr";
+import { toast } from "react-toastify";
+import { fetcher } from "@/utils/fetcher";
+import moment from "moment";
 
 const SingleTest = () => {
   const router = useRouter();
@@ -56,47 +57,46 @@ const SingleTest = () => {
         }
       } catch (error) {}
     } else {
-      console.log("Amount Invalid");
+      toast.error("Wrong Amount Entered");
     }
     setLoading(false);
   };
   return (
     <div className="bg-white">
-      <div className="flex items-start justify-between p-4 border-b rounded-t">
-        <div className="flex flex-grow flex-col items-center">
-          <h3 className="text-lg font-semibold text-gray-900 flex-grow">
+      <div className="flex flex-col p-4 border-b rounded-t">
+        <div className="text-center border-b-2 font-bold text-xl pb-2 my-2">
+          Payment Information
+        </div>
+        <div className="grid grid-cols-2 gap-2 mb-2 md:md-0 self-start">
+          <p className="text-md font-semibold text-gray-900 flex-grow">
+            Patient Name:
+          </p>
+          <p className="text-md font-bold text-gray-900 flex-grow">
+            {testData?.patient?.firstname} {testData?.patient?.lastname}
+          </p>
+          <p className="text-md font-semibold text-gray-900 flex-grow">
+            Test Title:
+          </p>
+          <p className="text-md font-bold text-gray-900 flex-grow">
             {testData?.test_title}
-          </h3>
-          <div className="text-2xl font-bold">
-            Total Cost :{" "}
-            <span
-              className={
-                testData?.status == "Awaiting Payment"
-                  ? "text-red-700"
-                  : "text-emerald-700"
-              }
-            >
-              NGN {testData?.total_cost}.00
-            </span>
-          </div>
+          </p>
+
+          <p className="text-md font-semibold">Total Cost:</p>
+          <p
+            className={`${
+              testData?.status == "Awaiting Payment"
+                ? "text-red-700"
+                : "text-emerald-700"
+            } text-md font-bold`}
+          >
+            NGN {testData?.total_cost}.00
+          </p>
+          <p className="text-md font-semibold">Status:</p>
+          <p className="text-md font-bold">{testData?.status}</p>
         </div>
       </div>
       <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200  px-8">
-        <ul className="flex flex-wrap -mb-px">
-          <li className="mr-2 flex-grow">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentTab(0);
-              }}
-              className={currentTab == 0 ? "active_tab" : "non_active_tab"}
-            >
-              Payment Information
-            </a>
-          </li>
-        </ul>
-        {currentTab == 0 && testData?.status === "Awaiting Payment" && (
+        {testData?.status === "Awaiting Payment" ? (
           <form className="border flex flex-col my-3 p-4 items-start space-y-4">
             <div className="flex flex-col w-full items-start">
               <label
@@ -185,16 +185,19 @@ const SingleTest = () => {
               </>
             )}
           </form>
-        )}
-        {currentTab == 0 && testData?.status !== "Awaiting Payment" && (
+        ) : (
           <div className="flex flex-col items-start my-4 space-y-2">
             <div className="grid grid-cols-2 gap-5 text-left">
               <span className="font-bold">Invoice Number : </span>
               <span>{testData?.payment?.invoice}</span>
               <span className="font-bold">Amount Paid : </span>
-              <span>{testData?.payment?.amount_paid}</span>
+              <span>NGN {testData?.payment?.amount_paid}:00</span>
               <span className="font-bold">Date Paid : </span>
-              <span>{testData?.payment?.createdAt}</span>
+              <span>
+                {moment(testData?.payment?.createdAt).format(
+                  "Do MMMM, YYYY | h:mm:ss a"
+                )}
+              </span>
               <span className="font-bold">Received by : </span>
               <span>
                 {testData?.payment?.user?.firstname}{" "}

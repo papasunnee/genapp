@@ -6,41 +6,18 @@ import { useRouter } from "next/router";
 
 import Auth from "@/components/Layout/Auth";
 
-// const Index = () => {
-//   const { data, status } = useSession();
-//   const router = useRouter();
-//   if (status == "authenticated") {
-//     if (data?.user?.role?.name == "Super Admin") {
-//       router.push("/admin");
-//     }
-//   }
-
-//   if (status == "unauthenticated") {
-//     return (
-//       <div className="w-full h-screen flex justify-center items-center">
-//         <div className="max-w-lg flex flex-col">
-//           <Login />
-//           <p className="self-end text-gray-400 text-xs italic px-5 py-1">
-//             v 1.0.0.2023.04
-//           </p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return <p className="animate-pulse">Loading</p>;
-// };
-
-// export default Index;
-
-// layout for page
-
 export default function Index() {
   const { data, status } = useSession();
   const router = useRouter();
   if (status == "authenticated") {
     if (data?.user?.role?.name == "Super Admin") {
       router.push("/admin");
+    }
+    if (data?.user?.role?.name == "Admin") {
+      router.push("/admin");
+    }
+    if (data?.user?.role?.name == "Accountant") {
+      router.push("/account");
     }
     router.push("/admin");
   }

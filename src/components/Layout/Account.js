@@ -8,7 +8,7 @@ import Sidebar from "../Sidebar/Sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
-export default function Accountant({ children }) {
+export default function Account({ children }) {
   const session = useSession();
   const { status, data } = session;
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function Accountant({ children }) {
     if (status == "unauthenticated") {
       router.replace("/");
     }
-    if (data?.user?.role?.weight > 200) {
+    if (data?.user?.role?.weight != "400") {
       router.replace("/unauthorized");
     }
   }, [status, data]);
@@ -25,7 +25,7 @@ export default function Accountant({ children }) {
     status == "authenticated" &&
     data != "undefined" &&
     data != undefined &&
-    data?.user?.role?.weight < 300
+    data?.user?.role?.weight == "400"
   ) {
     return (
       <>

@@ -136,31 +136,33 @@ export default function Sidebar() {
                 </span>
               </li>
 
-              <li className="items-center">
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCollapseShow("hidden");
-                    router.push("/admin/users");
-                  }}
-                  className={
-                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname.indexOf("/admin/users") !== -1
-                      ? "text-sky-500 hover:text-sky-600"
-                      : "text-slate-700 hover:text-slate-500")
-                  }
-                >
-                  <i
+              {[100, 200].includes(data?.user?.role?.weight) && (
+                <li className="items-center">
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCollapseShow("hidden");
+                      router.push("/admin/users");
+                    }}
                     className={
-                      "fas fa-users mr-2 text-sm " +
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
                       (router.pathname.indexOf("/admin/users") !== -1
-                        ? "opacity-75"
-                        : "text-slate-300")
+                        ? "text-sky-500 hover:text-sky-600"
+                        : "text-slate-700 hover:text-slate-500")
                     }
-                  ></i>{" "}
-                  Staff/Users
-                </span>
-              </li>
+                  >
+                    <i
+                      className={
+                        "fas fa-users mr-2 text-sm " +
+                        (router.pathname.indexOf("/admin/users") !== -1
+                          ? "opacity-75"
+                          : "text-slate-300")
+                      }
+                    ></i>{" "}
+                    Staff/Users
+                  </span>
+                </li>
+              )}
 
               <li className="items-center">
                 <span
@@ -338,7 +340,7 @@ export default function Sidebar() {
                   </span>
                   <span
                     href="#"
-                    className="text-slate-400 text-xs py-1 font-bold block"
+                    className="text-slate-400 text-xs py-1 font-semibold block"
                   >
                     {data.user.firstname.toString().toUpperCase()}{" "}
                     {data.user.lastname.toString().toUpperCase()}
