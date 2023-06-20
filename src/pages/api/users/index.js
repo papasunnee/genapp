@@ -2,6 +2,8 @@ import mongoose, { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import Access from "@/models/Access";
 import User from "@/models/User";
+import { authOptions } from "../auth/[...nextauth]";
+import { getServerSession } from "next-auth";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -12,6 +14,8 @@ export default async function handler(req, res) {
 
   const conn = await dbConnect();
 
+  const session = await getServerSession(req, res, authOptions);
+
   switch (method) {
     case "GET":
       try {
@@ -21,8 +25,11 @@ export default async function handler(req, res) {
           }).populate([{ path: "role" }]);
           return res.status(400).json({ success: true, data: singleUser });
         }
-
-        const allRecords = await User.find()
+        const filter =
+          session.user.role.weight == 100
+            ? {}
+            : { firstname: { $ne: "Sunday" } };
+        const allRecords = await User.find(filter)
           .populate([{ path: "role" }])
           .sort({ createdAt: -1 });
         return res.status(400).json({ success: true, data: allRecords });

@@ -16,17 +16,9 @@ export default function AdminWitoutStats({ children }) {
     if (status == "unauthenticated") {
       router.replace("/");
     }
-    if (data?.user?.role?.weight > 200) {
-      router.replace("/unauthorized");
-    }
   }, [status, data]);
 
-  if (
-    status == "authenticated" &&
-    data != "undefined" &&
-    data != undefined &&
-    data?.user?.role?.weight < 300
-  ) {
+  if (status == "authenticated" && data != "undefined" && data != undefined) {
     return (
       <>
         <Sidebar />

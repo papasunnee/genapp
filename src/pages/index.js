@@ -10,15 +10,18 @@ export default function Index() {
   const { data, status } = useSession();
   const router = useRouter();
   if (status == "authenticated") {
-    if (data?.user?.role?.name == "Super Admin") {
-      router.push("/admin");
-    }
-    if (data?.user?.role?.name == "Admin") {
-      router.push("/admin");
-    }
-    if (data?.user?.role?.name == "Accountant") {
-      router.push("/account");
-    }
+    // if (data?.user?.role?.name == "Super Admin") {
+    //   router.push("/admin");
+    //   return;
+    // }
+    // if (data?.user?.role?.name == "Admin") {
+    //   router.push("/admin");
+    //   return;
+    // }
+    // if (data?.user?.role?.name == "Accountant") {
+    //   router.push("/account");
+    //   return;
+    // }
     router.push("/admin");
   }
   if (status == "unauthenticated") {

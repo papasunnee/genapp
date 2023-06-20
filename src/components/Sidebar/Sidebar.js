@@ -136,7 +136,7 @@ export default function Sidebar() {
                 </span>
               </li>
 
-              {[100, 200].includes(data?.user?.role?.weight) && (
+              {[100, 200, 500].includes(data?.user?.role?.weight) && (
                 <li className="items-center">
                   <span
                     onClick={(e) => {
@@ -164,57 +164,61 @@ export default function Sidebar() {
                 </li>
               )}
 
-              <li className="items-center">
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCollapseShow("hidden");
-                    router.push("/admin/results");
-                  }}
-                  className={
-                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname.indexOf("/admin/results") !== -1
-                      ? "text-sky-500 hover:text-sky-600"
-                      : "text-slate-700 hover:text-slate-500")
-                  }
-                >
-                  <i
+              {[100, 200, 300].includes(data?.user?.role?.weight) && (
+                <li className="items-center">
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCollapseShow("hidden");
+                      router.push("/admin/results");
+                    }}
                     className={
-                      "fas fa-list mr-2 text-sm " +
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
                       (router.pathname.indexOf("/admin/results") !== -1
-                        ? "opacity-75"
-                        : "text-slate-300")
+                        ? "text-sky-500 hover:text-sky-600"
+                        : "text-slate-700 hover:text-slate-500")
                     }
-                  ></i>{" "}
-                  Results
-                </span>
-              </li>
+                  >
+                    <i
+                      className={
+                        "fas fa-list mr-2 text-sm " +
+                        (router.pathname.indexOf("/admin/results") !== -1
+                          ? "opacity-75"
+                          : "text-slate-300")
+                      }
+                    ></i>{" "}
+                    Results
+                  </span>
+                </li>
+              )}
 
-              <li className="items-center">
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCollapseShow("hidden");
-                    router.push("/admin/payments");
-                  }}
-                  className={
-                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname.indexOf("/admin/payments") !== -1
-                      ? "text-sky-500 hover:text-sky-600"
-                      : "text-slate-700 hover:text-slate-500")
-                  }
-                >
-                  <i
+              {[100, 200, 400].includes(data?.user?.role?.weight) && (
+                <li className="items-center">
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCollapseShow("hidden");
+                      router.push("/admin/payments");
+                    }}
                     className={
-                      "fas fa-fingerprint mr-2 text-sm " +
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
                       (router.pathname.indexOf("/admin/payments") !== -1
-                        ? "opacity-75"
-                        : "text-slate-300")
+                        ? "text-sky-500 hover:text-sky-600"
+                        : "text-slate-700 hover:text-slate-500")
                     }
-                  ></i>{" "}
-                  Payments
-                </span>
-              </li>
+                  >
+                    <i
+                      className={
+                        "fas fa-fingerprint mr-2 text-sm " +
+                        (router.pathname.indexOf("/admin/payments") !== -1
+                          ? "opacity-75"
+                          : "text-slate-300")
+                      }
+                    ></i>{" "}
+                    Payments
+                  </span>
+                </li>
+              )}
 
               <li className="items-center">
                 <span

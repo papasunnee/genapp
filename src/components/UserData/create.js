@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
+import { toast } from "react-toastify";
 
 // components
 
@@ -67,12 +68,17 @@ export default function Create() {
         descriptionRef.current.value = "";
         genderRef.current.value = "Male";
         roleRef.current.value = roleData?.data?.[0]?._id;
+        toast.success("New User successfully created");
       } else {
-        console.log({ data });
-        throw new Error("Something went wrong");
+        throw new Error(data.error);
       }
     } catch (error) {
       console.log(error.message);
+      if (error.message.includes("dob")) {
+        toast.error("Invalid Date of Birth");
+      } else {
+        toast.error("Error Creating User");
+      }
     }
     setLoading(false);
   };

@@ -47,6 +47,7 @@ const SingleTest = () => {
         });
         const data = await res.json();
         if (data.success) {
+          toast.success("Payment Successfully Recorded");
           mutateTest();
           mutateDiagnosis();
           const itemCopy = {

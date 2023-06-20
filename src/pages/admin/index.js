@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 
 // components
 import CardLineChart from "@/components/Cards/CardLineChart";
@@ -8,7 +8,6 @@ import CardSocialTraffic from "@/components/Cards/CardSocialTraffic";
 
 // layout for page
 import Admin from "@/components/Layout/Admin";
-import withRole from "@/hoc/withRole";
 
 function Index() {
   return (

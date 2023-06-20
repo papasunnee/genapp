@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // components
 import UserData from "@/components/UserData";
@@ -6,8 +6,19 @@ import UserData from "@/components/UserData";
 // layout for page
 import AdminWitoutStats from "@/components/Layout/AdminWithoutStats";
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function Index() {
+  const session = useSession();
+  const { status, data } = session;
+  const router = useRouter();
+  useEffect(() => {
+    console.log(data?.user?.role?.weight);
+    if ([400].includes(data?.user?.role?.weight)) {
+      router.back();
+    }
+  }, [data, status]);
   return (
     <>
       <AdminNavbar breadCrumb={["Dashboard", "Staff"]} />
