@@ -12,7 +12,6 @@ export default async function handler(req, res) {
   let put_id = req?.body?.put_id;
   await dbConnect();
   const session = await getServerSession(req, res, authOptions);
-  // console.log({ session });
 
   switch (method) {
     case "GET":
@@ -23,10 +22,24 @@ export default async function handler(req, res) {
           });
           return res.status(400).json({ success: true, data: singleRole });
         }
-
-        const allRecords = await Role.find({
+        const roleWeight = session?.user?.role?.weight;
+        let filter = {
           status: { $ne: "Disabled" },
-        }).sort({
+          weight: { $gte: roleWeight },
+        };
+        if (roleWeight == 200) {
+          filter = {
+            status: { $ne: "Disabled" },
+            weight: { $gte: 200 },
+          };
+        } else if (roleWeight == 500) {
+          filter = {
+            status: { $ne: "Disabled" },
+            weight: { $gt: 200 },
+          };
+        }
+
+        const allRecords = await Role.find(filter).sort({
           createdAt: -1,
         });
         return res.status(400).json({ success: true, data: allRecords });
