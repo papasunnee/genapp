@@ -9,7 +9,10 @@ import CardStats from "../Cards/CardStats";
 export default function HeaderStats({ muteStats }) {
   const { data: patientsData } = useSWR("/api/patients", fetcher);
   const { data: userData } = useSWR("/api/users", fetcher);
-  const { data: testData } = useSWR("/api/diagnosis", fetcher);
+  const { data: testData } = useSWR(
+    "/api/diagnosis?filter=true&status=Test Completed",
+    fetcher
+  );
   return (
     <>
       {/* Header */}
@@ -44,22 +47,26 @@ export default function HeaderStats({ muteStats }) {
               </div>
               <div className="w-full sm:w-6/12 xl:w-3/12 px-4">
                 <CardStats
-                  statSubtitle="RESULTS / SALES"
-                  statTitle={testData?.data.length || 0}
+                  statSubtitle="RESULTS"
+                  statTitle={testData?.data?.length || 0}
                   statArrow="down"
                   statPercent="1.10"
                   statPercentColor="text-orange-500"
-                  statDescripiron="Since yesterday"
+                  statDescripiron="Since last week"
                   statIconName="far fa-chart-bar"
                   statIconColor="bg-pink-500"
                 />
               </div>
               <div className="w-full sm:w-6/12 xl:w-3/12 px-4">
                 <CardStats
-                  statSubtitle="TESTS"
-                  statTitle="0%"
-                  statArrow="up"
-                  statPercent="12"
+                  statSubtitle="REVENUE"
+                  statTitle={testData?.percentage || 0}
+                  statArrow={
+                    testData?.percentage && testData?.percentage > 0
+                      ? "up"
+                      : "down"
+                  }
+                  statPercent={testData?.percentage || 0}
                   statPercentColor="text-emerald-500"
                   statDescripiron="Since last month"
                   statIconName="fas fa-percent"

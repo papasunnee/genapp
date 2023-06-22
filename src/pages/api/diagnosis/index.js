@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import Test from "@/models/Test";
 import Patient from "@/models/Patient";
 import { authOptions } from "../auth/[...nextauth]";
+import moment from "moment";
 
 export default async function handler(req, res) {
   const { ObjectId } = Types;
@@ -36,8 +37,105 @@ export default async function handler(req, res) {
           ]);
           return res.status(400).json({ success: true, data: singleTest });
         }
+        if (req.query?.filter) {
+          let queryFilter = { ...req.query };
+          delete queryFilter.filter;
+          let filteredData = await Test.find(queryFilter)
+            .populate([
+              { path: "patient" },
+              { path: "user" },
+              {
+                path: "payment",
+                populate: {
+                  path: "user",
+                  populate: {
+                    path: "role",
+                  },
+                },
+              },
+            ])
+            .sort({ createdAt: -1 });
 
-        
+          const lastmonthlastdate = moment()
+            .subtract(1, "months")
+            .startOf("month")
+            .format("YYYY-MM-DD");
+
+          const lastmonthfirstdate = moment()
+            .subtract(1, "months")
+            .endOf("month")
+            .format("YYYY-MM-DD");
+
+          const currentmonthfirstdate = moment()
+            .startOf("month")
+            .format("YYYY-MM-DD");
+          const currentmonthlastdate = moment()
+            .endOf("month")
+            .format("YYYY-MM-DD");
+          let previousMonthsData = await Test.aggregate([
+            {
+              $match: {
+                status: "Test Completed",
+                createdAt: {
+                  $gte: new Date(lastmonthfirstdate),
+                  $lt: new Date(lastmonthlastdate),
+                },
+              },
+            },
+            {
+              $group: {
+                _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                totalSaleAmount: {
+                  $sum: "$total_cost",
+                },
+                count: { $sum: 1 },
+              },
+            },
+            {
+              $sort: { totalSaleAmount: -1 },
+            },
+          ]);
+          let currentMonthsData = await Test.aggregate([
+            {
+              $match: {
+                status: "Test Completed",
+                createdAt: {
+                  $gte: new Date(currentmonthfirstdate),
+                  $lt: new Date(currentmonthlastdate),
+                },
+              },
+            },
+            {
+              $group: {
+                _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                totalSaleAmount: {
+                  $sum: "$total_cost",
+                },
+                count: { $sum: 1 },
+              },
+            },
+            {
+              $sort: { totalSaleAmount: -1 },
+            },
+          ]);
+          let percentage = 100;
+          if (previousMonthsData.length > 0 && currentMonthsData.length > 0) {
+            percentage =
+              ((currentMonthsData[0].totalSaleAmount -
+                previousMonthsData[0].totalSaleAmount) /
+                previousMonthsData[0].totalSaleAmount) *
+              100;
+          } else if (
+            (previousMonthsData.length > 0 && currentMonthsData.length < 1) ||
+            (previousMonthsData.length < 1 && currentMonthsData.length < 1)
+          ) {
+            percentage = 0;
+          }
+          return res
+            .status(400)
+            .json({ success: true, data: filteredData, percentage });
+        }
+
         const allRecords = await Test.find()
           .populate([
             { path: "patient" },
