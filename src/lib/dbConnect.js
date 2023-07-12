@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 const DB_NAME = process.env.DB_NAME;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
-// const MONGODB_URI = `mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@cluster0.0ge1oik.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority`;
 const MONGODB_URI = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@cluster0.x1q3yzz.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
 
 if (!MONGODB_URI || !DB_NAME || !DB_PASSWORD || !DB_USER) {
