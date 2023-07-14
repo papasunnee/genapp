@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 const DB_NAME = process.env.DB_NAME;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
@@ -8,6 +8,12 @@ if (!MONGODB_URI || !DB_NAME || !DB_PASSWORD || !DB_USER) {
   throw new Error(
     "Please ensure you define the following environment variable inside .env.local DB_NAME, DB_PASSWORD, DB_USER"
   );
+}
+
+interface connectedOptions extends ConnectOptions {
+  bufferCommands: boolean;
+  useNewUrlParser: boolean;
+  useUnifiedTopology: boolean;
 }
 
 /**
@@ -27,7 +33,7 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
-    const opts = {
+    const opts: connectedOptions = {
       bufferCommands: false,
       useNewUrlParser: true,
       useUnifiedTopology: true,

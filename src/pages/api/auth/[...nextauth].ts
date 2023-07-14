@@ -1,12 +1,12 @@
 import NextAuth from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 import TestCategory from "@/models/TestCategory";
 import TestType from "@/models/TestType";
 import TestParameter from "@/models/TestParameter";
 import Access from "@/models/Access";
+import dbConnect from "@/lib/dbConnect";
 
 export const authOptions: NextAuthOptions = {
   session: {
