@@ -1,14 +1,13 @@
 import NextAuth from "next-auth";
-import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 import TestCategory from "@/models/TestCategory";
 import TestType from "@/models/TestType";
 import TestParameter from "@/models/TestParameter";
 import Access from "@/models/Access";
-import dbConnect from "@/lib/dbConnect";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -70,6 +69,4 @@ export const authOptions: NextAuthOptions = {
     signIn: "/",
   },
 };
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+export default NextAuth(authOptions);
