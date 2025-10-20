@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 export default function Admin({ children }) {
   const session = useSession();
   const { status, data } = session;
+  console.log({ status, data });
   const router = useRouter();
   useEffect(() => {
     if (status == "unauthenticated") {
