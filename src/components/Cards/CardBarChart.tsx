@@ -20,8 +20,8 @@ export default function CardBarChart() {
         datasets: [
           {
             label: new Date().getFullYear(),
-            backgroundColor: "#ed64a6",
-            borderColor: "#ed64a6",
+            backgroundColor: "#2563eb",
+            borderColor: "#2563eb",
             data: [30, 78, 56, 34, 100, 45, 13],
             fill: false,
             barThickness: 8,
@@ -29,8 +29,8 @@ export default function CardBarChart() {
           {
             label: new Date().getFullYear() - 1,
             fill: false,
-            backgroundColor: "#4c51bf",
-            borderColor: "#4c51bf",
+            backgroundColor: "#cbd5e1",
+            borderColor: "#cbd5e1",
             data: [27, 68, 86, 74, 10, 4, 87],
             barThickness: 8,
           },
@@ -104,11 +104,11 @@ export default function CardBarChart() {
   }, []);
   return (
     <>
-      <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="rounded-t mb-0 px-4 py-3 bg-transparent">
           <div className="flex flex-wrap items-center">
             <div className="relative w-full max-w-full flex-grow flex-1">
-              <h6 className="uppercase text-slate-400 mb-1 text-xs font-semibold">
+              <h6 className="uppercase text-slate-400 mb-1 text-xs font-semibold tracking-wide">
                 Performance
               </h6>
               <h2 className="text-slate-700 text-xl font-semibold">

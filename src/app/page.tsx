@@ -23,11 +23,7 @@ export default async function IndexPage() {
 
   return (
     <Auth>
-      <div className="container mx-auto px-4 h-full">
-        <div className="flex content-center items-center justify-center h-full">
-          <Login />
-        </div>
-      </div>
+      <Login />
     </Auth>
   );
 }

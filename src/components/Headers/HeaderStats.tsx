@@ -21,6 +21,8 @@ export default function HeaderStats({ muteStats }: { muteStats?: any }) {
 
   const loading = patientsLoading || usersLoading || testLoading;
 
+  const revenueUp = !!testData?.percentage && testData.percentage > 0;
+
   const stats = [
     {
       key: "patients",
@@ -28,10 +30,9 @@ export default function HeaderStats({ muteStats }: { muteStats?: any }) {
       title: patientsData?.data?.length || 0,
       arrow: "up",
       percent: "3.48",
-      percentColor: "text-emerald-500",
+      percentColor: "text-emerald-600",
       description: "Since last month",
       iconName: "fas fa-user",
-      iconColor: "bg-red-500",
     },
     {
       key: "users",
@@ -39,10 +40,9 @@ export default function HeaderStats({ muteStats }: { muteStats?: any }) {
       title: userData?.data?.length || 0,
       arrow: "down",
       percent: "3.48",
-      percentColor: "text-red-500",
+      percentColor: "text-red-600",
       description: "Since last week",
       iconName: "fas fa-users",
-      iconColor: "bg-orange-500",
     },
     {
       key: "results",
@@ -50,21 +50,19 @@ export default function HeaderStats({ muteStats }: { muteStats?: any }) {
       title: testData?.data?.length || 0,
       arrow: "down",
       percent: "1.10",
-      percentColor: "text-orange-500",
+      percentColor: "text-red-600",
       description: "Since last week",
       iconName: "far fa-chart-bar",
-      iconColor: "bg-pink-500",
     },
     {
       key: "revenue",
       subtitle: "REVENUE",
       title: testData?.percentage?.toFixed?.(2) || 0,
-      arrow: testData?.percentage && testData.percentage > 0 ? "up" : "down",
+      arrow: revenueUp ? "up" : "down",
       percent: testData?.percentage?.toFixed?.(2) || 0,
-      percentColor: "text-emerald-500",
+      percentColor: revenueUp ? "text-emerald-600" : "text-red-600",
       description: "Since last month",
       iconName: "fas fa-percent",
-      iconColor: "bg-sky-500",
     },
   ];
 
@@ -90,7 +88,6 @@ export default function HeaderStats({ muteStats }: { muteStats?: any }) {
                   statPercentColor={stat.percentColor}
                   statDescripiron={stat.description}
                   statIconName={stat.iconName}
-                  statIconColor={stat.iconColor}
                 />
               </div>
             ))
