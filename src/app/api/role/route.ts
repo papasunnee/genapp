@@ -3,6 +3,10 @@ import { getRoleModel } from "@/models/Role";
 import { withTenant } from "@/lib/apiTenant";
 
 export const GET = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   const Role = getRoleModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
 
@@ -40,6 +44,10 @@ export const GET = withTenant(async (req, tenant, session) => {
 });
 
 export const POST = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   const Role = getRoleModel(tenant.connection);
 
   try {
@@ -55,6 +63,10 @@ export const POST = withTenant(async (req, tenant, session) => {
 });
 
 export const PUT = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   const Role = getRoleModel(tenant.connection);
 
   try {
@@ -84,6 +96,10 @@ export const PUT = withTenant(async (req, tenant, session) => {
 });
 
 export const DELETE = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   const Role = getRoleModel(tenant.connection);
 
   try {

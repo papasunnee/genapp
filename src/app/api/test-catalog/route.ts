@@ -3,7 +3,11 @@ import { getTestCategoryModel } from "@/models/TestCategory";
 import { withTenant } from "@/lib/apiTenant";
 import { seedTestCatalog } from "@/lib/seedTestCatalog";
 
-export const GET = withTenant(async (req, tenant) => {
+export const GET = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   await seedTestCatalog(tenant.connection);
   const TestCategory = getTestCategoryModel(tenant.connection);
 

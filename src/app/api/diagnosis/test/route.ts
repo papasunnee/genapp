@@ -9,7 +9,11 @@ import { withTenant } from "@/lib/apiTenant";
 
 const { ObjectId } = Types;
 
-export const GET = withTenant(async (req, tenant) => {
+export const GET = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   const Test = getTestModel(tenant.connection);
   const Patient = getPatientModel(tenant.connection);
   getPaymentModel(tenant.connection);
