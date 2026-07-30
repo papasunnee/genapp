@@ -1,6 +1,5 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
+import { Connection, Document, Model, Schema, Types } from "mongoose";
 import { validateEmail } from "@/utils/validateEmail";
-import "./Test";
 
 export interface IPatient extends Document {
   firstname: string;
@@ -87,5 +86,9 @@ const PatientSchema = new Schema<IPatient>(
   { timestamps: true }
 );
 
-export default (mongoose.models.Patient as Model<IPatient>) ||
-  mongoose.model<IPatient>("Patient", PatientSchema);
+export function getPatientModel(connection: Connection): Model<IPatient> {
+  return (
+    (connection.models.Patient as Model<IPatient>) ||
+    connection.model<IPatient>("Patient", PatientSchema)
+  );
+}

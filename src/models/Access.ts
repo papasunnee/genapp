@@ -1,7 +1,5 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
+import { Connection, Document, Model, Schema, Types } from "mongoose";
 import bcrypt from "bcrypt";
-import "./User";
-import "./Role";
 
 export interface IAccess extends Document {
   password: string;
@@ -51,5 +49,9 @@ AccessSchema.methods.comparePassword = async function (
   }
 };
 
-export default (mongoose.models.Access as Model<IAccess>) ||
-  mongoose.model<IAccess>("Access", AccessSchema);
+export function getAccessModel(connection: Connection): Model<IAccess> {
+  return (
+    (connection.models.Access as Model<IAccess>) ||
+    connection.model<IAccess>("Access", AccessSchema)
+  );
+}

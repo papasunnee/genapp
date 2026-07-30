@@ -1,5 +1,4 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
-import "./TestCategory";
+import { Connection, Document, Model, Schema, Types } from "mongoose";
 
 export interface ITestType extends Document {
   name: string;
@@ -23,5 +22,9 @@ const TestTypeSchema = new Schema<ITestType>(
   { timestamps: true }
 );
 
-export default (mongoose.models.TestType as Model<ITestType>) ||
-  mongoose.model<ITestType>("TestType", TestTypeSchema);
+export function getTestTypeModel(connection: Connection): Model<ITestType> {
+  return (
+    (connection.models.TestType as Model<ITestType>) ||
+    connection.model<ITestType>("TestType", TestTypeSchema)
+  );
+}

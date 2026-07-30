@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import { Connection, Document, Model, Schema } from "mongoose";
 
 export interface IRole extends Document {
   name: string;
@@ -30,5 +30,9 @@ const RoleSchema = new Schema<IRole>(
   { timestamps: true }
 );
 
-export default (mongoose.models.Role as Model<IRole>) ||
-  mongoose.model<IRole>("Role", RoleSchema);
+export function getRoleModel(connection: Connection): Model<IRole> {
+  return (
+    (connection.models.Role as Model<IRole>) ||
+    connection.model<IRole>("Role", RoleSchema)
+  );
+}

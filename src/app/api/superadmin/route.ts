@@ -1,29 +1,42 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
-import User from "@/models/User";
-import Access from "@/models/Access";
+import { NextResponse } from "next/server";
+import { getUserModel } from "@/models/User";
+import { getAccessModel } from "@/models/Access";
+import { withTenant } from "@/lib/apiTenant";
 
-export async function POST(req: NextRequest) {
-  const conn = await dbConnect();
+export const POST = withTenant(async (req, tenant, session) => {
+  // Creates privileged accounts - only an existing superadmin (weight 100)
+  // in this organization may call it. (Previously had no auth check at
+  // all - anyone who could reach any tenant's subdomain could create a
+  // user with an arbitrary role.)
+  if (session?.user?.role?.weight !== 100) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  const User = getUserModel(tenant.connection);
+  const Access = getAccessModel(tenant.connection);
+  const conn = tenant.connection;
 
   try {
     const body = await req.json();
     let password: string;
-    const session = await conn.startSession();
-    const user = await session.withTransaction(async () => {
+    const mongooseSession = await conn.startSession();
+    let userData: any;
+    await mongooseSession.withTransaction(async () => {
       password = body.password;
       delete body.password;
-      const userData = await User.create({ ...body }, { session });
-      const access = await Access.create(
-        { password, user: userData },
-        { session }
+      userData = await User.create([{ ...body }], { session: mongooseSession });
+      await Access.create(
+        [{ password, user: userData[0]._id }],
+        { session: mongooseSession }
       );
-      return { userData, access };
     });
-    session.endSession();
+    mongooseSession.endSession();
 
     return NextResponse.json(
-      { success: true, data: (user as any).userData },
+      { success: true, data: userData[0] },
       { status: 201 }
     );
   } catch (error: any) {
@@ -32,4 +45,4 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-}
+});

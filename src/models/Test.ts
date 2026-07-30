@@ -1,7 +1,4 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
-import "./Patient";
-import "./User";
-import "./Payment";
+import { Connection, Document, Model, Schema, Types } from "mongoose";
 
 export type TestStatus = "Awaiting Payment" | "Awaiting Result" | "Test Completed";
 
@@ -74,5 +71,9 @@ const TestSchema = new Schema<ITest>(
   { timestamps: true }
 );
 
-export default (mongoose.models.Test as Model<ITest>) ||
-  mongoose.model<ITest>("Test", TestSchema);
+export function getTestModel(connection: Connection): Model<ITest> {
+  return (
+    (connection.models.Test as Model<ITest>) ||
+    connection.model<ITest>("Test", TestSchema)
+  );
+}

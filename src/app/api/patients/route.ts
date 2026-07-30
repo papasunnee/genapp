@@ -1,12 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { Types } from "mongoose";
-import dbConnect from "@/lib/dbConnect";
-import Patient from "@/models/Patient";
+import { getPatientModel } from "@/models/Patient";
+import { getTestModel } from "@/models/Test";
+import { getPaymentModel } from "@/models/Payment";
+import { withTenant } from "@/lib/apiTenant";
 
 const { ObjectId } = Types;
 
-export async function GET(req: NextRequest) {
-  await dbConnect();
+export const GET = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const Patient = getPatientModel(tenant.connection);
+  getTestModel(tenant.connection);
+  getPaymentModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
 
   try {
@@ -36,10 +44,14 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: NextRequest) {
-  await dbConnect();
+export const POST = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const Patient = getPatientModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -51,10 +63,14 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-}
+});
 
-export async function PUT(req: NextRequest) {
-  await dbConnect();
+export const PUT = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const Patient = getPatientModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -80,10 +96,14 @@ export async function PUT(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
-  await dbConnect();
+export const DELETE = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const Patient = getPatientModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -103,4 +123,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

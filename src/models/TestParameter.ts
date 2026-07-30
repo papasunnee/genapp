@@ -1,5 +1,4 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
-import "./TestType";
+import { Connection, Document, Model, Schema, Types } from "mongoose";
 
 export interface ITestParameter extends Document {
   name: string;
@@ -23,5 +22,11 @@ const TestParameterSchema = new Schema<ITestParameter>(
   { timestamps: true }
 );
 
-export default (mongoose.models.TestParameter as Model<ITestParameter>) ||
-  mongoose.model<ITestParameter>("TestParameter", TestParameterSchema);
+export function getTestParameterModel(
+  connection: Connection
+): Model<ITestParameter> {
+  return (
+    (connection.models.TestParameter as Model<ITestParameter>) ||
+    connection.model<ITestParameter>("TestParameter", TestParameterSchema)
+  );
+}

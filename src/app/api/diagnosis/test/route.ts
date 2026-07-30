@@ -1,13 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { Types } from "mongoose";
-import dbConnect from "@/lib/dbConnect";
-import Test from "@/models/Test";
-import Patient from "@/models/Patient";
+import { getTestModel } from "@/models/Test";
+import { getPatientModel } from "@/models/Patient";
+import { getPaymentModel } from "@/models/Payment";
+import { getUserModel } from "@/models/User";
+import { getRoleModel } from "@/models/Role";
+import { withTenant } from "@/lib/apiTenant";
 
 const { ObjectId } = Types;
 
-export async function GET(req: NextRequest) {
-  await dbConnect();
+export const GET = withTenant(async (req, tenant) => {
+  const Test = getTestModel(tenant.connection);
+  const Patient = getPatientModel(tenant.connection);
+  getPaymentModel(tenant.connection);
+  getUserModel(tenant.connection);
+  getRoleModel(tenant.connection);
   const testId = req.nextUrl.searchParams.get("testId");
   const id = req.nextUrl.searchParams.get("id");
   const patientId = req.nextUrl.searchParams.get("patientId");
@@ -52,4 +59,4 @@ export async function GET(req: NextRequest) {
       { status: 400 }
     );
   }
-}
+});

@@ -7,7 +7,7 @@ import NotificationDropdown from "../Dropdowns/NotificationDropdown";
 import UserDropdown from "../Dropdowns/UserDropdown";
 import { signOut, useSession } from "next-auth/react";
 
-export default function Sidebar() {
+export default function Sidebar({ orgName }: { orgName: string }) {
   const { data, status } = useSession();
   const [collapseShow, setCollapseShow] = useState("hidden");
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function Sidebar() {
           {/* Brand */}
           <Link legacyBehavior href="">
             <a className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block text-xs  md:text-sm uppercase font-bold p-4 px-0">
-              GENESIS MEDICAL DIAGNOSTICS LABORATORY
+              {orgName}
             </a>
           </Link>
           {/* User */}
@@ -53,7 +53,7 @@ export default function Sidebar() {
                 <div className="w-6/12">
                   <Link legacyBehavior href="">
                     <a className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0">
-                      GENESIS DIAGNOSTICS LABORATORY
+                      {orgName}
                     </a>
                   </Link>
                 </div>

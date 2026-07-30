@@ -14,6 +14,8 @@ export const authConfig: NextAuthConfig = {
         token._id = (user as any)._id?.toString();
         token.lastname = (user as any).lastname;
         token.role = (user as any).role;
+        token.organizationId = (user as any).organizationId;
+        token.organizationSubdomain = (user as any).organizationSubdomain;
       }
       return token;
     },

@@ -1,15 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { Types } from "mongoose";
-import dbConnect from "@/lib/dbConnect";
-import Access from "@/models/Access";
-import User from "@/models/User";
-import { auth } from "@/auth";
+import { getAccessModel } from "@/models/Access";
+import { getUserModel } from "@/models/User";
+import { getRoleModel } from "@/models/Role";
+import { withTenant } from "@/lib/apiTenant";
 
 const { ObjectId } = Types;
 
-export async function GET(req: NextRequest) {
-  const conn = await dbConnect();
-  const session = await auth();
+export const GET = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const User = getUserModel(tenant.connection);
+  const Role = getRoleModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
 
   try {
@@ -20,8 +24,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, data: singleUser });
     }
 
-    const filter =
-      session?.user?.role?.weight == 100 ? {} : { firstname: { $ne: "Sunday" } };
+    const requesterWeight = session.user?.role?.weight;
+    let filter: Record<string, any> = {};
+    if (requesterWeight !== 100) {
+      // Never expose users whose role outranks the requester's own.
+      const higherPrivilegeRoles = await Role.find({
+        weight: { $lt: requesterWeight },
+      }).select("_id");
+      filter = { role: { $nin: higherPrivilegeRoles.map((r) => r._id) } };
+    }
+
     const allRecords = await User.find(filter)
       .populate([{ path: "role" }])
       .sort({ createdAt: -1 });
@@ -32,27 +44,34 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: NextRequest) {
-  const conn = await dbConnect();
+export const POST = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const User = getUserModel(tenant.connection);
+  const Access = getAccessModel(tenant.connection);
+  const conn = tenant.connection;
 
   try {
     const body = await req.json();
-    let password: string, userData: any[] = [];
-    const session = await conn.startSession();
-    const result = await session.withTransaction(async () => {
+    let userData: any[] = [];
+    const mongooseSession = await conn.startSession();
+    await mongooseSession.withTransaction(async () => {
       userData = await User.create(
         [{ ...body, role: new ObjectId(body.role) }],
-        { session }
+        { session: mongooseSession }
       );
-      password = "password";
-      await Access.create([{ password, user: userData[0]._id }], { session });
-
-      return userData;
+      await Access.create(
+        [{ password: "password", user: userData[0]._id }],
+        { session: mongooseSession }
+      );
     });
-    session.endSession();
-    if ((result as any)?.ok) {
+    mongooseSession.endSession();
+
+    if (userData.length > 0) {
       return NextResponse.json(
         { success: true, data: userData[0] },
         { status: 201 }
@@ -65,10 +84,14 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-}
+});
 
-export async function PUT(req: NextRequest) {
-  await dbConnect();
+export const PUT = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const User = getUserModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -94,10 +117,14 @@ export async function PUT(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
-  await dbConnect();
+export const DELETE = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const User = getUserModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -117,4 +144,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

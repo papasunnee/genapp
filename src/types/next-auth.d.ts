@@ -7,6 +7,8 @@ declare module "next-auth" {
       firstname?: string;
       lastname?: string;
       role?: IRole;
+      organizationId?: string;
+      organizationSubdomain?: string;
     };
   }
 
@@ -15,6 +17,8 @@ declare module "next-auth" {
     firstname?: string;
     lastname?: string;
     role?: IRole;
+    organizationId?: string;
+    organizationSubdomain?: string;
   }
 }
 
@@ -24,5 +28,7 @@ declare module "next-auth/jwt" {
     firstname?: string;
     lastname?: string;
     role?: IRole;
+    organizationId?: string;
+    organizationSubdomain?: string;
   }
 }

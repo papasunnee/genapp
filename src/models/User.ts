@@ -1,6 +1,5 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
+import { Connection, Document, Model, Schema, Types } from "mongoose";
 import { validateEmail } from "@/utils/validateEmail";
-import "./Role";
 
 export interface IUser extends Document {
   firstname: string;
@@ -75,5 +74,9 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-export default (mongoose.models.User as Model<IUser>) ||
-  mongoose.model<IUser>("User", UserSchema);
+export function getUserModel(connection: Connection): Model<IUser> {
+  return (
+    (connection.models.User as Model<IUser>) ||
+    connection.model<IUser>("User", UserSchema)
+  );
+}

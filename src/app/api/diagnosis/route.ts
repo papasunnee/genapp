@@ -1,15 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { Types } from "mongoose";
 import moment from "moment";
-import dbConnect from "@/lib/dbConnect";
-import Test from "@/models/Test";
-import Patient from "@/models/Patient";
-import { auth } from "@/auth";
+import { getTestModel } from "@/models/Test";
+import { getPatientModel } from "@/models/Patient";
+import { getUserModel } from "@/models/User";
+import { getPaymentModel } from "@/models/Payment";
+import { getRoleModel } from "@/models/Role";
+import { withTenant } from "@/lib/apiTenant";
 
 const { ObjectId } = Types;
 
-export async function GET(req: NextRequest) {
-  const conn = await dbConnect();
+export const GET = withTenant(async (req, tenant) => {
+  const Test = getTestModel(tenant.connection);
+  getPatientModel(tenant.connection);
+  getUserModel(tenant.connection);
+  getPaymentModel(tenant.connection);
+  getRoleModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
   const filterFlag = req.nextUrl.searchParams.get("filter");
 
@@ -148,11 +154,16 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: NextRequest) {
-  const conn = await dbConnect();
-  const session = await auth();
+export const POST = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const Test = getTestModel(tenant.connection);
+  const Patient = getPatientModel(tenant.connection);
+  const conn = tenant.connection;
 
   try {
     const body = await req.json();
@@ -160,7 +171,7 @@ export async function POST(req: NextRequest) {
     const testProcess = await transactionSession.withTransaction(async () => {
       const testData = await Test.create({
         ...body,
-        user: session?.user?._id,
+        user: session.user?._id,
       });
 
       const updatePatient = await Patient.findOneAndUpdate(
@@ -179,10 +190,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-}
+});
 
-export async function PUT(req: NextRequest) {
-  await dbConnect();
+export const PUT = withTenant(async (req, tenant) => {
+  const Test = getTestModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -218,10 +229,10 @@ export async function PUT(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
-  await dbConnect();
+export const DELETE = withTenant(async (req, tenant) => {
+  const Test = getTestModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -241,4 +252,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

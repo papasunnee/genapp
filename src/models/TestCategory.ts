@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import { Connection, Document, Model, Schema } from "mongoose";
 
 export interface ITestCategory extends Document {
   name: string;
@@ -17,5 +17,11 @@ const TestCategorySchema = new Schema<ITestCategory>(
   { timestamps: true }
 );
 
-export default (mongoose.models.TestCategory as Model<ITestCategory>) ||
-  mongoose.model<ITestCategory>("TestCategory", TestCategorySchema);
+export function getTestCategoryModel(
+  connection: Connection
+): Model<ITestCategory> {
+  return (
+    (connection.models.TestCategory as Model<ITestCategory>) ||
+    connection.model<ITestCategory>("TestCategory", TestCategorySchema)
+  );
+}

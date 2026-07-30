@@ -1,11 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
-import Role from "@/models/Role";
-import { auth } from "@/auth";
+import { NextResponse } from "next/server";
+import { getRoleModel } from "@/models/Role";
+import { withTenant } from "@/lib/apiTenant";
 
-export async function GET(req: NextRequest) {
-  await dbConnect();
-  const session = await auth();
+export const GET = withTenant(async (req, tenant, session) => {
+  const Role = getRoleModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
 
   try {
@@ -39,10 +37,10 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: NextRequest) {
-  await dbConnect();
+export const POST = withTenant(async (req, tenant, session) => {
+  const Role = getRoleModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -54,10 +52,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-}
+});
 
-export async function PUT(req: NextRequest) {
-  await dbConnect();
+export const PUT = withTenant(async (req, tenant, session) => {
+  const Role = getRoleModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -83,10 +81,10 @@ export async function PUT(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
-  await dbConnect();
+export const DELETE = withTenant(async (req, tenant, session) => {
+  const Role = getRoleModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -106,4 +104,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

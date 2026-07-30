@@ -1,14 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { Types } from "mongoose";
-import dbConnect from "@/lib/dbConnect";
-import Payment from "@/models/Payment";
-import Test from "@/models/Test";
-import { auth } from "@/auth";
+import { getPaymentModel } from "@/models/Payment";
+import { getTestModel } from "@/models/Test";
+import { getUserModel } from "@/models/User";
+import { getRoleModel } from "@/models/Role";
+import { withTenant } from "@/lib/apiTenant";
 
 const { ObjectId } = Types;
 
-export async function GET(req: NextRequest) {
-  await dbConnect();
+export const GET = withTenant(async (req, tenant) => {
+  const Payment = getPaymentModel(tenant.connection);
+  getTestModel(tenant.connection);
+  getUserModel(tenant.connection);
+  getRoleModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
   const test_id = req.nextUrl.searchParams.get("test_id");
 
@@ -43,17 +47,22 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: NextRequest) {
-  await dbConnect();
-  const session = await auth();
+export const POST = withTenant(async (req, tenant, session) => {
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const Payment = getPaymentModel(tenant.connection);
+  const Test = getTestModel(tenant.connection);
+  getUserModel(tenant.connection);
 
   try {
     const body = await req.json();
     const newRecord = await Payment.create({
       ...body,
-      user: session?.user?._id,
+      user: session.user?._id,
     });
     const updatedTest = await Test.findOneAndUpdate(
       { _id: new ObjectId(newRecord.test) },
@@ -78,10 +87,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-}
+});
 
-export async function PUT(req: NextRequest) {
-  await dbConnect();
+export const PUT = withTenant(async (req, tenant) => {
+  const Payment = getPaymentModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -107,10 +116,10 @@ export async function PUT(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
-  await dbConnect();
+export const DELETE = withTenant(async (req, tenant) => {
+  const Payment = getPaymentModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -130,4 +139,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

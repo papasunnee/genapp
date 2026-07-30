@@ -1,6 +1,4 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
-import "./User";
-import "./Test";
+import { Connection, Document, Model, Schema, Types } from "mongoose";
 
 export interface IPayment extends Document {
   invoice: string;
@@ -42,5 +40,9 @@ const PaymentSchema = new Schema<IPayment>(
   { timestamps: true }
 );
 
-export default (mongoose.models.Payment as Model<IPayment>) ||
-  mongoose.model<IPayment>("Payment", PaymentSchema);
+export function getPaymentModel(connection: Connection): Model<IPayment> {
+  return (
+    (connection.models.Payment as Model<IPayment>) ||
+    connection.model<IPayment>("Payment", PaymentSchema)
+  );
+}
