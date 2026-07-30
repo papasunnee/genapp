@@ -1,10 +1,16 @@
 import { Connection, Document, Model, Schema } from "mongoose";
 
+export type OrganizationPlan = "Free" | "Pro" | "Enterprise";
+export type SubscriptionStatus = "Trial" | "Active" | "Expired" | "Cancelled";
+
 export interface IOrganization extends Document {
   name: string;
   subdomain: string;
   dbName: string;
   status: "Active" | "Suspended";
+  plan: OrganizationPlan;
+  subscriptionStatus: SubscriptionStatus;
+  subscriptionRenewsAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +42,19 @@ const OrganizationSchema = new Schema<IOrganization>(
       type: String,
       default: "Active",
       enum: ["Active", "Suspended"],
+    },
+    plan: {
+      type: String,
+      default: "Free",
+      enum: ["Free", "Pro", "Enterprise"],
+    },
+    subscriptionStatus: {
+      type: String,
+      default: "Trial",
+      enum: ["Trial", "Active", "Expired", "Cancelled"],
+    },
+    subscriptionRenewsAt: {
+      type: Date,
     },
   },
   { timestamps: true }

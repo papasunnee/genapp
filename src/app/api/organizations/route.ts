@@ -7,6 +7,7 @@ import { getTestCategoryModel } from "@/models/TestCategory";
 import { getControlConnection } from "@/lib/controlPlane";
 import { getTenantConnection } from "@/lib/tenantConnection";
 import { seedTestCatalog } from "@/lib/seedTestCatalog";
+import { isAuthorizedPlatformRequest } from "@/lib/platformAuth";
 
 const DEFAULT_ROLES = [
   { name: "Super Admin", weight: 100 },
@@ -17,16 +18,80 @@ const DEFAULT_ROLES = [
 ];
 
 /**
- * Platform-level operation - no tenant/session context exists yet for a
- * brand new organization, so this is protected by a shared secret rather
- * than a user session.
+ * Platform-level operations - no tenant/session context exists for these
+ * (an organization is the thing being managed, not a tenant a session
+ * belongs to), so they're protected by either the shared secret header
+ * (script/CLI callers) or the platform admin's browser session cookie.
  */
+export async function GET(req: NextRequest) {
+  if (!isAuthorizedPlatformRequest(req)) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const controlConn = await getControlConnection();
+    const Organization = getOrganizationModel(controlConn);
+    const organizations = await Organization.find().sort({ createdAt: -1 });
+    return NextResponse.json({ success: true, data: organizations });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  if (!isAuthorizedPlatformRequest(req)) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const { id, status, plan, subscriptionStatus, subscriptionRenewsAt } = body;
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Missing organization id" },
+        { status: 400 }
+      );
+    }
+
+    const update: Record<string, any> = {};
+    if (status !== undefined) update.status = status;
+    if (plan !== undefined) update.plan = plan;
+    if (subscriptionStatus !== undefined) update.subscriptionStatus = subscriptionStatus;
+    if (subscriptionRenewsAt !== undefined) {
+      update.subscriptionRenewsAt = subscriptionRenewsAt ? new Date(subscriptionRenewsAt) : null;
+    }
+
+    const controlConn = await getControlConnection();
+    const Organization = getOrganizationModel(controlConn);
+    const organization = await Organization.findByIdAndUpdate(id, update, { new: true });
+
+    if (!organization) {
+      return NextResponse.json(
+        { success: false, error: "Organization not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data: organization });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 400 }
+    );
+  }
+}
+
 export async function POST(req: NextRequest) {
-  const providedSecret = req.headers.get("x-platform-secret");
-  if (
-    !process.env.PLATFORM_ADMIN_SECRET ||
-    providedSecret !== process.env.PLATFORM_ADMIN_SECRET
-  ) {
+  if (!isAuthorizedPlatformRequest(req)) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 }
