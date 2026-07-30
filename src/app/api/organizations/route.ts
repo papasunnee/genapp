@@ -4,6 +4,9 @@ import { getRoleModel } from "@/models/Role";
 import { getUserModel } from "@/models/User";
 import { getAccessModel } from "@/models/Access";
 import { getTestCategoryModel } from "@/models/TestCategory";
+import { getPatientModel } from "@/models/Patient";
+import { getTestModel } from "@/models/Test";
+import { getPaymentModel } from "@/models/Payment";
 import { getControlConnection } from "@/lib/controlPlane";
 import { getTenantConnection } from "@/lib/tenantConnection";
 import { seedTestCatalog } from "@/lib/seedTestCatalog";
@@ -86,6 +89,79 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 400 }
+    );
+  }
+}
+
+/**
+ * Permanently deletes an organization: every document in its tenant
+ * database, then the control-plane record itself. There is no undo.
+ * Requires the caller to pass the organization's exact subdomain as
+ * confirmSubdomain - independent, server-side confirmation that a stray
+ * or scripted call can't wipe an organization by accident, on top of
+ * whatever confirmation the UI itself requires.
+ */
+export async function DELETE(req: NextRequest) {
+  if (!isAuthorizedPlatformRequest(req)) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const { id, confirmSubdomain } = body;
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Missing organization id" },
+        { status: 400 }
+      );
+    }
+
+    const controlConn = await getControlConnection();
+    const Organization = getOrganizationModel(controlConn);
+    const organization = await Organization.findById(id);
+
+    if (!organization) {
+      return NextResponse.json(
+        { success: false, error: "Organization not found" },
+        { status: 404 }
+      );
+    }
+
+    if (confirmSubdomain !== organization.subdomain) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Confirmation text did not match the organization's subdomain",
+        },
+        { status: 400 }
+      );
+    }
+
+    // dropDatabase isn't available to the app's DB user, so every known
+    // collection is wiped individually. Tenant data goes first, the
+    // control-plane record last, so a failure partway through never
+    // leaves a dangling subdomain still resolving to a half-wiped database.
+    const tenantConn = await getTenantConnection(organization.dbName);
+    await Promise.all([
+      getUserModel(tenantConn).deleteMany({}),
+      getAccessModel(tenantConn).deleteMany({}),
+      getRoleModel(tenantConn).deleteMany({}),
+      getPatientModel(tenantConn).deleteMany({}),
+      getTestModel(tenantConn).deleteMany({}),
+      getPaymentModel(tenantConn).deleteMany({}),
+      getTestCategoryModel(tenantConn).deleteMany({}),
+    ]);
+
+    await Organization.deleteOne({ _id: id });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
     );
   }
 }

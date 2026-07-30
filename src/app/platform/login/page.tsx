@@ -48,7 +48,7 @@ export default function PlatformLoginPage() {
 
         {error && (
           <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-4">
-            <i className="fas fa-circle-exclamation mt-0.5"></i>
+            <i className="fas fa-exclamation-circle mt-0.5"></i>
             <span>{error}</span>
           </div>
         )}

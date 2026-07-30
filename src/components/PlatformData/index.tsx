@@ -88,6 +88,35 @@ export default function PlatformData() {
     updateOrg(org._id, { status: nextStatus });
   };
 
+  const handleDelete = async (org: any) => {
+    const confirmed = await confirmDialog({
+      title: "Delete organization",
+      message: `This permanently deletes "${org.name}" and every patient, test, payment, and staff record in it. This cannot be undone.`,
+      confirmLabel: "Delete permanently",
+      cancelLabel: "Cancel",
+      danger: true,
+      confirmText: org.subdomain,
+    });
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch("/api/organizations", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: org._id, confirmSubdomain: org.subdomain }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`"${org.name}" deleted`);
+        mutate();
+      } else {
+        toast.error(json.error || "Failed to delete organization");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
@@ -205,7 +234,7 @@ export default function PlatformData() {
                       />
                     </div>
                   </td>
-                  <td className="px-6 align-middle text-sm p-3 text-right">
+                  <td className="px-6 align-middle text-sm p-3 text-right space-x-3 whitespace-nowrap">
                     <button
                       onClick={() => handleToggleStatus(org)}
                       className={`text-xs font-semibold uppercase ${
@@ -215,6 +244,12 @@ export default function PlatformData() {
                       }`}
                     >
                       {org.status === "Active" ? "Suspend" : "Activate"}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(org)}
+                      className="text-xs font-semibold uppercase text-slate-400 hover:text-red-700"
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>

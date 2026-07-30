@@ -11,7 +11,7 @@ export default async function IndexPage() {
     await resolveTenant(headersList.get("host"));
   } catch (error) {
     if (error instanceof TenantResolutionError) {
-      redirect("/unauthorized");
+      redirect(`/unauthorized?reason=${error.reason}`);
     }
     throw error;
   }

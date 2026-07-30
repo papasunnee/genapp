@@ -16,7 +16,7 @@ export default function LogoutButton() {
       onClick={handleLogout}
       className="text-sm text-slate-500 hover:text-slate-700 font-medium"
     >
-      <i className="fas fa-arrow-right-from-bracket mr-1"></i>
+      <i className="fas fa-sign-out-alt mr-1"></i>
       Logout
     </button>
   );

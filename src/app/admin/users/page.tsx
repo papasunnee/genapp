@@ -6,7 +6,7 @@ import UserData from "@/components/UserData";
 export default async function UsersPage() {
   const session = await auth();
   if ((session?.user as any)?.role?.weight === 400) {
-    redirect("/unauthorized");
+    redirect("/unauthorized?reason=forbidden");
   }
 
   return (

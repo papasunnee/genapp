@@ -47,7 +47,7 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: () => void
     >
       <i
         className={`fas mt-0.5 ${
-          item.variant === "success" ? "fa-circle-check" : "fa-circle-exclamation"
+          item.variant === "success" ? "fa-check-circle" : "fa-exclamation-circle"
         }`}
       ></i>
       <span className="break-words flex-grow">{item.message}</span>
