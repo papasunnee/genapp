@@ -6,8 +6,11 @@ import { toast } from "@/components/ui/Toast";
 import { fetcher } from "@/utils/fetcher";
 import moment from "moment";
 
+const INPUT_CLASS =
+  "bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block w-full p-2.5 transition-colors";
+const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
+
 const SingleTest = ({ id }: { id?: string }) => {
-  const [currentTab, setCurrentTab] = useState(0);
   const [testData, setTestData] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [paymentOption, setPaymentOption] = useState("cash");
@@ -47,7 +50,7 @@ const SingleTest = ({ id }: { id?: string }) => {
         });
         const data = await res.json();
         if (data.success) {
-          toast.success("Payment Successfully Recorded");
+          toast.success("Payment successfully recorded");
           mutateTest();
           mutateDiagnosis();
           const itemCopy = {
@@ -56,60 +59,54 @@ const SingleTest = ({ id }: { id?: string }) => {
           };
           setTestData(itemCopy);
         }
-      } catch (error) {}
+      } catch (error: any) {
+        toast.error(error.message);
+      }
     } else {
-      toast.error("Wrong Amount Entered");
+      toast.error("Wrong amount entered");
     }
     setLoading(false);
   };
+
   return (
-    <div className="bg-white">
-      <div className="flex flex-col p-4 border-b rounded-t">
-        <div className="text-center border-b-2 font-bold text-xl pb-2 my-2">
+    <div className="relative flex flex-col min-w-0 break-words w-full mb-6 rounded-xl border border-slate-200 shadow-sm bg-white">
+      <div className="px-6 py-5 border-b border-slate-100">
+        <h6 className="text-slate-800 text-md md:text-lg font-semibold mb-4">
           Payment Information
-        </div>
-        <div className="grid grid-cols-2 gap-2 mb-2 md:md-0 self-start">
-          <p className="text-md font-semibold text-gray-900 flex-grow">
-            Patient Name:
-          </p>
-          <p className="text-md font-bold text-gray-900 flex-grow">
+        </h6>
+        <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+          <p className="font-medium text-slate-500">Patient Name</p>
+          <p className="font-semibold text-slate-800">
             {testData?.patient?.firstname} {testData?.patient?.lastname}
           </p>
-          <p className="text-md font-semibold text-gray-900 flex-grow">
-            Test Title:
-          </p>
-          <p className="text-md font-bold text-gray-900 flex-grow">
-            {testData?.test_title}
-          </p>
-
-          <p className="text-md font-semibold">Total Cost:</p>
+          <p className="font-medium text-slate-500">Test Title</p>
+          <p className="font-semibold text-slate-800">{testData?.test_title}</p>
+          <p className="font-medium text-slate-500">Total Cost</p>
           <p
-            className={`${
+            className={`font-semibold ${
               testData?.status == "Awaiting Payment"
-                ? "text-red-700"
-                : "text-emerald-700"
-            } text-md font-bold`}
+                ? "text-red-600"
+                : "text-emerald-600"
+            }`}
           >
             NGN {testData?.total_cost}.00
           </p>
-          <p className="text-md font-semibold">Status:</p>
-          <p className="text-md font-bold">{testData?.status}</p>
+          <p className="font-medium text-slate-500">Status</p>
+          <p className="font-semibold text-slate-800">{testData?.status}</p>
         </div>
       </div>
-      <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200  px-8">
+
+      <div className="px-6 py-5">
         {testData?.status === "Awaiting Payment" ? (
-          <form className="border flex flex-col my-3 p-4 items-start space-y-4">
-            <div className="flex flex-col w-full items-start">
-              <label
-                htmlFor="paymentOption"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+          <form className="flex flex-col items-start space-y-4 max-w-sm">
+            <div className="w-full">
+              <label className={LABEL_CLASS} htmlFor="paymentOption">
                 Select payment option
               </label>
               <select
                 onChange={handlePaymentOption}
                 id="paymentOption"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                className={INPUT_CLASS}
               >
                 <option value="cash">Cash</option>
                 <option value="card">Card Payment</option>
@@ -117,43 +114,34 @@ const SingleTest = ({ id }: { id?: string }) => {
             </div>
             {paymentOption == "cash" && (
               <>
-                <div className="flex flex-col w-full items-start">
-                  <label
-                    htmlFor="paymentOption"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
+                <div className="w-full">
+                  <label className={LABEL_CLASS} htmlFor="invoice">
                     Invoice No.
                   </label>
-                  <input
-                    ref={invoiceRef}
-                    type="text"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                  />
+                  <input id="invoice" ref={invoiceRef} type="text" className={INPUT_CLASS} />
                 </div>
-                <div className="flex flex-col w-full items-start">
-                  <label
-                    htmlFor="paymentOption"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
+                <div className="w-full">
+                  <label className={LABEL_CLASS} htmlFor="amountPaid">
                     Amount Paid
                   </label>
                   <input
+                    id="amountPaid"
                     ref={amountPaidRef}
                     type="text"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    className={INPUT_CLASS}
                   />
                 </div>
                 <button
                   disabled={loading}
                   type="button"
                   onClick={handleSavePayment}
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
+                  className="inline-flex items-center justify-center rounded-lg bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2.5 transition-colors"
                 >
                   {loading && (
                     <svg
                       aria-hidden="true"
                       role="status"
-                      className="inline w-4 h-4 mr-3 text-white animate-spin"
+                      className="inline w-4 h-4 mr-2 text-white animate-spin"
                       viewBox="0 0 100 101"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -173,41 +161,36 @@ const SingleTest = ({ id }: { id?: string }) => {
               </>
             )}
             {paymentOption == "card" && (
-              <>
-                <button
-                  type="button"
-                  onClick={() =>
-                    alert("Feature not yet active, please pay cash")
-                  }
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
-                >
-                  Paystack Option
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={() =>
+                  toast.error("Card payments aren't available yet - please select cash for now")
+                }
+                className="inline-flex items-center justify-center rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
+              >
+                Paystack Option
+              </button>
             )}
           </form>
         ) : (
-          <div className="flex flex-col items-start my-4 space-y-2">
-            <div className="grid grid-cols-2 gap-5 text-left">
-              <span className="font-bold">Invoice Number : </span>
-              <span>{testData?.payment?.invoice}</span>
-              <span className="font-bold">Amount Paid : </span>
-              <span>NGN {testData?.payment?.amount_paid}:00</span>
-              <span className="font-bold">Date Paid : </span>
-              <span>
-                {moment(testData?.payment?.createdAt).format(
-                  "Do MMMM, YYYY | h:mm:ss a"
-                )}
+          <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm max-w-sm">
+            <span className="font-medium text-slate-500">Invoice Number</span>
+            <span className="text-slate-800">{testData?.payment?.invoice}</span>
+            <span className="font-medium text-slate-500">Amount Paid</span>
+            <span className="text-slate-800">
+              NGN {testData?.payment?.amount_paid}.00
+            </span>
+            <span className="font-medium text-slate-500">Date Paid</span>
+            <span className="text-slate-800">
+              {moment(testData?.payment?.createdAt).format("Do MMMM, YYYY | h:mm:ss a")}
+            </span>
+            <span className="font-medium text-slate-500">Received by</span>
+            <span className="text-slate-800">
+              {testData?.payment?.user?.firstname} {testData?.payment?.user?.lastname}
+              <span className="block text-xs text-slate-400">
+                {testData?.payment?.user?.role?.name}
               </span>
-              <span className="font-bold">Received by : </span>
-              <span>
-                {testData?.payment?.user?.firstname}{" "}
-                {testData?.payment?.user?.lastname} <br />
-                <span className="text-xs italic">
-                  {testData?.payment?.user?.role?.name}
-                </span>
-              </span>
-            </div>
+            </span>
           </div>
         )}
       </div>
