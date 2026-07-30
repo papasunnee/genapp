@@ -1,7 +1,6 @@
 import React from "react";
 
 // components
-import CardTable from "@/components/Cards/CardTable";
 import PatientsData from "@/components/PatientsData";
 
 // layout for page
