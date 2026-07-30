@@ -5,12 +5,12 @@ import useSWR from "swr";
 import moment from "moment";
 import Pagination from "react-js-pagination";
 import PropTypes from "prop-types";
-
-// components
-import TableDropdown from "../Dropdowns/TableDropdown";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
 import { useSession } from "next-auth/react";
+import { toast } from "@/components/ui/Toast";
+import { confirmDialog } from "@/components/ui/ConfirmDialog";
+import TableSkeleton from "@/components/PatientsData/TableSkeleton";
 
 type UserDataProps = {
   color?: "light" | "dark";
@@ -18,8 +18,8 @@ type UserDataProps = {
 };
 
 export default function UserData({ color, addButton }: UserDataProps) {
-  const { data, status }: any = useSession();
-  const { data: userData }: any = useSWR("/api/users", fetcher);
+  const { data }: any = useSession();
+  const { data: userData, isLoading, mutate }: any = useSWR("/api/users", fetcher);
   const { data: dateData }: any = useSWR("/api/time", fetcher);
 
   const resPerPage = 5;
@@ -38,181 +38,180 @@ export default function UserData({ color, addButton }: UserDataProps) {
     setEndIndex(currentPage * resPerPage);
   };
 
+  const canManageStaff = [100, 200].includes(data?.user?.role?.weight);
+
+  const handleDelete = async (id: string, name: string) => {
+    const confirmed = await confirmDialog({
+      title: "Remove staff member",
+      message: `Remove "${name}" from staff? This cannot be undone.`,
+      confirmLabel: "Remove",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!confirmed) return;
+    try {
+      const res = await fetch("/api/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delete_id: id }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Staff member removed");
+        mutate();
+      } else {
+        toast.error(json.error || "Failed to remove staff member");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   return (
-    <>
-      <div
-        className={
-          "relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " +
-          (color === "light" ? "bg-white" : "bg-slate-700 text-white")
-        }
-      >
-        <div className="rounded-t mb-0 px-4 py-6 border-0">
-          <div className="flex flex-wrap items-center">
-            <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h6 className="text-slate-700 text-md md:text-lg font-semibold">
-                Staff List ({userDataList?.length || 0}) <br />
-                <span className="font-thin text-xs md:text-sm">
-                  Page {userDataList ? userPage : 0} of{" "}
-                  {Math.ceil((userDataList?.length || 0) / resPerPage) || 0}
-                </span>
-              </h6>
-            </div>
-
-            {addButton &&
-              [100, 200, 500].includes(data?.user?.role?.weight) && (
-                <div>
-                  <Link
-                    href="/admin/users/newuser"
-                    className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1"
-                    title="Add New Staff"
-                  >
-                    <i className="fas fa-plus"></i>
-                    <span className="hidden sm:inline-block">
-                      Add New Staff
-                    </span>
-                  </Link>
-                </div>
-              )}
+    <div
+      className={
+        "relative flex flex-col min-w-0 break-words w-full mb-6 rounded-xl border shadow-sm " +
+        (color === "light"
+          ? "bg-white border-slate-200"
+          : "bg-slate-700 text-white border-slate-600")
+      }
+    >
+      <div className="px-6 py-5 border-b border-slate-100">
+        <div className="flex flex-wrap items-center">
+          <div className="relative w-full max-w-full flex-grow flex-1">
+            <h6 className="text-slate-800 text-md md:text-lg font-semibold">
+              Staff List ({userDataList?.length || 0})
+            </h6>
+            <span className="font-normal text-xs md:text-sm text-slate-400">
+              Page {userDataList?.length ? userPage : 0} of{" "}
+              {Math.ceil((userDataList?.length || 0) / resPerPage) || 0}
+            </span>
           </div>
-        </div>
 
-        {/* Users table */}
-        {userDataList?.length > 0 ? (
-          <>
-            <div className="block w-full overflow-x-auto">
-              <table className="items-center w-full bg-transparent border-collapse">
-                <thead>
-                  <tr>
-                    <th
-                      className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      NAME
-                    </th>
-                    <th
-                      className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      Age | Gender
-                    </th>
-                    <th
-                      className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      Email
-                    </th>
-                    <th
-                      className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      Phone
-                    </th>
-                    <th
-                      className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
+          {addButton &&
+            [100, 200, 500].includes(data?.user?.role?.weight) && (
+              <div>
+                <Link
+                  href="/admin/users/newuser"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white active:bg-emerald-700 text-xs font-semibold uppercase px-3 py-2 rounded-lg outline-none focus:outline-none transition-colors space-x-1"
+                  title="Add New Staff"
+                >
+                  <i className="fas fa-plus"></i>
+                  <span className="hidden sm:inline-block">Add New Staff</span>
+                </Link>
+              </div>
+            )}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <TableSkeleton columns={canManageStaff ? 4 : 3} />
+      ) : userDataList?.length > 0 ? (
+        <>
+          <div className="block w-full overflow-x-auto">
+            <table className="items-center w-full bg-transparent border-collapse">
+              <thead>
+                <tr>
+                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
+                    Name
+                  </th>
+                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
+                    Age | Gender
+                  </th>
+                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
+                    Email
+                  </th>
+                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
+                    Phone
+                  </th>
+                  {canManageStaff && (
+                    <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-right tracking-wide bg-slate-50 text-slate-500 border-slate-100">
                       Action
                     </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {userDataList
-                    ?.slice(startIndex, endIndex)
-                    ?.map((item: any, index: number) => {
-                      return (
-                        <tr key={index}>
-                          <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-sm whitespace-nowrap p-4 text-left flex items-center">
-                            <div className="hidden h-12 w-12 bg-white rounded-full border md:flex items-center justify-center">
-                              <i className="fas fa-user text-xl text-slate-300"></i>
-                            </div>
-                            {/* <img
-                        src="/img/bootstrap.jpg"
-                        className="h-12 w-12 bg-white rounded-full border"
-                        alt="..."
-                      ></img>{" "} */}
-                            <div className="flex flex-col">
-                              <span className="ml-0 md:ml-3 font-bold text-slate-600">
-                                {item.firstname} {item.lastname}
-                              </span>
-                              <span className="text-xs ml-0 md:ml-3 italic font-thin text-slate-400">
-                                {item.role.name}
-                              </span>
-                            </div>
-                          </th>
-                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                            {moment([
-                              dateData?.currentYear,
-                              dateData?.currentMonth,
-                              dateData?.currentDate,
-                            ]).diff(moment(item?.dob), "years")}{" "}
-                            years | {item.gender}
-                          </td>
-                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                            {item?.email}
-                          </td>
-                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                            {/* <i className="fas fa-circle text-orange-500 mr-2"></i>{" "}
-                      pending */}
-                            {item?.phone}
-                          </td>
-
-                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
-                            <TableDropdown />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-            </div>
-            <div className="block w-full overflow-x-auto">
-              <div className="flex justify-center my-5 px-2">
-                <Pagination
-                  activePage={userPage}
-                  itemsCountPerPage={resPerPage}
-                  totalItemsCount={userDataList?.length}
-                  pageRangeDisplayed={5}
-                  nextPageText={"Next"}
-                  prevPageText={"Prev"}
-                  firstPageText={"First"}
-                  lastPageText={"Last"}
-                  onChange={handlePageChange}
-                  itemClass="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-200 focus:z-20"
-                  activeLinkClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
-                  activeClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
-                />
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="block w-full overflow-x-auto">
-            <div className="my-5">
-              <p className="text-center">No Test Record Found at the moment</p>
-            </div>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {userDataList
+                  ?.slice(startIndex, endIndex)
+                  ?.map((item: any, index: number) => (
+                    <tr
+                      key={index}
+                      className="hover:bg-slate-50 border-b border-slate-100 last:border-b-0"
+                    >
+                      <th className="px-6 align-middle text-sm whitespace-nowrap p-3 text-left flex items-center">
+                        <div className="hidden h-10 w-10 bg-slate-100 rounded-full md:flex items-center justify-center flex-shrink-0">
+                          <i className="fas fa-user text-lg text-slate-400"></i>
+                        </div>
+                        <div className="flex flex-col ml-0 md:ml-3">
+                          <span className="font-semibold text-slate-700">
+                            {item.firstname} {item.lastname}
+                          </span>
+                          <span className="text-xs italic text-slate-400">
+                            {item.role.name}
+                          </span>
+                        </div>
+                      </th>
+                      <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-slate-600">
+                        {moment([
+                          dateData?.currentYear,
+                          dateData?.currentMonth,
+                          dateData?.currentDate,
+                        ]).diff(moment(item?.dob), "years")}{" "}
+                        years &middot; {item.gender}
+                      </td>
+                      <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-slate-600">
+                        {item?.email}
+                      </td>
+                      <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-slate-600">
+                        {item?.phone}
+                      </td>
+                      {canManageStaff && (
+                        <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-right">
+                          {item._id !== data?.user?._id && (
+                            <button
+                              onClick={() =>
+                                handleDelete(item._id, `${item.firstname} ${item.lastname}`)
+                              }
+                              className="text-red-600 hover:text-red-800 text-xs font-semibold uppercase"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
-    </>
+          <div className="flex justify-center my-5 px-2">
+            <Pagination
+              activePage={userPage}
+              itemsCountPerPage={resPerPage}
+              totalItemsCount={userDataList?.length}
+              pageRangeDisplayed={5}
+              nextPageText={"Next"}
+              prevPageText={"Prev"}
+              firstPageText={"First"}
+              lastPageText={"Last"}
+              onChange={handlePageChange}
+              itemClass="relative inline-flex items-center border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 focus:z-20"
+              activeLinkClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
+              activeClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
+            />
+          </div>
+        </>
+      ) : (
+        <div className="block w-full overflow-x-auto">
+          <div className="my-8">
+            <p className="text-center text-sm text-slate-500">
+              No staff records yet, click on Add New Staff
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

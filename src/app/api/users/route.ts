@@ -125,6 +125,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   }
 
   const User = getUserModel(tenant.connection);
+  const Access = getAccessModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -136,7 +137,30 @@ export const DELETE = withTenant(async (req, tenant, session) => {
       );
     }
 
+    if (delete_id === session.user?._id) {
+      return NextResponse.json(
+        { success: false, error: "You cannot delete your own account" },
+        { status: 400 }
+      );
+    }
+
+    // Same rule as the GET listing: never let a requester act on a user
+    // whose role outranks their own (lower weight = higher privilege).
+    const targetUser = await User.findOne({ _id: delete_id }).populate("role");
+    const requesterWeight = session.user?.role?.weight;
+    if (
+      !targetUser ||
+      requesterWeight === undefined ||
+      (targetUser.role as any)?.weight < requesterWeight
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Not authorized to delete this user" },
+        { status: 403 }
+      );
+    }
+
     const deleteUserResponse = await User.deleteOne({ _id: delete_id });
+    await Access.deleteOne({ user: delete_id });
     return NextResponse.json({ success: true, data: deleteUserResponse });
   } catch (error: any) {
     return NextResponse.json(

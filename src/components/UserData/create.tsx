@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
 import { toast } from "@/components/ui/Toast";
 
-// components
+const INPUT_CLASS =
+  "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors";
+const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
 
 export default function Create() {
   const [loading, setLoading] = useState(false);
@@ -70,283 +72,204 @@ export default function Create() {
         if (descriptionRef.current) descriptionRef.current.value = "";
         if (genderRef.current) genderRef.current.value = "Male";
         if (roleRef.current) roleRef.current.value = roleData?.data?.[0]?._id;
-        toast.success("New User successfully created");
+        toast.success("New staff member created successfully");
       } else {
         throw new Error(data.error);
       }
     } catch (error: any) {
-      console.log(error.message);
       if (error.message.includes("dob")) {
         toast.error("Invalid Date of Birth");
       } else {
-        toast.error("Error Creating User");
+        toast.error("Error creating staff member");
       }
     }
     setLoading(false);
   };
+
   return (
-    <>
-      <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-slate-100 border-0">
-        <div className="rounded-t bg-white mb-0 px-6 py-6">
-          <div className="text-center flex justify-between">
-            <h6 className="text-slate-700 text-md sm:text-xl font-bold">
-              New Staff
+    <div className="relative flex flex-col min-w-0 break-words w-full mb-6 rounded-xl border border-slate-200 shadow-sm bg-white">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+        <h6 className="text-slate-800 text-md md:text-lg font-semibold">
+          New Staff
+        </h6>
+        <Link
+          href="/admin/users"
+          className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold uppercase px-4 py-2 rounded-lg transition-colors"
+        >
+          Staff List
+        </Link>
+      </div>
+      <div className="flex-auto px-6 py-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <h6 className="text-slate-400 text-xs mb-4 font-semibold uppercase tracking-wide">
+              Staff Information
             </h6>
-            <Link
-              href="/admin/users"
-              className="bg-slate-700 active:bg-slate-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
-            >
-              Staff List
-            </Link>
-          </div>
-        </div>
-        <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
-          <form onSubmit={handleSubmit}>
-            <h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
-              User Information
-            </h6>
-            <div className="flex flex-wrap">
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="firstname"
-                  >
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    ref={firstnameRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-firstname">
+                  First Name
+                </label>
+                <input
+                  id="staff-firstname"
+                  type="text"
+                  required
+                  ref={firstnameRef}
+                  className={INPUT_CLASS}
+                />
               </div>
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="lastname"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    ref={lastnameRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-lastname">
+                  Last Name
+                </label>
+                <input
+                  id="staff-lastname"
+                  type="text"
+                  required
+                  ref={lastnameRef}
+                  className={INPUT_CLASS}
+                />
               </div>
-
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="dob"
-                  >
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    ref={dobRef}
-                    required
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-dob">
+                  Date of Birth
+                </label>
+                <input
+                  id="staff-dob"
+                  type="date"
+                  ref={dobRef}
+                  required
+                  className={INPUT_CLASS}
+                />
               </div>
-
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="email"
-                  >
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    ref={emailRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-email">
+                  Email address
+                </label>
+                <input id="staff-email" type="email" ref={emailRef} className={INPUT_CLASS} />
               </div>
-
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="phone"
-                  >
-                    Phone Number{" "}
-                    <small className="text-slate-400 lowercase">
-                      <i>eg. 08023454545</i>
-                    </small>
-                  </label>
-                  <input
-                    type="tel"
-                    pattern="[0-9]{11}"
-                    ref={phoneRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-phone">
+                  Phone Number{" "}
+                  <span className="text-slate-400 font-normal normal-case">
+                    (e.g. 08023454545)
+                  </span>
+                </label>
+                <input
+                  id="staff-phone"
+                  type="tel"
+                  pattern="[0-9]{11}"
+                  ref={phoneRef}
+                  className={INPUT_CLASS}
+                />
               </div>
-
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="gender"
-                  >
-                    Gender
-                  </label>
-                  <select
-                    ref={genderRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Transgender">Transgender</option>
-                    <option value="N/A">Non-binary/non-conforming</option>
-                    <option value="N/A">Prefer not to respond</option>
-                  </select>
-                </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-gender">
+                  Gender
+                </label>
+                <select id="staff-gender" ref={genderRef} className={INPUT_CLASS}>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Transgender">Transgender</option>
+                  <option value="Non-binary">Non-binary/non-conforming</option>
+                  <option value="Prefer not to say">Prefer not to respond</option>
+                </select>
               </div>
             </div>
+          </div>
 
-            <hr className="mt-6 border-b-1 border-slate-300" />
+          <hr className="border-slate-100" />
 
-            <h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
+          <div>
+            <h6 className="text-slate-400 text-xs mb-4 font-semibold uppercase tracking-wide">
               Contact Information
             </h6>
-            <div className="flex flex-wrap">
-              <div className="w-full lg:w-12/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
-                  >
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    ref={addressRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className={LABEL_CLASS} htmlFor="staff-address">
+                  Address
+                </label>
+                <input id="staff-address" type="text" ref={addressRef} className={INPUT_CLASS} />
               </div>
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="city"
-                  >
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    ref={cityRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-city">
+                  City
+                </label>
+                <input id="staff-city" type="text" ref={cityRef} className={INPUT_CLASS} />
               </div>
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="country"
-                  >
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    ref={countryRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  />
-                </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-country">
+                  Country
+                </label>
+                <input id="staff-country" type="text" ref={countryRef} className={INPUT_CLASS} />
               </div>
             </div>
+          </div>
 
-            <hr className="mt-6 border-b-1 border-slate-300" />
+          <hr className="border-slate-100" />
 
-            <h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
-              ADDTIONAL INFORMATION ABOUT USER
+          <div>
+            <h6 className="text-slate-400 text-xs mb-4 font-semibold uppercase tracking-wide">
+              Additional Information
             </h6>
-            <div className="flex flex-wrap">
-              <div className="w-full lg:w-12/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
-                  >
-                    DESCRIPTION
-                  </label>
-                  <textarea
-                    ref={descriptionRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    rows={4}
-                  ></textarea>
-                </div>
-              </div>
-            </div>
+            <label className={LABEL_CLASS} htmlFor="staff-description">
+              Description
+            </label>
+            <textarea
+              id="staff-description"
+              ref={descriptionRef}
+              className={INPUT_CLASS}
+              rows={4}
+            ></textarea>
+          </div>
 
-            <hr className="mt-6 border-b-1 border-slate-300" />
+          <hr className="border-slate-100" />
 
-            <h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
+          <div>
+            <h6 className="text-slate-400 text-xs mb-4 font-semibold uppercase tracking-wide">
               Official Setting
             </h6>
-            <div className="flex flex-wrap">
-              <div className="w-full lg:w-12/12 px-4">
-                <div className="relative w-full mb-3">
-                  <label
-                    className="block uppercase text-slate-600 text-xs font-bold mb-2"
-                    htmlFor="grid-password"
-                  >
-                    Assign Role
-                  </label>
-                  <select
-                    ref={roleRef}
-                    className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:ring w-full ease-linear transition-all duration-150"
-                  >
-                    {roleData?.data?.map((item: any, index: number) => {
-                      return (
-                        <option key={index} value={item._id}>
-                          {item.name}
-                        </option>
-                      );
-                    })}
-                  </select>
-                  <hr className="my-6 border-b-1 border-slate-300" />
-                  <div className="text-center flex justify-between">
-                    <button className="bg-slate-700 active:bg-slate-600 text-white font-bold uppercase text-xs p-4 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 flex-grow">
-                      {loading && (
-                        <svg
-                          aria-hidden="true"
-                          role="status"
-                          className="inline w-4 h-4 mr-3 text-white animate-spin"
-                          viewBox="0 0 100 101"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                            fill="#E5E7EB"
-                          />
-                          <path
-                            d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      )}
-                      CREATE USER
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
+            <label className={LABEL_CLASS} htmlFor="staff-role">
+              Assign Role
+            </label>
+            <select id="staff-role" ref={roleRef} className={INPUT_CLASS}>
+              {roleData?.data?.map((item: any, index: number) => (
+                <option key={index} value={item._id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="pt-2 border-t border-slate-100">
+            <button
+              disabled={loading}
+              className="mt-4 w-full inline-flex items-center justify-center rounded-lg bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2.5 transition-colors"
+            >
+              {loading && (
+                <svg
+                  aria-hidden="true"
+                  role="status"
+                  className="inline w-4 h-4 mr-2 text-white animate-spin"
+                  viewBox="0 0 100 101"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                    fill="#E5E7EB"
+                  />
+                  <path
+                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              )}
+              Create Staff
+            </button>
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 }

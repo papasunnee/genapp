@@ -1,6 +1,5 @@
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
 import Create from "@/components/UserData/create";
-import UserData from "@/components/UserData";
 
 export default function NewUserPage() {
   return (
@@ -14,9 +13,6 @@ export default function NewUserPage() {
       <div className="flex flex-wrap px-4 md:px-10 mx-auto w-full -m-24">
         <div className="w-full mb-12">
           <Create />
-        </div>
-        <div className="w-full mb-12 px-4">
-          <UserData />
         </div>
       </div>
     </>
