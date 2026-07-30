@@ -1,9 +1,11 @@
+"use client";
+
 import React from "react";
 import useSWR from "swr";
 import { fetcher } from "@/utils/fetcher";
 import CardStats from "../Cards/CardStats";
 
-export default function HeaderStats({ muteStats }) {
+export default function HeaderStats({ muteStats }: { muteStats?: any }) {
   const { data: patientsData, isLoading: patientsLoading } = useSWR(
     "/api/patients",
     fetcher

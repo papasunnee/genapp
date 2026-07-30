@@ -1,7 +1,13 @@
+"use client";
+
 import React from "react";
 import UserDropdown from "../Dropdowns/UserDropdown";
 
-export default function AdminNavbar({ breadCrumb }) {
+export default function AdminNavbar({
+  breadCrumb = ["Dashboard"],
+}: {
+  breadCrumb?: string[];
+}) {
   return (
     <>
       {/* Navbar */}
@@ -43,7 +49,3 @@ export default function AdminNavbar({ breadCrumb }) {
     </>
   );
 }
-
-AdminNavbar.defaultProps = {
-  breadCrumb: ["Dashboard"],
-};

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from "react";
 import Chart from "chart.js";
 
@@ -103,8 +105,10 @@ export default function CardLineChart() {
         },
       },
     };
-    var ctx = document.getElementById("line-chart").getContext("2d");
-    window.myLine = new Chart(ctx, config);
+    var ctx = (
+      document.getElementById("line-chart") as HTMLCanvasElement
+    ).getContext("2d");
+    (window as any).myLine = new Chart(ctx, config);
   }, []);
   return (
     <>

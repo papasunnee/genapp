@@ -1,13 +1,15 @@
+"use client";
+
 import React, { useState, createRef, useRef } from "react";
 import { createPopper } from "@popperjs/core";
 
 const TableDropdown = () => {
   // dropdown props
   const [dropdownPopoverShow, setDropdownPopoverShow] = useState(false);
-  const btnDropdownRef = createRef();
-  const popoverDropdownRef = createRef();
+  const btnDropdownRef = createRef<HTMLAnchorElement>();
+  const popoverDropdownRef = createRef<HTMLDivElement>();
   const openDropdownPopover = () => {
-    createPopper(btnDropdownRef.current, popoverDropdownRef.current, {
+    createPopper(btnDropdownRef.current!, popoverDropdownRef.current!, {
       placement: "left-start",
     });
     setDropdownPopoverShow(true);
