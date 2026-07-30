@@ -7,6 +7,7 @@ import {
   assignValuesToTest,
   displayTestResult,
   filterRegisteredTestOnly,
+  formatCurrency,
 } from "@/utils/functions";
 import { useSession } from "next-auth/react";
 import Pagination from "@/components/ui/Pagination";
@@ -470,7 +471,7 @@ export default function Test({ id }: { id?: string }) {
                             </span>
                           </th>
                           <td className={TABLE_TD_CLASS}>
-                            NGN {item.total_cost}.00
+                            {formatCurrency(item.total_cost)}
                           </td>
                           <td className="px-6 align-middle text-sm whitespace-nowrap p-3">
                             <i
@@ -546,7 +547,7 @@ export default function Test({ id }: { id?: string }) {
           <div className="space-y-4">
             <div className="text-xl font-semibold text-slate-800">
               Total Cost:{" "}
-              <span className="text-emerald-600">NGN {totalCost}.00</span>
+              <span className="text-emerald-600">{formatCurrency(totalCost)}</span>
             </div>
             <table className="items-center w-full bg-transparent border border-slate-200 rounded-lg overflow-hidden">
               <thead>
@@ -578,7 +579,7 @@ export default function Test({ id }: { id?: string }) {
                                 </span>
                               </th>
                               <td className="text-xs font-semibold px-3 text-slate-600">
-                                NGN {parameter.cost}.00
+                                {formatCurrency(parameter.cost)}
                               </td>
                             </tr>
                           );
@@ -598,7 +599,7 @@ export default function Test({ id }: { id?: string }) {
                               </span>
                             </th>
                             <td className="text-xs font-semibold px-3 text-slate-600">
-                              NGN {parameter.cost}.00
+                              {formatCurrency(parameter.cost)}
                             </td>
                           </tr>
                         );
@@ -617,7 +618,7 @@ export default function Test({ id }: { id?: string }) {
                               </span>
                             </th>
                             <td className="text-xs font-semibold px-3 text-slate-600">
-                              NGN {parameter.cost}.00
+                              {formatCurrency(parameter.cost)}
                             </td>
                           </tr>
                         );
@@ -838,7 +839,7 @@ export default function Test({ id }: { id?: string }) {
                 : "text-emerald-600"
             }
           >
-            NGN {testData.total_cost}.00
+            {formatCurrency(testData.total_cost)}
           </span>
         </div>
 
@@ -939,7 +940,9 @@ export default function Test({ id }: { id?: string }) {
                 <span className="font-semibold text-slate-700">Invoice Number:</span>
                 <span className="text-slate-600">{testData?.payment?.invoice}</span>
                 <span className="font-semibold text-slate-700">Amount Paid:</span>
-                <span className="text-slate-600">{testData?.payment?.amount_paid}</span>
+                <span className="text-slate-600">
+                  {formatCurrency(testData?.payment?.amount_paid)}
+                </span>
                 <span className="font-semibold text-slate-700">Date Paid:</span>
                 <span className="text-slate-600">{testData?.payment?.createdAt}</span>
                 <span className="font-semibold text-slate-700">Received by:</span>

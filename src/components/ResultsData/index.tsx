@@ -6,6 +6,7 @@ import moment from "moment";
 import Pagination from "@/components/ui/Pagination";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
+import { formatCurrency } from "@/utils/functions";
 import TableSkeleton from "@/components/PatientsData/TableSkeleton";
 import {
   TABLE_CARD_CLASS,
@@ -119,7 +120,7 @@ export default function ResultsData() {
                         {item?.payment ? (
                           <div>
                             <span className="font-semibold text-slate-700">
-                              NGN {item?.payment?.amount_paid}
+                              {formatCurrency(item?.payment?.amount_paid)}
                             </span>
                             <span className="font-normal text-xs italic text-slate-400 block">
                               Invoice No. {item?.payment?.invoice}

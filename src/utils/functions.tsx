@@ -1,6 +1,16 @@
 import moment from "moment";
 import Link from "next/link";
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+export const formatCurrency = (amount: any): string => {
+  const value = Number(amount);
+  return `NGN ${currencyFormatter.format(Number.isFinite(value) ? value : 0)}`;
+};
+
 export const getAge = (date?: string | Date) => {
   if (date) {
     return moment(Date.now()).diff(moment(date), "years") + " years";

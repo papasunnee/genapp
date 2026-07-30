@@ -6,6 +6,7 @@ import { fetcher } from "@/utils/fetcher";
 import { toast } from "@/components/ui/Toast";
 import { confirmDialog } from "@/components/ui/ConfirmDialog";
 import Modal from "@/components/ui/Modal";
+import { formatCurrency } from "@/utils/functions";
 
 type ResultType = "numeric" | "text";
 type ParamRow = {
@@ -413,7 +414,7 @@ function CategoryCard({
           ? "Text notes"
           : [p.unit?.join(", "), p.range && `range ${p.range}`].filter(Boolean).join(" · ") ||
             "Numeric"}{" "}
-        · NGN {p.cost}
+        &middot; {formatCurrency(p.cost)}
       </span>
     </div>
   );

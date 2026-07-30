@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { toast } from "@/components/ui/Toast";
 import { fetcher } from "@/utils/fetcher";
+import { formatCurrency } from "@/utils/functions";
 import moment from "moment";
 
 const INPUT_CLASS =
@@ -89,7 +90,7 @@ const SingleTest = ({ id }: { id?: string }) => {
                 : "text-emerald-600"
             }`}
           >
-            NGN {testData?.total_cost}.00
+            {formatCurrency(testData?.total_cost)}
           </p>
           <p className="font-medium text-slate-500">Status</p>
           <p className="font-semibold text-slate-800">{testData?.status}</p>
@@ -178,7 +179,7 @@ const SingleTest = ({ id }: { id?: string }) => {
             <span className="text-slate-800">{testData?.payment?.invoice}</span>
             <span className="font-medium text-slate-500">Amount Paid</span>
             <span className="text-slate-800">
-              NGN {testData?.payment?.amount_paid}.00
+              {formatCurrency(testData?.payment?.amount_paid)}
             </span>
             <span className="font-medium text-slate-500">Date Paid</span>
             <span className="text-slate-800">
