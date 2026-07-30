@@ -14,7 +14,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Genesis Diagnostics Laboratory",
+  title: "LabFlow",
 };
 
 export const viewport: Viewport = {
