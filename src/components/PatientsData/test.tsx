@@ -9,11 +9,18 @@ import {
   filterRegisteredTestOnly,
 } from "@/utils/functions";
 import { useSession } from "next-auth/react";
-import Pagination from "react-js-pagination";
+import Pagination from "@/components/ui/Pagination";
 import { toast } from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
 import Skeleton from "@/components/ui/Skeleton";
 import TableSkeleton from "./TableSkeleton";
+import {
+  TABLE_CARD_CLASS,
+  TABLE_HEADER_CLASS,
+  TABLE_TH_CLASS,
+  TABLE_TR_CLASS,
+  TABLE_TD_CLASS,
+} from "@/components/ui/table";
 
 const MODAL_INPUT_CLASS =
   "bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block w-full p-2.5 transition-colors";
@@ -74,13 +81,7 @@ const TestStatus: Record<
   },
 };
 
-export default function Test({
-  color = "light",
-  id,
-}: {
-  color?: "light" | "dark";
-  id?: string;
-}) {
+export default function Test({ id }: { id?: string }) {
   const { data: sessionData }: any = useSession();
   const resPerPage = 5;
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -412,15 +413,8 @@ export default function Test({
 
   return (
     <>
-      <div
-        className={
-          "relative flex flex-col min-w-0 break-words w-full mb-6 rounded-xl border shadow-sm " +
-          (color === "light"
-            ? "bg-white border-slate-200"
-            : "bg-slate-700 text-white border-slate-600")
-        }
-      >
-        <div className="px-6 py-5 border-b border-slate-100">
+      <div className={TABLE_CARD_CLASS}>
+        <div className={TABLE_HEADER_CLASS}>
           <div className="flex flex-wrap items-center">
             <div className="relative w-full max-w-full flex-grow flex-1">
               <h3 className="font-semibold text-md text-slate-800">
@@ -455,47 +449,10 @@ export default function Test({
               <table className="items-center w-full bg-transparent border-collapse">
                 <thead>
                   <tr>
-                    <th
-                      className={
-                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      Name
-                    </th>
-                    <th
-                      className={
-                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      Total Cost
-                    </th>
-                    <th
-                      className={
-                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      Status
-                    </th>
-
-                    <th
-                      className={
-                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
-                        (color === "light"
-                          ? "bg-slate-50 text-slate-500 border-slate-100"
-                          : "bg-slate-600 text-slate-200 border-slate-500")
-                      }
-                    >
-                      Completion
-                    </th>
+                    <th className={TABLE_TH_CLASS}>Name</th>
+                    <th className={TABLE_TH_CLASS}>Total Cost</th>
+                    <th className={TABLE_TH_CLASS}>Status</th>
+                    <th className={TABLE_TH_CLASS}>Completion</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -503,24 +460,16 @@ export default function Test({
                     ?.slice(startIndex, endIndex)
                     .map((item: any, index: number) => {
                       return (
-                        <tr
-                          key={index}
-                          className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors"
-                        >
+                        <tr key={index} className={TABLE_TR_CLASS}>
                           <th className="px-6 align-middle text-sm whitespace-nowrap p-3 text-left flex items-center">
                             <span
                               onClick={(e) => handleTestModal(item)}
-                              className={
-                                "font-semibold cursor-pointer hover:underline " +
-                                (color === "light"
-                                  ? "text-slate-700"
-                                  : "text-white")
-                              }
+                              className="font-semibold cursor-pointer hover:underline text-slate-700"
                             >
                               {item.test_title}
                             </span>
                           </th>
-                          <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-slate-600">
+                          <td className={TABLE_TD_CLASS}>
                             NGN {item.total_cost}.00
                           </td>
                           <td className="px-6 align-middle text-sm whitespace-nowrap p-3">
@@ -567,16 +516,7 @@ export default function Test({
                 activePage={testPage}
                 itemsCountPerPage={resPerPage}
                 totalItemsCount={patientData?.data?.tests?.length}
-                pageRangeDisplayed={5}
-                nextPageText={"Next"}
-                prevPageText={"Prev"}
-                firstPageText={"First"}
-                lastPageText={"Last"}
                 onChange={handlePageChange}
-                itemClass="relative inline-flex items-center border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 focus:z-20"
-                activeLinkClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
-                activeClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
-                disabledClass="cursor-not-allowed"
               />
             </div>
           </>

@@ -23,7 +23,7 @@ export default async function PatientDetailPage({
             <PatientProfile id={id} />
           </div>
           <div className="w-full xl:w-8/12 px-4">
-            <Test color="light" id={id} />
+            <Test id={id} />
           </div>
         </div>
       </div>

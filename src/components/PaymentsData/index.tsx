@@ -3,17 +3,19 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
 import moment from "moment";
-import PropTypes from "prop-types";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
-import Pagination from "react-js-pagination";
+import Pagination from "@/components/ui/Pagination";
 import TableSkeleton from "@/components/PatientsData/TableSkeleton";
+import {
+  TABLE_CARD_CLASS,
+  TABLE_HEADER_CLASS,
+  TABLE_TH_CLASS,
+  TABLE_TR_CLASS,
+  TABLE_TD_CLASS,
+} from "@/components/ui/table";
 
-type PaymentsDataProps = {
-  color?: "light" | "dark";
-};
-
-export default function PaymentsData({ color }: PaymentsDataProps) {
+export default function PaymentsData() {
   const resPerPage = 5;
   const [testDataList, setTestDataList] = useState<any>([]);
   const { data: testData, isLoading }: any = useSWR("/api/diagnosis", fetcher);
@@ -45,15 +47,8 @@ export default function PaymentsData({ color }: PaymentsDataProps) {
   };
 
   return (
-    <div
-      className={
-        "relative flex flex-col min-w-0 break-words w-full mb-6 rounded-xl border shadow-sm " +
-        (color === "light"
-          ? "bg-white border-slate-200"
-          : "bg-slate-700 text-white border-slate-600")
-      }
-    >
-      <div className="px-6 py-5 border-b border-slate-100">
+    <div className={TABLE_CARD_CLASS}>
+      <div className={TABLE_HEADER_CLASS}>
         <div className="flex flex-wrap items-center">
           <div className="relative w-full max-w-full flex-grow flex-1">
             <h6 className="text-slate-800 text-md md:text-lg font-semibold">
@@ -84,28 +79,17 @@ export default function PaymentsData({ color }: PaymentsDataProps) {
             <table className="items-center w-full bg-transparent border-collapse">
               <thead>
                 <tr>
-                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
-                    Test Name
-                  </th>
-                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
-                    Amount
-                  </th>
-                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
-                    Payment Processed By
-                  </th>
-                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide bg-slate-50 text-slate-500 border-slate-100">
-                    Payment Date
-                  </th>
+                  <th className={TABLE_TH_CLASS}>Test Name</th>
+                  <th className={TABLE_TH_CLASS}>Amount</th>
+                  <th className={TABLE_TH_CLASS}>Payment Processed By</th>
+                  <th className={TABLE_TH_CLASS}>Payment Date</th>
                 </tr>
               </thead>
               <tbody>
                 {testDataList
                   ?.slice(startIndex, endIndex)
                   ?.map((item: any, index: number) => (
-                    <tr
-                      key={index}
-                      className="hover:bg-slate-50 border-b border-slate-100 last:border-b-0"
-                    >
+                    <tr key={index} className={TABLE_TR_CLASS}>
                       <th className="px-6 align-middle text-sm whitespace-nowrap p-3 text-left">
                         <Link
                           href={`/admin/payments/${item._id}`}
@@ -120,7 +104,7 @@ export default function PaymentsData({ color }: PaymentsDataProps) {
                           {item?.status}
                         </span>
                       </th>
-                      <td className="px-6 align-middle text-sm whitespace-nowrap p-3">
+                      <td className={TABLE_TD_CLASS}>
                         {item?.payment ? (
                           <div>
                             <span className="font-semibold text-slate-700">
@@ -139,7 +123,7 @@ export default function PaymentsData({ color }: PaymentsDataProps) {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 align-middle text-sm whitespace-nowrap p-3">
+                      <td className={TABLE_TD_CLASS}>
                         {item?.payment ? (
                           <div>
                             <span className="font-semibold text-slate-700">
@@ -156,7 +140,7 @@ export default function PaymentsData({ color }: PaymentsDataProps) {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-slate-600">
+                      <td className={TABLE_TD_CLASS}>
                         {item?.payment ? (
                           <div className="flex flex-col">
                             <span>
@@ -180,16 +164,7 @@ export default function PaymentsData({ color }: PaymentsDataProps) {
               activePage={testPage}
               itemsCountPerPage={resPerPage}
               totalItemsCount={testDataList?.length}
-              pageRangeDisplayed={5}
-              nextPageText={"Next"}
-              prevPageText={"Prev"}
-              firstPageText={"First"}
-              lastPageText={"Last"}
               onChange={handlePageChange}
-              itemClass="relative inline-flex items-center border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 focus:z-20"
-              activeLinkClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
-              activeClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
-              disabledClass="cursor-not-allowed"
             />
           </div>
         </>
@@ -206,10 +181,3 @@ export default function PaymentsData({ color }: PaymentsDataProps) {
   );
 }
 
-PaymentsData.defaultProps = {
-  color: "light",
-};
-
-PaymentsData.propTypes = {
-  color: PropTypes.oneOf(["light", "dark"]),
-};
