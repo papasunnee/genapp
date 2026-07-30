@@ -40,6 +40,14 @@ module.exports = {
         "210-px": "210px",
         "580-px": "580px",
       },
+      keyframes: {
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 1.5s infinite",
+      },
     },
   },
   plugins: [],

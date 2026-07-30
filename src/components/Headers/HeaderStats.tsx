@@ -4,6 +4,7 @@ import React from "react";
 import useSWR from "swr";
 import { fetcher } from "@/utils/fetcher";
 import CardStats from "../Cards/CardStats";
+import CardStatsSkeleton from "../Cards/CardStatsSkeleton";
 
 export default function HeaderStats({ muteStats }: { muteStats?: any }) {
   const { data: patientsData, isLoading: patientsLoading } = useSWR(
@@ -71,9 +72,14 @@ export default function HeaderStats({ muteStats }: { muteStats?: any }) {
       <div className="px-4 md:px-10 mx-auto w-full">
         <div className="flex flex-wrap">
           {loading ? (
-            <div className="text-white w-full text-center py-10">
-              Loading stats...
-            </div>
+            Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="w-full sm:w-6/12 xl:w-3/12 px-4 mb-6 xl:mb-0"
+              >
+                <CardStatsSkeleton />
+              </div>
+            ))
           ) : (
             stats.map((stat) => (
               <div

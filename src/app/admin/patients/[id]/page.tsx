@@ -1,7 +1,6 @@
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
 import PatientProfile from "@/components/PatientsData/profile";
 import Test from "@/components/PatientsData/test";
-import PatientsData from "@/components/PatientsData";
 
 export default async function PatientDetailPage({
   params,
@@ -25,9 +24,6 @@ export default async function PatientDetailPage({
           </div>
           <div className="w-full xl:w-8/12 px-4">
             <Test color="light" id={id} />
-          </div>
-          <div className="w-full  px-4">
-            <PatientsData />
           </div>
         </div>
       </div>
