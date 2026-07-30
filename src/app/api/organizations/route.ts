@@ -5,6 +5,7 @@ import { getUserModel } from "@/models/User";
 import { getAccessModel } from "@/models/Access";
 import { getControlConnection } from "@/lib/controlPlane";
 import { getTenantConnection } from "@/lib/tenantConnection";
+import { seedTestCatalog } from "@/lib/seedTestCatalog";
 
 const DEFAULT_ROLES = [
   { name: "Super Admin", weight: 100 },
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
       status: "Active",
     });
     await Access.create({ password: adminPassword, user: adminUser._id });
+    await seedTestCatalog(tenantConn);
 
     const organization = await Organization.create({
       name,

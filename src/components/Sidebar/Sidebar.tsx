@@ -25,10 +25,11 @@ export default function Sidebar({ orgName }: { orgName: string }) {
             <i className="fas fa-bars"></i>
           </button>
           {/* Brand */}
-          <Link legacyBehavior href="">
-            <a className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block text-xs  md:text-sm uppercase font-bold p-4 px-0">
-              {orgName}
-            </a>
+          <Link
+            href=""
+            className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block text-xs  md:text-sm uppercase font-bold p-4 px-0"
+          >
+            {orgName}
           </Link>
           {/* User */}
           {/* <ul className="md:hidden items-center flex flex-wrap list-none"> */}
@@ -51,10 +52,11 @@ export default function Sidebar({ orgName }: { orgName: string }) {
             <div className="md:min-w-full md:hidden block pb-4 mb-4 border-b border-solid border-slate-200">
               <div className="flex flex-wrap">
                 <div className="w-6/12">
-                  <Link legacyBehavior href="">
-                    <a className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0">
-                      {orgName}
-                    </a>
+                  <Link
+                    href=""
+                    className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
+                  >
+                    {orgName}
                   </Link>
                 </div>
                 <div className="w-6/12 flex justify-end">
@@ -252,6 +254,34 @@ export default function Sidebar({ orgName }: { orgName: string }) {
                   My Profile
                 </span>
               </li>
+
+              {[100, 200].includes((data?.user as any)?.role?.weight) && (
+                <li className="items-center">
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCollapseShow("hidden");
+                      router.push("/admin/test-catalog");
+                    }}
+                    className={
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                      (pathname.indexOf("/admin/test-catalog") !== -1
+                        ? "text-sky-500 hover:text-sky-600"
+                        : "text-slate-700 hover:text-slate-500")
+                    }
+                  >
+                    <i
+                      className={
+                        "fas fa-flask mr-2 text-sm " +
+                        (pathname.indexOf("/admin/test-catalog") !== -1
+                          ? "opacity-75"
+                          : "text-slate-300")
+                      }
+                    ></i>{" "}
+                    Test Catalog
+                  </span>
+                </li>
+              )}
             </ul>
 
             {/* Divider */}
@@ -259,20 +289,18 @@ export default function Sidebar({ orgName }: { orgName: string }) {
 
             <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
               <li className="items-center">
-                <Link legacyBehavior href="#">
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      signOut({
-                        callbackUrl: "/",
-                      });
-                    }}
-                    className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
-                  >
-                    <i className="fas fa-power-off text-slate-400 mr-2 text-sm"></i>{" "}
-                    Logout
-                  </a>
+                <Link
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    signOut({
+                      callbackUrl: "/",
+                    });
+                  }}
+                  className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
+                >
+                  <i className="fas fa-power-off text-slate-400 mr-2 text-sm"></i>{" "}
+                  Logout
                 </Link>
               </li>
             </ul>

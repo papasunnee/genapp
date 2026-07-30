@@ -70,6 +70,18 @@ export const displayTestResult = (testData: any = {}, patientData: any) => {
         </h1>
         <div className="w-full">
           {testData.test_data.map((item: any, index: number) => {
+            if (item.parameter.resultType === "text") {
+              return (
+                <div className="w-full flex flex-col mt-0 border" key={index}>
+                  <div className="text-left px-2 font-semibold border-b bg-gray-50">
+                    {item.parameter.name}
+                  </div>
+                  <div className="px-2 py-1 whitespace-pre-wrap">
+                    {item.parameter.value}
+                  </div>
+                </div>
+              );
+            }
             return (
               <div className="w-full flex space-y-0 mt-0" key={index}>
                 <div className="text-left flex-grow w-1/2 border px-2">
@@ -78,8 +90,12 @@ export const displayTestResult = (testData: any = {}, patientData: any) => {
                 <div className="flex-grow w-1/2 border">
                   {item.parameter.value}
                 </div>
-                <div className="flex-grow w-1/2 border">mg/dl</div>
-                <div className="flex-grow w-1/2 border">0.1 - 1.0</div>
+                <div className="flex-grow w-1/2 border">
+                  {item.parameter.selectedunit || item.parameter.unit?.[0] || "-"}
+                </div>
+                <div className="flex-grow w-1/2 border">
+                  {item.parameter.range || "-"}
+                </div>
               </div>
             );
           })}

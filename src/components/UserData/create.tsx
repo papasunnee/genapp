@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/utils/fetcher";
-import { toast } from "react-toastify";
+import { toast } from "@/components/ui/Toast";
 
 // components
 
@@ -92,13 +92,11 @@ export default function Create() {
             <h6 className="text-slate-700 text-md sm:text-xl font-bold">
               New Staff
             </h6>
-            <Link href="/admin/users" legacyBehavior>
-              <a
-                className="bg-slate-700 active:bg-slate-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
-                type="button"
-              >
-                Staff List
-              </a>
+            <Link
+              href="/admin/users"
+              className="bg-slate-700 active:bg-slate-600 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+            >
+              Staff List
             </Link>
           </div>
         </div>

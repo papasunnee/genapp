@@ -108,6 +108,18 @@ export default function TestPrintPage({
               <td className="flex-grow w-1/2 border font-semibold">REF. RANGE</td>
             </tr>
             {testData?.resultArray?.map((item: any, index: number) => {
+              if (item.parameter.resultType === "text") {
+                return (
+                  <tr className="w-full flex flex-col mt-0" key={index}>
+                    <td className="text-left border px-2 font-semibold bg-gray-50">
+                      {item.parameter.name}
+                    </td>
+                    <td className="border px-2 py-1 whitespace-pre-wrap">
+                      {item.parameter.value}
+                    </td>
+                  </tr>
+                );
+              }
               return (
                 <tr className="w-full flex space-y-0 mt-0" key={index}>
                   <td className="text-left flex-grow w-1/2 border px-2">
@@ -116,8 +128,12 @@ export default function TestPrintPage({
                   <td className="flex-grow w-1/2 border">
                     {item.parameter.value}
                   </td>
-                  <td className="flex-grow w-1/2 border">mg/dl</td>
-                  <td className="flex-grow w-1/2 border">0.1 - 1.0</td>
+                  <td className="flex-grow w-1/2 border">
+                    {item.parameter.selectedunit || item.parameter.unit?.[0] || "-"}
+                  </td>
+                  <td className="flex-grow w-1/2 border">
+                    {item.parameter.range || "-"}
+                  </td>
                 </tr>
               );
             })}

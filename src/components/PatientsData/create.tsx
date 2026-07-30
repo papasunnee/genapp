@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
-import { toast } from "react-toastify";
+import { toast } from "@/components/ui/Toast";
 import DatePicker from "react-date-picker";
 import { fetcher } from "@/utils/fetcher";
 
@@ -90,14 +90,12 @@ export default function Create() {
             <h6 className="text-slate-700 text-md md:text-lg font-semibold">
               New Patient
             </h6>
-            <Link href="/admin/patients" legacyBehavior>
-              <a
-                className="bg-slate-700 active:bg-slate-600 text-white text-md font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 space-x-1"
-                type="button"
-              >
-                <i className="fas fa-list"></i>
-                <span className="hidden sm:inline-block">Patients List</span>
-              </a>
+            <Link
+              href="/admin/patients"
+              className="bg-slate-700 active:bg-slate-600 text-white text-md font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 space-x-1"
+            >
+              <i className="fas fa-list"></i>
+              <span className="hidden sm:inline-block">Patients List</span>
             </Link>
           </div>
         </div>

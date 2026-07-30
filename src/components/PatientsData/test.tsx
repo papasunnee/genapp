@@ -8,10 +8,9 @@ import {
   displayTestResult,
   filterRegisteredTestOnly,
 } from "@/utils/functions";
-import TestCategory from "@/data/TestCategory";
 import { useSession } from "next-auth/react";
 import Pagination from "react-js-pagination";
-import { toast } from "react-toastify";
+import { toast } from "@/components/ui/Toast";
 
 const TestStatus: Record<
   string,
@@ -58,14 +57,10 @@ export default function Test({
   const clinicalAddressRef = useRef<HTMLInputElement>(null);
   const clinicalDiagnosisRef = useRef<HTMLInputElement>(null);
   const test_result_form = useRef<HTMLFormElement>(null);
-  const [testState, setTestState] = useState<any[]>(
-    JSON.parse(JSON.stringify(TestCategory))
-  );
-  const [currentTest, setCurrentTest] = useState<any>(testState[0]);
+  const [testState, setTestState] = useState<any[]>([]);
+  const [currentTest, setCurrentTest] = useState<any>(undefined);
   const [totalCost, setTotalCost] = useState(0);
-  const [currentTestType, setCurrentTestType] = useState<any>(
-    testState[0]?.type[0]
-  );
+  const [currentTestType, setCurrentTestType] = useState<any>(undefined);
   const [showModal, setShowModal] = useState(false);
   const [showTestModal, setShowTestModal] = useState(false);
   const [testData, setTestData] = useState<any>({});
@@ -90,8 +85,20 @@ export default function Test({
     fetcher
   );
   const { mutate } = useSWR(`/api/patients`, fetcher);
+  const { data: catalogData }: any = useSWR("/api/test-catalog", fetcher);
+  const testCategory = catalogData?.data ?? [];
 
   useEffect(() => {}, [testPage]);
+
+  useEffect(() => {
+    if (testCategory.length > 0 && testState.length === 0) {
+      const initial = JSON.parse(JSON.stringify(testCategory));
+      setTestState(initial);
+      setCurrentTest(initial[0]);
+      setCurrentTestType(initial[0]?.type?.[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogData]);
 
   const handleChange = (e: any) => {
     setCurrentTest(testState[e.target.value]);
@@ -143,7 +150,7 @@ export default function Test({
     setProceedState(false);
     setTestStatsDisplay(false);
     setTestAddonDisplay(false);
-    setTestState(JSON.parse(JSON.stringify(TestCategory)));
+    setTestState(JSON.parse(JSON.stringify(testCategory)));
     setCurrentTest(testState[0]);
     setCurrentTestType(testState[0]?.type[0]);
     if (selectRef?.current?.value) selectRef.current.value = "0";
@@ -157,7 +164,7 @@ export default function Test({
   };
   const handleShowModal = (e: any) => {
     e.preventDefault();
-    setTestState(JSON.parse(JSON.stringify(TestCategory)));
+    setTestState(JSON.parse(JSON.stringify(testCategory)));
     setCurrentTest(testState[0]);
     setCurrentTestType(testState[0]?.type[0]);
     setProceedState(false);
@@ -1250,6 +1257,27 @@ export default function Test({
                     <tbody>
                       {testData?.test_data?.map((test: any, i: number) => {
                         let { parameter = {} } = test;
+                        if (parameter.resultType === "text") {
+                          return (
+                            <tr className="text-left mb-6 w-full" key={i}>
+                              <td className="w-full" colSpan={2}>
+                                <label
+                                  htmlFor="unit"
+                                  className="block mb-2 text-sm font-medium text-gray-900"
+                                >
+                                  Enter analysis/findings for {parameter.name}
+                                </label>
+                                <textarea
+                                  required
+                                  name={parameter.id}
+                                  value={resultForm[parameter.name] || ""}
+                                  onChange={handleResultFormChange}
+                                  className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 h-32"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        }
                         return (
                           <tr className="text-left mb-6 w-full" key={i}>
                             <td className="w-1/2">
@@ -1261,13 +1289,21 @@ export default function Test({
                               </label>
                               <select
                                 name={`select${parameter.id}`}
-                                className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                className="mb-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                               >
-                                <option>mmHg</option>
-                                {parameter.unit.map((val: any, index: number) => (
-                                  <option key={index}>{val}</option>
-                                ))}
+                                {parameter.unit?.length > 0 ? (
+                                  parameter.unit.map((val: any, index: number) => (
+                                    <option key={index}>{val}</option>
+                                  ))
+                                ) : (
+                                  <option value="">No unit configured</option>
+                                )}
                               </select>
+                              {parameter.range && (
+                                <p className="text-xs text-gray-500 mb-3">
+                                  Reference range: {parameter.range}
+                                </p>
+                              )}
                             </td>
                             <td className="w-1/2">
                               <label
@@ -1276,18 +1312,14 @@ export default function Test({
                               >
                                 Enter Value for {parameter.name}
                               </label>
-                              {test.discrete ? (
-                                <input
-                                  type="number"
-                                  required
-                                  name={parameter.id}
-                                  value={resultForm[parameter.name]}
-                                  onChange={handleResultFormChange}
-                                  className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                />
-                              ) : (
-                                <textarea className="h-full w-full"></textarea>
-                              )}
+                              <input
+                                type="number"
+                                required
+                                name={parameter.id}
+                                value={resultForm[parameter.name] || ""}
+                                onChange={handleResultFormChange}
+                                className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                              />
                             </td>
                           </tr>
                         );

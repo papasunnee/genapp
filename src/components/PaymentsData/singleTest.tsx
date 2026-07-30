@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
-import { toast } from "react-toastify";
+import { toast } from "@/components/ui/Toast";
 import { fetcher } from "@/utils/fetcher";
 import moment from "moment";
 
