@@ -1,24 +1,25 @@
+"use client";
+
 import React, { useState, useRef } from "react";
 import { signIn } from "next-auth/react";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const passwordRef = useRef();
-  const emailRef = useRef();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await signIn("credentials", {
-        email: emailRef.current.value,
-        password: passwordRef.current.value,
+      const res: any = await signIn("credentials", {
+        email: emailRef.current?.value,
+        password: passwordRef.current?.value,
         redirect: false,
       });
       //handle failure message
-      console.log({ res });
       if (res.error && !res.ok) {
         if (res.error.includes("getaddrinfo")) {
           throw new Error("Please check your network connection");
@@ -27,11 +28,14 @@ const Login = () => {
         } else throw new Error(res.error);
       }
       //redirect on success
-      passwordRef.current.value = "";
-      emailRef.current.value = "";
-    } catch (error) {
+      if (passwordRef.current) passwordRef.current.value = "";
+      if (emailRef.current) emailRef.current.value = "";
+      window.location.href = "/admin";
+    } catch (error: any) {
       setErrorMessage(error.message);
-      passwordRef.current.value = "**************************";
+      if (passwordRef.current) {
+        passwordRef.current.value = "**************************";
+      }
     }
     setLoading(false);
   };

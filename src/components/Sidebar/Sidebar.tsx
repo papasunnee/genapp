@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter, usePathname } from "next/navigation";
 import NotificationDropdown from "../Dropdowns/NotificationDropdown";
 import UserDropdown from "../Dropdowns/UserDropdown";
 import { signOut, useSession } from "next-auth/react";
@@ -9,6 +11,7 @@ export default function Sidebar() {
   const { data, status } = useSession();
   const [collapseShow, setCollapseShow] = useState("hidden");
   const router = useRouter();
+  const pathname = usePathname() ?? "";
   return (
     <>
       <nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
@@ -94,7 +97,7 @@ export default function Sidebar() {
                   }}
                   className={
                     "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname == "/admin"
+                    (pathname == "/admin"
                       ? "text-sky-500 hover:text-sky-600"
                       : "text-slate-700 hover:text-slate-500")
                   }
@@ -102,9 +105,7 @@ export default function Sidebar() {
                   <i
                     className={
                       "fas fa-tv mr-2 text-sm " +
-                      (router.pathname == "/admin"
-                        ? "opacity-75"
-                        : "text-slate-300")
+                      (pathname == "/admin" ? "opacity-75" : "text-slate-300")
                     }
                   ></i>{" "}
                   Dashboard
@@ -119,7 +120,7 @@ export default function Sidebar() {
                   }}
                   className={
                     "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname.indexOf("/admin/patients") !== -1
+                    (pathname.indexOf("/admin/patients") !== -1
                       ? "text-sky-500 hover:text-sky-600"
                       : "text-slate-700 hover:text-slate-500")
                   }
@@ -127,7 +128,7 @@ export default function Sidebar() {
                   <i
                     className={
                       "fas fa-user mr-2 text-sm " +
-                      (router.pathname.indexOf("/admin/patients") !== -1
+                      (pathname.indexOf("/admin/patients") !== -1
                         ? "opacity-75"
                         : "text-slate-300")
                     }
@@ -136,7 +137,9 @@ export default function Sidebar() {
                 </span>
               </li>
 
-              {[100, 200, 500].includes(data?.user?.role?.weight) && (
+              {[100, 200, 500].includes(
+                (data?.user as any)?.role?.weight
+              ) && (
                 <li className="items-center">
                   <span
                     onClick={(e) => {
@@ -146,7 +149,7 @@ export default function Sidebar() {
                     }}
                     className={
                       "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                      (router.pathname.indexOf("/admin/users") !== -1
+                      (pathname.indexOf("/admin/users") !== -1
                         ? "text-sky-500 hover:text-sky-600"
                         : "text-slate-700 hover:text-slate-500")
                     }
@@ -154,7 +157,7 @@ export default function Sidebar() {
                     <i
                       className={
                         "fas fa-users mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/users") !== -1
+                        (pathname.indexOf("/admin/users") !== -1
                           ? "opacity-75"
                           : "text-slate-300")
                       }
@@ -164,7 +167,9 @@ export default function Sidebar() {
                 </li>
               )}
 
-              {[100, 200, 300].includes(data?.user?.role?.weight) && (
+              {[100, 200, 300].includes(
+                (data?.user as any)?.role?.weight
+              ) && (
                 <li className="items-center">
                   <span
                     onClick={(e) => {
@@ -174,7 +179,7 @@ export default function Sidebar() {
                     }}
                     className={
                       "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                      (router.pathname.indexOf("/admin/results") !== -1
+                      (pathname.indexOf("/admin/results") !== -1
                         ? "text-sky-500 hover:text-sky-600"
                         : "text-slate-700 hover:text-slate-500")
                     }
@@ -182,7 +187,7 @@ export default function Sidebar() {
                     <i
                       className={
                         "fas fa-list mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/results") !== -1
+                        (pathname.indexOf("/admin/results") !== -1
                           ? "opacity-75"
                           : "text-slate-300")
                       }
@@ -192,7 +197,9 @@ export default function Sidebar() {
                 </li>
               )}
 
-              {[100, 200, 400].includes(data?.user?.role?.weight) && (
+              {[100, 200, 400].includes(
+                (data?.user as any)?.role?.weight
+              ) && (
                 <li className="items-center">
                   <span
                     onClick={(e) => {
@@ -202,7 +209,7 @@ export default function Sidebar() {
                     }}
                     className={
                       "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                      (router.pathname.indexOf("/admin/payments") !== -1
+                      (pathname.indexOf("/admin/payments") !== -1
                         ? "text-sky-500 hover:text-sky-600"
                         : "text-slate-700 hover:text-slate-500")
                     }
@@ -210,7 +217,7 @@ export default function Sidebar() {
                     <i
                       className={
                         "fas fa-fingerprint mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/payments") !== -1
+                        (pathname.indexOf("/admin/payments") !== -1
                           ? "opacity-75"
                           : "text-slate-300")
                       }
@@ -229,7 +236,7 @@ export default function Sidebar() {
                   }}
                   className={
                     "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (router.pathname.indexOf("/admin/profile") !== -1
+                    (pathname.indexOf("/admin/profile") !== -1
                       ? "text-sky-500 hover:text-sky-600"
                       : "text-slate-700 hover:text-slate-500")
                   }
@@ -237,7 +244,7 @@ export default function Sidebar() {
                   <i
                     className={
                       "fas fa-user mr-2 text-sm " +
-                      (router.pathname.indexOf("/admin/profile") !== -1
+                      (pathname.indexOf("/admin/profile") !== -1
                         ? "opacity-75"
                         : "text-slate-300")
                     }
@@ -245,65 +252,10 @@ export default function Sidebar() {
                   My Profile
                 </span>
               </li>
-
-              {/* 
-              
-              <li className="items-center">
-                <Link legacyBehavior href="/admin/tables">
-                  <a
-                    href="#"
-                    className={
-                      "text-xs uppercase py-3 font-bold block " +
-                      (router.pathname.indexOf("/admin/tables") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
-                    }
-                  >
-                    <i
-                      className={
-                        "fas fa-table mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/tables") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Tables
-                  </a>
-                </Link>
-              </li>
-
-              <li className="items-center">
-                <Link legacyBehavior href="/admin/maps">
-                  <a
-                    href="#"
-                    className={
-                      "text-xs uppercase py-3 font-bold block " +
-                      (router.pathname.indexOf("/admin/maps") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
-                    }
-                  >
-                    <i
-                      className={
-                        "fas fa-map-marked mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/maps") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Maps
-                  </a>
-                </Link>
-              </li> */}
             </ul>
 
             {/* Divider */}
             <hr className="my-4 md:min-w-full" />
-            {/* Heading */}
-            {/* <h6 className="md:min-w-full text-slate-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">
-              Auth Layout Pages
-            </h6> */}
-            {/* Navigation */}
 
             <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
               <li className="items-center">
@@ -333,37 +285,21 @@ export default function Sidebar() {
             </h6>
             {/* Navigation */}
 
-            <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
-              <li className="items-center">
-                <div className="flex flex-col">
-                  <span
-                    href="#"
-                    className="text-slate-500 text-sm py-1 font-bold block"
-                  >
-                    {data.user.role.name}
-                  </span>
-                  <span
-                    href="#"
-                    className="text-slate-400 text-xs py-1 font-semibold block"
-                  >
-                    {data.user.firstname.toString().toUpperCase()}{" "}
-                    {data.user.lastname.toString().toUpperCase()}
-                  </span>
-                </div>
-              </li>
-
-              {/* <li className="items-center">
-                <Link legacyBehavior href="/profile">
-                  <a
-                    href="#"
-                    className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
-                  >
-                    <i className="fas fa-user-circle text-slate-400 mr-2 text-sm"></i>{" "}
-                    Profile Page
-                  </a>
-                </Link>
-              </li> */}
-            </ul>
+            {data?.user && (
+              <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
+                <li className="items-center">
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-sm py-1 font-bold block">
+                      {(data.user as any).role?.name}
+                    </span>
+                    <span className="text-slate-400 text-xs py-1 font-semibold block">
+                      {(data.user as any).firstname?.toString().toUpperCase()}{" "}
+                      {(data.user as any).lastname?.toString().toUpperCase()}
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            )}
           </div>
         </div>
       </nav>
