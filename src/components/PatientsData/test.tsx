@@ -11,6 +11,39 @@ import {
 import { useSession } from "next-auth/react";
 import Pagination from "react-js-pagination";
 import { toast } from "@/components/ui/Toast";
+import Modal from "@/components/ui/Modal";
+import Skeleton from "@/components/ui/Skeleton";
+import TableSkeleton from "./TableSkeleton";
+
+const MODAL_INPUT_CLASS =
+  "bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block w-full p-2.5 transition-colors";
+const MODAL_PRIMARY_BUTTON =
+  "text-white bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-4 focus:outline-none focus:ring-brand-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors";
+const MODAL_SECONDARY_BUTTON =
+  "text-slate-600 bg-white hover:bg-slate-50 focus:ring-4 focus:outline-none focus:ring-slate-200 rounded-lg border border-slate-300 text-sm font-medium px-5 py-2.5 transition-colors";
+const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
+
+function Spinner() {
+  return (
+    <svg
+      aria-hidden="true"
+      role="status"
+      className="inline w-4 h-4 mr-2 text-white animate-spin"
+      viewBox="0 0 100 101"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+        fill="#E5E7EB"
+      />
+      <path
+        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 const TestStatus: Record<
   string,
@@ -77,13 +110,12 @@ export default function Test({
 
   const invoiceRef = useRef<HTMLInputElement>(null);
   const amountPaidRef = useRef<HTMLInputElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const testModalRef = useRef<HTMLDivElement>(null);
 
-  const { data: patientData, mutate: mutatePatient }: any = useSWR(
-    `/api/patients?id=${id}`,
-    fetcher
-  );
+  const {
+    data: patientData,
+    mutate: mutatePatient,
+    isLoading: patientLoading,
+  }: any = useSWR(`/api/patients?id=${id}`, fetcher);
   const { mutate } = useSWR(`/api/patients`, fetcher);
   const { data: catalogData }: any = useSWR("/api/test-catalog", fetcher);
   const testCategory = catalogData?.data ?? [];
@@ -145,8 +177,8 @@ export default function Test({
     testCopy.splice(selectedTestIndex, 1, selectedTestData);
     setTestState(testCopy);
   };
-  const handleCancelModal = (e: any) => {
-    e.preventDefault();
+  const handleCancelModal = (e?: any) => {
+    e?.preventDefault();
     setProceedState(false);
     setTestStatsDisplay(false);
     setTestAddonDisplay(false);
@@ -157,8 +189,8 @@ export default function Test({
     if (select2Ref?.current?.value) select2Ref.current.value = "0";
     setShowModal(false);
   };
-  const handleCancelTestModal = (e: any) => {
-    e.preventDefault();
+  const handleCancelTestModal = (e?: any) => {
+    e?.preventDefault();
     setTestData({});
     setShowTestModal(false);
   };
@@ -382,18 +414,20 @@ export default function Test({
     <>
       <div
         className={
-          "relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " +
-          (color === "light" ? "bg-white" : "bg-slate-700 text-white")
+          "relative flex flex-col min-w-0 break-words w-full mb-6 rounded-xl border shadow-sm " +
+          (color === "light"
+            ? "bg-white border-slate-200"
+            : "bg-slate-700 text-white border-slate-600")
         }
       >
-        <div className="rounded-t mb-0 px-4 py-6 border-0">
+        <div className="px-6 py-5 border-b border-slate-100">
           <div className="flex flex-wrap items-center">
-            <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h3 className="font-medium text-md text-slate-700">
-                {patientData ? (
-                  `Test(s) Taken By ${patientData?.data?.firstname} (${patientData?.data?.tests?.length})`
+            <div className="relative w-full max-w-full flex-grow flex-1">
+              <h3 className="font-semibold text-md text-slate-800">
+                {patientLoading ? (
+                  <Skeleton className="h-3 w-48" />
                 ) : (
-                  <span className="inline-block shadow animate-pulse h-3 bg-gray-300 rounded-full  w-32"></span>
+                  `Test(s) Taken By ${patientData?.data?.firstname} (${patientData?.data?.tests?.length || 0})`
                 )}
               </h3>
             </div>
@@ -403,7 +437,7 @@ export default function Test({
                   type="button"
                   title="Add New Test"
                   onClick={handleShowModal}
-                  className="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 space-x-1"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white active:bg-emerald-700 text-xs font-semibold uppercase px-3 py-2 rounded-lg outline-none focus:outline-none transition-colors space-x-1"
                 >
                   <i className="fas fa-plus"></i>
                   <span className="hidden sm:inline-block"> Add New Test</span>
@@ -413,8 +447,9 @@ export default function Test({
           </div>
         </div>
 
-        {/* Projects table */}
-        {patientData?.data?.tests?.length > 0 ? (
+        {patientLoading ? (
+          <TableSkeleton columns={4} />
+        ) : patientData?.data?.tests?.length > 0 ? (
           <>
             <div className="block w-full overflow-x-auto">
               <table className="items-center w-full bg-transparent border-collapse">
@@ -422,7 +457,7 @@ export default function Test({
                   <tr>
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
                         (color === "light"
                           ? "bg-slate-50 text-slate-500 border-slate-100"
                           : "bg-slate-600 text-slate-200 border-slate-500")
@@ -432,7 +467,7 @@ export default function Test({
                     </th>
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
                         (color === "light"
                           ? "bg-slate-50 text-slate-500 border-slate-100"
                           : "bg-slate-600 text-slate-200 border-slate-500")
@@ -442,7 +477,7 @@ export default function Test({
                     </th>
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
                         (color === "light"
                           ? "bg-slate-50 text-slate-500 border-slate-100"
                           : "bg-slate-600 text-slate-200 border-slate-500")
@@ -453,7 +488,7 @@ export default function Test({
 
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        "px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-left tracking-wide " +
                         (color === "light"
                           ? "bg-slate-50 text-slate-500 border-slate-100"
                           : "bg-slate-600 text-slate-200 border-slate-500")
@@ -470,40 +505,40 @@ export default function Test({
                       return (
                         <tr
                           key={index}
-                          className="transition duration-300 ease-in-out hover:bg-gray-200"
+                          className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors"
                         >
-                          <th className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center">
+                          <th className="px-6 align-middle text-sm whitespace-nowrap p-3 text-left flex items-center">
                             <span
                               onClick={(e) => handleTestModal(item)}
                               className={
-                                "font-bold cursor-pointer underline " +
-                                +(color === "light"
-                                  ? "text-slate-600"
+                                "font-semibold cursor-pointer hover:underline " +
+                                (color === "light"
+                                  ? "text-slate-700"
                                   : "text-white")
                               }
                             >
                               {item.test_title}
                             </span>
                           </th>
-                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                          <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-slate-600">
                             NGN {item.total_cost}.00
                           </td>
-                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                          <td className="px-6 align-middle text-sm whitespace-nowrap p-3">
                             <i
                               className={`fas fa-circle ${
                                 TestStatus[item.status].textcolor
-                              } mr-2`}
-                            ></i>{" "}
-                            {item.status}
+                              } mr-2 text-xs`}
+                            ></i>
+                            <span className="text-slate-600">{item.status}</span>
                           </td>
-                          <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                          <td className="px-6 align-middle text-sm whitespace-nowrap p-3">
                             <div className="flex items-center">
-                              <span className="mr-2">
+                              <span className="mr-2 text-slate-500 text-xs">
                                 {TestStatus[item.status].value + "%"}
                               </span>
                               <div className="relative w-full">
                                 <div
-                                  className={`overflow-hidden h-2 text-xs flex rounded ${
+                                  className={`overflow-hidden h-2 text-xs flex rounded-full ${
                                     TestStatus[item.status].lightcolor
                                   }`}
                                 >
@@ -527,862 +562,554 @@ export default function Test({
                 </tbody>
               </table>
             </div>
-            <div className="block w-full overflow-x-auto">
-              <div className="flex justify-center my-5 px-2">
-                <Pagination
-                  activePage={testPage}
-                  itemsCountPerPage={resPerPage}
-                  totalItemsCount={patientData?.data?.tests?.length}
-                  pageRangeDisplayed={5}
-                  nextPageText={"Next"}
-                  prevPageText={"Prev"}
-                  firstPageText={"First"}
-                  lastPageText={"Last"}
-                  onChange={handlePageChange}
-                  itemClass="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-200 focus:z-20"
-                  activeLinkClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
-                  activeClass="z-10 inline-flex items-center border border-indigo-500 bg-indigo-200 text-sm font-medium text-indigo-600 focus:z-20"
-                  disabledClass="cursor-not-allowed"
-                />
-              </div>
+            <div className="flex justify-center my-5 px-2">
+              <Pagination
+                activePage={testPage}
+                itemsCountPerPage={resPerPage}
+                totalItemsCount={patientData?.data?.tests?.length}
+                pageRangeDisplayed={5}
+                nextPageText={"Next"}
+                prevPageText={"Prev"}
+                firstPageText={"First"}
+                lastPageText={"Last"}
+                onChange={handlePageChange}
+                itemClass="relative inline-flex items-center border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 focus:z-20"
+                activeLinkClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
+                activeClass="z-10 inline-flex items-center border border-brand-500 bg-brand-50 text-sm font-medium text-brand-700 focus:z-20"
+                disabledClass="cursor-not-allowed"
+              />
             </div>
           </>
         ) : (
           <div className="block w-full overflow-x-auto">
-            <div className="my-5">
-              <p className="text-center">
+            <div className="my-8">
+              <p className="text-center text-sm text-slate-500">
                 You have not added a test, please click on add new test to begin
               </p>
             </div>
           </div>
         )}
       </div>
-      <div
-        ref={modalRef}
-        id="staticModal"
-        tabIndex={-1}
-        className={`${
-          showModal ? "block" : "hidden"
-        } bg-gray-900/80 flex items-center justify-center fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%)] max-h-full`}
+      <Modal
+        open={showModal}
+        onClose={handleCancelModal}
+        size="lg"
+        title={
+          proceedState
+            ? "Selected Test Summary"
+            : testAddonDisplay
+            ? "Additional Test Information"
+            : "Select Test(s)"
+        }
       >
         {proceedState && (
-          <div className="relative w-full max-w-2xl max-h-full">
-            {/* Modal content */}
-            <div className="relative bg-white rounded-lg shadow">
-              {/* Modal header */}
-              <div className="flex items-start justify-between p-4 border-b rounded-t">
-                <div className="flex flex-grow flex-col items-center">
-                  <h3 className="text-lg font-semibold text-gray-900 flex-grow">
-                    Selected Test Summary
-                  </h3>
-                  <div className="text-2xl font-bold">
-                    Total Cost :{" "}
-                    <span className="text-emerald-700">NGN {totalCost}.00</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCancelModal}
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-                  data-modal-hide="staticModal"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                </button>
-              </div>
-              {/* Modal body */}
-              <div className="p-6 space-y-6">
-                <table className="items-center w-full bg-transparent border">
-                  <thead>
-                    <tr>
-                      <th
-                        className={
-                          "px-3 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                          (color === "light"
-                            ? "bg-slate-50 text-slate-500 border-slate-100"
-                            : "bg-slate-600 text-slate-200 border-slate-500")
-                        }
-                      >
-                        Name
-                      </th>
-                      <th
-                        className={
-                          "px-3 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                          (color === "light"
-                            ? "bg-slate-50 text-slate-500 border-slate-100"
-                            : "bg-slate-600 text-slate-200 border-slate-500")
-                        }
-                      >
-                        Cost
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {testState.map((item: any, index: number) => {
-                      let display: any = "";
-                      if (item.nest == 2) {
-                        display = item.type.map((type: any) => {
-                          return type.parameters.map((parameter: any, pIndex: number) => {
-                            if (parameter.checked) {
-                              return (
-                                <tr
-                                  key={pIndex}
-                                  className="hover:bg-slate-100/40"
-                                >
-                                  <th className="border align-middle py-1 text-xs whitespace-nowrap text-left">
-                                    <span
-                                      className={
-                                        "ml-3 font-bold " +
-                                        +(color === "light"
-                                          ? "text-slate-600"
-                                          : "text-white")
-                                      }
-                                    >
-                                      {parameter.name} -
-                                      <span className="font-light">
-                                        {" "}
-                                        ({item.name} - {type.name} )
-                                      </span>
-                                    </span>
-                                  </th>
-                                  <td className="border text-xs font-semibold pl-3">
-                                    NGN {parameter.cost}.00
-                                  </td>
-                                </tr>
-                              );
-                            }
-                          });
-                        });
-                      }
-                      if (item.nest == 1) {
-                        display = item.parameters.map((parameter: any, pIndex2: number) => {
-                          if (parameter.checked) {
-                            return (
-                              <tr
-                                key={pIndex2}
-                                className="hover:bg-slate-100/40"
-                              >
-                                <th className="border py-1 align-middle text-xs whitespace-nowrap text-left">
-                                  <span
-                                    className={
-                                      "ml-3 font-bold " +
-                                      +(color === "light"
-                                        ? "text-slate-600"
-                                        : "text-white")
-                                    }
-                                  >
-                                    {parameter.name}{" "}
-                                    <span className="font-light">
-                                      {" "}
-                                      ({item.name})
-                                    </span>
+          <div className="space-y-4">
+            <div className="text-xl font-semibold text-slate-800">
+              Total Cost:{" "}
+              <span className="text-emerald-600">NGN {totalCost}.00</span>
+            </div>
+            <table className="items-center w-full bg-transparent border border-slate-200 rounded-lg overflow-hidden">
+              <thead>
+                <tr>
+                  <th className="px-3 align-middle border-b border-slate-100 py-2 text-xs uppercase whitespace-nowrap font-semibold text-left bg-slate-50 text-slate-500 tracking-wide">
+                    Name
+                  </th>
+                  <th className="px-3 align-middle border-b border-slate-100 py-2 text-xs uppercase whitespace-nowrap font-semibold text-left bg-slate-50 text-slate-500 tracking-wide">
+                    Cost
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {testState.map((item: any, index: number) => {
+                  let display: any = "";
+                  if (item.nest == 2) {
+                    display = item.type.map((type: any) => {
+                      return type.parameters.map((parameter: any, pIndex: number) => {
+                        if (parameter.checked) {
+                          return (
+                            <tr key={pIndex} className="hover:bg-slate-50 border-b border-slate-100 last:border-b-0">
+                              <th className="py-2 px-3 align-middle text-xs whitespace-nowrap text-left">
+                                <span className="font-semibold text-slate-700">
+                                  {parameter.name} -
+                                  <span className="font-normal">
+                                    {" "}
+                                    ({item.name} - {type.name} )
                                   </span>
-                                </th>
-                                <td className="border text-xs font-semibold pl-3">
-                                  NGN {parameter.cost}.00
-                                </td>
-                              </tr>
-                            );
-                          }
-                        });
-                      }
-                      if (item.nest == 0) {
-                        display = item.parameters.map((parameter: any, pIndex3: number) => {
-                          if (parameter.checked) {
-                            return (
-                              <tr
-                                key={pIndex3}
-                                className="hover:bg-slate-100/40"
-                              >
-                                <th className="border py-1 align-middle text-xs whitespace-nowrap text-left">
-                                  <span
-                                    className={
-                                      "ml-3 font-bold " +
-                                      +(color === "light"
-                                        ? "text-slate-600"
-                                        : "text-white")
-                                    }
-                                  >
-                                    {parameter.name}{" "}
-                                    <span className="font-light">
-                                      {" "}
-                                      ({item.name})
-                                    </span>
-                                  </span>
-                                </th>
-                                <td className="border text-xs font-semibold pl-3">
-                                  NGN {parameter.cost}.00
-                                </td>
-                              </tr>
-                            );
-                          }
-                        });
-                      }
-                      return display;
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {/* Modal footer */}
-              <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b ">
-                <button
-                  onClick={handleProceed}
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center "
-                >
-                  Back
-                </button>
-                <button
-                  onClick={handleSaveModal}
-                  disabled={totalCost > 0 ? false : true}
-                  className="text-white bg-emerald-600 disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-emerald-800 focus:ring-4 focus:outline-none focus:ring-emerald-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 focus:z-10 "
-                >
-                  Continue
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {testAddonDisplay && (
-          <div className="relative w-full max-w-2xl max-h-full">
-            {/* Modal content */}
-            <div className="relative bg-white rounded-lg shadow">
-              {/* Modal header */}
-              <div className="flex items-start justify-between p-4 border-b rounded-t">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Additional Test Information
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleCancelModal}
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-                  data-modal-hide="staticModal"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                </button>
-              </div>
-              {/* Modal body */}
-              <form onSubmit={handleFinish}>
-                <div className="py-6 space-y-6">
-                  <div className="relative flex flex-col min-w-0 break-words w-full mb-6">
-                    <div className="flex-auto lg:px-10 py-10 pt-0">
-                      <div className="flex flex-wrap">
-                        <div className="w-full px-4">
-                          <div className="relative w-full mb-3">
-                            <label
-                              className="block text-slate-600 text-sm font-bold mb-2"
-                              htmlFor="grid-password"
-                            >
-                              Test Title
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              ref={testTitleRef}
-                              className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                            />
-                          </div>
-                        </div>
-                        <div className="w-full px-4">
-                          <div className="relative w-full mb-3">
-                            <label
-                              className="block text-slate-600 text-sm font-bold mb-2"
-                              htmlFor="grid-password"
-                            >
-                              Nature of Specimen
-                            </label>
-                            <input
-                              type="text"
-                              ref={specimenRef}
-                              className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                            />
-                          </div>
-                        </div>
-                        <div className="w-full px-4">
-                          <div className="relative w-full mb-3">
-                            <label
-                              className="block text-slate-600 text-sm font-bold mb-2"
-                              htmlFor="grid-password"
-                            >
-                              Clinical Address
-                            </label>
-                            <input
-                              type="text"
-                              ref={clinicalAddressRef}
-                              className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                            />
-                          </div>
-                        </div>
-                        <div className="w-full px-4">
-                          <div className="relative w-full mb-3">
-                            <label
-                              className="block text-slate-600 text-sm font-bold mb-2"
-                              htmlFor="grid-password"
-                            >
-                              Clinical Diagnosis
-                            </label>
-                            <input
-                              type="text"
-                              ref={clinicalDiagnosisRef}
-                              className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* Modal footer */}
-                <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b ">
-                  <button
-                    disabled={loading}
-                    type="submit"
-                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center "
-                  >
-                    {loading && (
-                      <svg
-                        aria-hidden="true"
-                        role="status"
-                        className="inline w-4 h-4 mr-3 text-white animate-spin"
-                        viewBox="0 0 100 101"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                          fill="#E5E7EB"
-                        />
-                        <path
-                          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    )}
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancelModal}
-                    className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 "
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-        {testStatsDisplay && (
-          <div className="relative w-full max-w-2xl max-h-full">
-            {/* Modal content */}
-            <div className="relative bg-white rounded-lg shadow">
-              {/* Modal header */}
-              <div className="flex items-start justify-between p-4 border-b rounded-t">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Select Test(s)
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleCancelModal}
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-                  data-modal-hide="staticModal"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                </button>
-              </div>
-              {/* Modal body */}
-              <div className="p-6 space-y-6">
-                <label
-                  htmlFor="countries"
-                  className="block mb-2 text-sm font-medium text-gray-900"
-                >
-                  Select a Test Category
-                </label>
-                <select
-                  id="countries"
-                  defaultValue={0}
-                  ref={selectRef}
-                  onChange={handleChange}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                >
-                  {testState.map((item: any, index: number) => {
-                    return (
-                      <option value={index} key={index}>
-                        {item.name}
-                      </option>
-                    );
-                  })}
-                </select>
-                <div className="text-base leading-relaxed text-gray-500 space-x-4">
-                  {currentTest?.discrete && currentTest.nest == 2 && (
-                    <>
-                      <select
-                        onChange={handleChange2}
-                        ref={select2Ref}
-                        defaultValue={0}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                      >
-                        {currentTest?.type.map((item: any, index: number) => {
-                          return (
-                            <option value={index} key={index}>
-                              {item.name}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <div className="border" style={{ marginLeft: "0px" }}>
-                        {currentTestType?.parameters?.map((item: any, index: number) => {
-                          return (
-                            <label
-                              className="whitespace-nowrap inline-block m-4 cursor-pointer"
-                              key={index}
-                            >
-                              <input
-                                checked={item.checked}
-                                id={item.name}
-                                type="checkbox"
-                                onChange={(e) =>
-                                  handleCheckbox({
-                                    e,
-                                    currentTest,
-                                    currentTestType,
-                                    index,
-                                  })
-                                }
-                              />{" "}
-                              {item.name}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-                  {currentTest?.discrete && currentTest.nest == 1 && (
-                    <>
-                      <div className="border" style={{ marginLeft: "0px" }}>
-                        {currentTest?.parameters?.map((item: any, index: number) => {
-                          return (
-                            <label
-                              className="whitespace-nowrap inline-block m-4 cursor-pointer"
-                              key={index}
-                            >
-                              <input
-                                checked={item.checked}
-                                id={item.name}
-                                type="checkbox"
-                                onChange={(e) =>
-                                  handleCheckbox({ e, currentTest, index })
-                                }
-                              />{" "}
-                              {item.name}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-                  {!currentTest?.discrete && currentTest?.nest == 0 && (
-                    <>
-                      <div className="border" style={{ marginLeft: "0px" }}>
-                        {currentTest?.parameters?.map((item: any, index: number) => {
-                          return (
-                            <label
-                              className="whitespace-nowrap inline-block m-4 cursor-pointer"
-                              key={index}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={item.checked}
-                                id={item.name}
-                                onChange={(e) =>
-                                  handleCheckbox({ e, currentTest, index })
-                                }
-                              />{" "}
-                              {item.name}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              {/* Modal footer */}
-              <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b ">
-                <button
-                  onClick={handleProceed}
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center "
-                >
-                  Proceed
-                </button>
-                <button
-                  onClick={handleCancelModal}
-                  className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 "
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      <div
-        ref={testModalRef}
-        id="staticTestModal"
-        tabIndex={-1}
-        className={`${
-          showTestModal ? "block" : "hidden"
-        } bg-gray-900/80 flex items-center justify-center fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%)] max-h-full`}
-      >
-        <div className="relative w-full max-w-2xl max-h-full">
-          {/* Modal content */}
-          <div className="relative bg-white rounded-lg shadow">
-            {/* Modal header */}
-            <div className="flex items-start justify-between p-4 border-b rounded-t">
-              <div className="flex flex-grow flex-col items-center">
-                <h3 className="text-lg font-semibold text-gray-900 flex-grow">
-                  {testData.test_title}
-                </h3>
-                <div className="text-2xl font-bold">
-                  Total Cost :{" "}
-                  <span
-                    className={
-                      testData.status == "Awaiting Payment"
-                        ? "text-red-700"
-                        : "text-emerald-700"
-                    }
-                  >
-                    NGN {testData.total_cost}.00
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleCancelTestModal}
-                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-                data-modal-hide="staticModal"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-              </button>
-            </div>
-            {/* Modal body */}
-
-            <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200  px-8">
-              <ul className="flex flex-wrap -mb-px">
-                <li className="mr-2 flex-grow">
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentTab(0);
-                    }}
-                    className={
-                      currentTab == 0 ? "active_tab" : "non_active_tab"
-                    }
-                  >
-                    Payment
-                  </a>
-                </li>
-                <li className="mr-2 flex-grow">
-                  <a
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentTab(1);
-                    }}
-                    href="#"
-                    className={
-                      currentTab == 1 ? "active_tab" : "non_active_tab"
-                    }
-                  >
-                    Test Result
-                  </a>
-                </li>
-              </ul>
-              {currentTab == 0 && testData.status === "Awaiting Payment" && (
-                <form className="border flex flex-col my-3 p-4 items-start space-y-4">
-                  <div className="flex flex-col w-full items-start">
-                    <label
-                      htmlFor="paymentOption"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Select payment option
-                    </label>
-                    <select
-                      onChange={handlePaymentOption}
-                      id="paymentOption"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                    >
-                      <option value="cash">Cash</option>
-                      <option value="card">Card Payment</option>
-                    </select>
-                  </div>
-                  {paymentOption == "cash" && (
-                    <>
-                      <div className="flex flex-col w-full items-start">
-                        <label
-                          htmlFor="paymentOption"
-                          className="block mb-2 text-sm font-medium text-gray-900"
-                        >
-                          Invoice No.
-                        </label>
-                        <input
-                          ref={invoiceRef}
-                          type="text"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                        />
-                      </div>
-                      <div className="flex flex-col w-full items-start">
-                        <label
-                          htmlFor="paymentOption"
-                          className="block mb-2 text-sm font-medium text-gray-900"
-                        >
-                          Amount Paid
-                        </label>
-                        <input
-                          ref={amountPaidRef}
-                          type="text"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                        />
-                      </div>
-                      <button
-                        disabled={loading}
-                        type="button"
-                        onClick={handleSavePayment}
-                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
-                      >
-                        {loading && (
-                          <svg
-                            aria-hidden="true"
-                            role="status"
-                            className="inline w-4 h-4 mr-3 text-white animate-spin"
-                            viewBox="0 0 100 101"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                              fill="#E5E7EB"
-                            />
-                            <path
-                              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                              fill="currentColor"
-                            />
-                          </svg>
-                        )}
-                        Save Payment
-                      </button>
-                    </>
-                  )}
-                  {paymentOption == "card" && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          alert("Feature not yet active, please pay cash")
-                        }
-                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
-                      >
-                        Paystack Option
-                      </button>
-                    </>
-                  )}
-                </form>
-              )}
-              {currentTab == 0 && testData.status !== "Awaiting Payment" && (
-                <div className="flex flex-col items-start my-4 space-y-2">
-                  <div className="grid grid-cols-2 gap-5 text-left">
-                    <span className="font-bold">Invoice Number : </span>
-                    <span>{testData?.payment?.invoice}</span>
-                    <span className="font-bold">Amount Paid : </span>
-                    <span>{testData?.payment?.amount_paid}</span>
-                    <span className="font-bold">Date Paid : </span>
-                    <span>{testData?.payment?.createdAt}</span>
-                    <span className="font-bold">Received by : </span>
-                    <span>
-                      {testData?.payment?.user?.firstname}{" "}
-                      {testData?.payment?.user?.lastname}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {currentTab == 1 && testData.status === "Awaiting Result" && (
-                <form
-                  ref={test_result_form}
-                  onSubmit={handleTestDataForm}
-                  className="w-full border p-6"
-                >
-                  <table className="w-full p-4">
-                    <tbody>
-                      {testData?.test_data?.map((test: any, i: number) => {
-                        let { parameter = {} } = test;
-                        if (parameter.resultType === "text") {
-                          return (
-                            <tr className="text-left mb-6 w-full" key={i}>
-                              <td className="w-full" colSpan={2}>
-                                <label
-                                  htmlFor="unit"
-                                  className="block mb-2 text-sm font-medium text-gray-900"
-                                >
-                                  Enter analysis/findings for {parameter.name}
-                                </label>
-                                <textarea
-                                  required
-                                  name={parameter.id}
-                                  value={resultForm[parameter.name] || ""}
-                                  onChange={handleResultFormChange}
-                                  className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 h-32"
-                                />
+                                </span>
+                              </th>
+                              <td className="text-xs font-semibold px-3 text-slate-600">
+                                NGN {parameter.cost}.00
                               </td>
                             </tr>
                           );
                         }
+                      });
+                    });
+                  }
+                  if (item.nest == 1) {
+                    display = item.parameters.map((parameter: any, pIndex2: number) => {
+                      if (parameter.checked) {
                         return (
-                          <tr className="text-left mb-6 w-full" key={i}>
-                            <td className="w-1/2">
-                              <label
-                                htmlFor="unit"
-                                className="block mb-2 text-sm font-medium text-gray-900"
-                              >
-                                Select unit for {parameter.name}
-                              </label>
-                              <select
-                                name={`select${parameter.id}`}
-                                className="mb-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                              >
-                                {parameter.unit?.length > 0 ? (
-                                  parameter.unit.map((val: any, index: number) => (
-                                    <option key={index}>{val}</option>
-                                  ))
-                                ) : (
-                                  <option value="">No unit configured</option>
-                                )}
-                              </select>
-                              {parameter.range && (
-                                <p className="text-xs text-gray-500 mb-3">
-                                  Reference range: {parameter.range}
-                                </p>
-                              )}
-                            </td>
-                            <td className="w-1/2">
-                              <label
-                                htmlFor="unit"
-                                className="block mb-2 text-sm font-medium text-gray-900"
-                              >
-                                Enter Value for {parameter.name}
-                              </label>
-                              <input
-                                type="number"
-                                required
-                                name={parameter.id}
-                                value={resultForm[parameter.name] || ""}
-                                onChange={handleResultFormChange}
-                                className="mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                              />
+                          <tr key={pIndex2} className="hover:bg-slate-50 border-b border-slate-100 last:border-b-0">
+                            <th className="py-2 px-3 align-middle text-xs whitespace-nowrap text-left">
+                              <span className="font-semibold text-slate-700">
+                                {parameter.name}{" "}
+                                <span className="font-normal"> ({item.name})</span>
+                              </span>
+                            </th>
+                            <td className="text-xs font-semibold px-3 text-slate-600">
+                              NGN {parameter.cost}.00
                             </td>
                           </tr>
                         );
-                      })}
-                      <tr>
-                        <td className="text-left">
-                          <button
-                            disabled={loading}
-                            type="submit"
-                            name="submitbutton"
-                            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
-                          >
-                            {loading && (
-                              <svg
-                                aria-hidden="true"
-                                role="status"
-                                className="inline w-4 h-4 mr-3 text-white animate-spin"
-                                viewBox="0 0 100 101"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                  fill="#E5E7EB"
-                                />
-                                <path
-                                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                  fill="currentColor"
-                                />
-                              </svg>
-                            )}
-                            Save Test Value/Result
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </form>
-              )}
-
-              {currentTab == 1 &&
-                testData.status === "Test Completed" &&
-                displayTestResult(testData, patientData)}
-              {currentTab == 2 && (
-                <div className="border flex flex-col my-3">Tab 3</div>
-              )}
-              {currentTab == 3 && (
-                <div className="border flex flex-col my-3">Tab 4</div>
-              )}
-            </div>
-
-            {/* Modal footer */}
-            <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b ">
+                      }
+                    });
+                  }
+                  if (item.nest == 0) {
+                    display = item.parameters.map((parameter: any, pIndex3: number) => {
+                      if (parameter.checked) {
+                        return (
+                          <tr key={pIndex3} className="hover:bg-slate-50 border-b border-slate-100 last:border-b-0">
+                            <th className="py-2 px-3 align-middle text-xs whitespace-nowrap text-left">
+                              <span className="font-semibold text-slate-700">
+                                {parameter.name}{" "}
+                                <span className="font-normal"> ({item.name})</span>
+                              </span>
+                            </th>
+                            <td className="text-xs font-semibold px-3 text-slate-600">
+                              NGN {parameter.cost}.00
+                            </td>
+                          </tr>
+                        );
+                      }
+                    });
+                  }
+                  return display;
+                })}
+              </tbody>
+            </table>
+            <div className="flex items-center space-x-2 pt-4 border-t border-slate-100">
+              <button onClick={handleProceed} className={MODAL_SECONDARY_BUTTON}>
+                Back
+              </button>
               <button
-                onClick={handleCancelTestModal}
-                className="text-white bg-emerald-600 disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-emerald-800 focus:ring-4 focus:outline-none focus:ring-emerald-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 focus:z-10 "
+                onClick={handleSaveModal}
+                disabled={totalCost <= 0}
+                className="text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-lg text-sm font-medium px-5 py-2.5 transition-colors"
               >
-                Close
+                Continue
               </button>
             </div>
           </div>
+        )}
+
+        {testAddonDisplay && (
+          <form onSubmit={handleFinish} className="space-y-4">
+            <div>
+              <label className={LABEL_CLASS} htmlFor="test-title">
+                Test Title
+              </label>
+              <input
+                id="test-title"
+                type="text"
+                required
+                ref={testTitleRef}
+                className={MODAL_INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASS} htmlFor="test-specimen">
+                Nature of Specimen
+              </label>
+              <input
+                id="test-specimen"
+                type="text"
+                ref={specimenRef}
+                className={MODAL_INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASS} htmlFor="test-clinical-address">
+                Clinical Address
+              </label>
+              <input
+                id="test-clinical-address"
+                type="text"
+                ref={clinicalAddressRef}
+                className={MODAL_INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASS} htmlFor="test-clinical-diagnosis">
+                Clinical Diagnosis
+              </label>
+              <input
+                id="test-clinical-diagnosis"
+                type="text"
+                ref={clinicalDiagnosisRef}
+                className={MODAL_INPUT_CLASS}
+              />
+            </div>
+            <div className="flex items-center space-x-2 pt-4 border-t border-slate-100">
+              <button disabled={loading} type="submit" className={MODAL_PRIMARY_BUTTON}>
+                {loading && <Spinner />}
+                Save
+              </button>
+              <button type="button" onClick={handleCancelModal} className={MODAL_SECONDARY_BUTTON}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {testStatsDisplay && (
+          <div className="space-y-4">
+            <div>
+              <label className={LABEL_CLASS} htmlFor="test-category">
+                Select a Test Category
+              </label>
+              <select
+                id="test-category"
+                defaultValue={0}
+                ref={selectRef}
+                onChange={handleChange}
+                className={MODAL_INPUT_CLASS}
+              >
+                {testState.map((item: any, index: number) => {
+                  return (
+                    <option value={index} key={index}>
+                      {item.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div className="text-sm text-slate-600">
+              {currentTest?.discrete && currentTest.nest == 2 && (
+                <>
+                  <select
+                    onChange={handleChange2}
+                    ref={select2Ref}
+                    defaultValue={0}
+                    className={MODAL_INPUT_CLASS + " mb-3"}
+                  >
+                    {currentTest?.type.map((item: any, index: number) => {
+                      return (
+                        <option value={index} key={index}>
+                          {item.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="border border-slate-200 rounded-lg p-2 flex flex-wrap">
+                    {currentTestType?.parameters?.map((item: any, index: number) => {
+                      return (
+                        <label
+                          className="whitespace-nowrap inline-block m-2 cursor-pointer"
+                          key={index}
+                        >
+                          <input
+                            checked={item.checked}
+                            id={item.name}
+                            type="checkbox"
+                            className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 mr-1"
+                            onChange={(e) =>
+                              handleCheckbox({
+                                e,
+                                currentTest,
+                                currentTestType,
+                                index,
+                              })
+                            }
+                          />
+                          {item.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+              {currentTest?.discrete && currentTest.nest == 1 && (
+                <div className="border border-slate-200 rounded-lg p-2 flex flex-wrap">
+                  {currentTest?.parameters?.map((item: any, index: number) => {
+                    return (
+                      <label
+                        className="whitespace-nowrap inline-block m-2 cursor-pointer"
+                        key={index}
+                      >
+                        <input
+                          checked={item.checked}
+                          id={item.name}
+                          type="checkbox"
+                          className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 mr-1"
+                          onChange={(e) => handleCheckbox({ e, currentTest, index })}
+                        />
+                        {item.name}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              {!currentTest?.discrete && currentTest?.nest == 0 && (
+                <div className="border border-slate-200 rounded-lg p-2 flex flex-wrap">
+                  {currentTest?.parameters?.map((item: any, index: number) => {
+                    return (
+                      <label
+                        className="whitespace-nowrap inline-block m-2 cursor-pointer"
+                        key={index}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={item.checked}
+                          id={item.name}
+                          className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 mr-1"
+                          onChange={(e) => handleCheckbox({ e, currentTest, index })}
+                        />
+                        {item.name}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center space-x-2 pt-4 border-t border-slate-100">
+              <button onClick={handleProceed} className={MODAL_PRIMARY_BUTTON}>
+                Proceed
+              </button>
+              <button onClick={handleCancelModal} className={MODAL_SECONDARY_BUTTON}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+      <Modal
+        open={showTestModal}
+        onClose={handleCancelTestModal}
+        size="lg"
+        title={testData.test_title || "Test"}
+      >
+        <div className="text-xl font-semibold mb-4">
+          Total Cost:{" "}
+          <span
+            className={
+              testData.status == "Awaiting Payment"
+                ? "text-red-600"
+                : "text-emerald-600"
+            }
+          >
+            NGN {testData.total_cost}.00
+          </span>
         </div>
-      </div>
+
+        <div className="text-sm font-medium text-center text-slate-500 border-b border-slate-200">
+          <ul className="flex flex-wrap -mb-px">
+            <li className="mr-2 flex-grow">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentTab(0);
+                }}
+                className={currentTab == 0 ? "active_tab" : "non_active_tab"}
+              >
+                Payment
+              </a>
+            </li>
+            <li className="mr-2 flex-grow">
+              <a
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentTab(1);
+                }}
+                href="#"
+                className={currentTab == 1 ? "active_tab" : "non_active_tab"}
+              >
+                Test Result
+              </a>
+            </li>
+          </ul>
+
+          {currentTab == 0 && testData.status === "Awaiting Payment" && (
+            <form className="flex flex-col my-4 items-start space-y-4">
+              <div className="w-full">
+                <label className={LABEL_CLASS} htmlFor="paymentOption">
+                  Select payment option
+                </label>
+                <select
+                  onChange={handlePaymentOption}
+                  id="paymentOption"
+                  className={MODAL_INPUT_CLASS}
+                >
+                  <option value="cash">Cash</option>
+                  <option value="card">Card Payment</option>
+                </select>
+              </div>
+              {paymentOption == "cash" && (
+                <>
+                  <div className="w-full">
+                    <label className={LABEL_CLASS} htmlFor="invoice">
+                      Invoice No.
+                    </label>
+                    <input
+                      id="invoice"
+                      ref={invoiceRef}
+                      type="text"
+                      className={MODAL_INPUT_CLASS}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label className={LABEL_CLASS} htmlFor="amountPaid">
+                      Amount Paid
+                    </label>
+                    <input
+                      id="amountPaid"
+                      ref={amountPaidRef}
+                      type="text"
+                      className={MODAL_INPUT_CLASS}
+                    />
+                  </div>
+                  <button
+                    disabled={loading}
+                    type="button"
+                    onClick={handleSavePayment}
+                    className={MODAL_PRIMARY_BUTTON}
+                  >
+                    {loading && <Spinner />}
+                    Save Payment
+                  </button>
+                </>
+              )}
+              {paymentOption == "card" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast.error("Card payments aren't available yet - please select cash for now")
+                  }
+                  className={MODAL_PRIMARY_BUTTON}
+                >
+                  Paystack Option
+                </button>
+              )}
+            </form>
+          )}
+          {currentTab == 0 && testData.status !== "Awaiting Payment" && (
+            <div className="flex flex-col items-start my-4 space-y-2 text-left">
+              <div className="grid grid-cols-2 gap-3 text-sm text-left w-full">
+                <span className="font-semibold text-slate-700">Invoice Number:</span>
+                <span className="text-slate-600">{testData?.payment?.invoice}</span>
+                <span className="font-semibold text-slate-700">Amount Paid:</span>
+                <span className="text-slate-600">{testData?.payment?.amount_paid}</span>
+                <span className="font-semibold text-slate-700">Date Paid:</span>
+                <span className="text-slate-600">{testData?.payment?.createdAt}</span>
+                <span className="font-semibold text-slate-700">Received by:</span>
+                <span className="text-slate-600">
+                  {testData?.payment?.user?.firstname}{" "}
+                  {testData?.payment?.user?.lastname}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {currentTab == 1 && testData.status === "Awaiting Result" && (
+            <form
+              ref={test_result_form}
+              onSubmit={handleTestDataForm}
+              className="w-full py-4"
+            >
+              <table className="w-full">
+                <tbody>
+                  {testData?.test_data?.map((test: any, i: number) => {
+                    let { parameter = {} } = test;
+                    if (parameter.resultType === "text") {
+                      return (
+                        <tr className="text-left mb-6 w-full" key={i}>
+                          <td className="w-full pb-4" colSpan={2}>
+                            <label className={LABEL_CLASS} htmlFor={parameter.id}>
+                              Enter analysis/findings for {parameter.name}
+                            </label>
+                            <textarea
+                              id={parameter.id}
+                              required
+                              name={parameter.id}
+                              value={resultForm[parameter.name] || ""}
+                              onChange={handleResultFormChange}
+                              className={MODAL_INPUT_CLASS + " h-32"}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return (
+                      <tr className="text-left mb-6 w-full" key={i}>
+                        <td className="w-1/2 pb-4 pr-2 align-top">
+                          <label className={LABEL_CLASS}>
+                            Select unit for {parameter.name}
+                          </label>
+                          <select
+                            name={`select${parameter.id}`}
+                            className={MODAL_INPUT_CLASS}
+                          >
+                            {parameter.unit?.length > 0 ? (
+                              parameter.unit.map((val: any, index: number) => (
+                                <option key={index}>{val}</option>
+                              ))
+                            ) : (
+                              <option value="">No unit configured</option>
+                            )}
+                          </select>
+                          {parameter.range && (
+                            <p className="text-xs text-slate-500 mt-1">
+                              Reference range: {parameter.range}
+                            </p>
+                          )}
+                        </td>
+                        <td className="w-1/2 pb-4 align-top">
+                          <label className={LABEL_CLASS} htmlFor={parameter.id}>
+                            Enter Value for {parameter.name}
+                          </label>
+                          <input
+                            id={parameter.id}
+                            type="number"
+                            required
+                            name={parameter.id}
+                            value={resultForm[parameter.name] || ""}
+                            onChange={handleResultFormChange}
+                            className={MODAL_INPUT_CLASS}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  <tr>
+                    <td className="text-left pt-2">
+                      <button
+                        disabled={loading}
+                        type="submit"
+                        name="submitbutton"
+                        className={MODAL_PRIMARY_BUTTON}
+                      >
+                        {loading && <Spinner />}
+                        Save Test Value/Result
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </form>
+          )}
+
+          {currentTab == 1 &&
+            testData.status === "Test Completed" &&
+            displayTestResult(testData, patientData)}
+        </div>
+
+        <div className="flex items-center pt-4 mt-2 border-t border-slate-100">
+          <button onClick={handleCancelTestModal} className={MODAL_SECONDARY_BUTTON}>
+            Close
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }

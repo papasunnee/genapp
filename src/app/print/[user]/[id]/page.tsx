@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { fetcher } from "@/utils/fetcher";
 import useSWR from "swr";
 import { printAge } from "@/utils/functions";
@@ -7,9 +8,9 @@ import { printAge } from "@/utils/functions";
 export default function TestPrintPage({
   params,
 }: {
-  params: { user: string; id: string };
+  params: Promise<{ user: string; id: string }>;
 }) {
-  const { id, user } = params;
+  const { id, user } = use(params);
 
   const {
     data: testData,
