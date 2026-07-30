@@ -28,7 +28,7 @@ const AccessSchema = new Schema<IAccess>(
 
 AccessSchema.pre("save", function (next) {
   if (this.isModified("password")) {
-    bcrypt.hash(this.password, 8, (err, hash) => {
+    bcrypt.hash(this.password, 8, (err: Error | undefined, hash: string) => {
       if (err) return next(err);
       this.password = hash;
       next();

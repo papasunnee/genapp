@@ -3,13 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 import Access from "@/models/Access";
+import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60,
-  },
+  ...authConfig,
   providers: [
     CredentialsProvider({
       credentials: {},
@@ -39,22 +36,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.firstname = (user as any).firstname;
-        token._id = (user as any)._id?.toString();
-        token.lastname = (user as any).lastname;
-        token.role = (user as any).role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user = { ...token } as any;
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/",
-  },
 });
