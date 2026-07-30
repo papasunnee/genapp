@@ -32,7 +32,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Invalid Login Credentials");
         }
 
-        return user as any;
+        // Auth.js v5 encodes the JWT via structuredClone, which can't
+        // handle a Mongoose Document (or its populated subdocuments) -
+        // serialize to a plain object first.
+        return JSON.parse(JSON.stringify(user));
       },
     }),
   ],
