@@ -1,7 +1,14 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
 import ResultsData from "@/components/ResultsData";
 
-export default function ResultsPage() {
+export default async function ResultsPage() {
+  const session = await auth();
+  if (![100, 200, 300].includes((session?.user as any)?.role?.weight)) {
+    redirect("/unauthorized?reason=forbidden");
+  }
+
   return (
     <>
       <AdminNavbar breadCrumb={["Dashboard", "Result List"]} />

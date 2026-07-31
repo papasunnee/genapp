@@ -214,8 +214,22 @@ export const PUT = withTenant(async (req, tenant, session) => {
     }
 
     delete body._id;
-    const status =
-      body.nullTestValuesCount > 1 ? undefined : "Test Completed";
+
+    // Completeness is derived from the submitted results themselves rather
+    // than a client-supplied count (which was trivially wrong - it counted
+    // DOM element objects, not their values, so it was always 0 and every
+    // save silently marked the test "Test Completed" regardless of how many
+    // fields were actually left blank).
+    let status: "Test Completed" | undefined;
+    try {
+      const parsedTestData = JSON.parse(body.test_data);
+      const hasBlankValue = parsedTestData.some(
+        (item: any) => !String(item?.parameter?.value ?? "").trim()
+      );
+      status = hasBlankValue ? undefined : "Test Completed";
+    } catch {
+      status = undefined;
+    }
 
     const updateTest = await Test.findOneAndUpdate(
       { _id: put_id },

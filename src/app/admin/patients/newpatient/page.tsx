@@ -4,7 +4,9 @@ import Create from "@/components/PatientsData/create";
 export default function NewPatientPage() {
   return (
     <>
-      <AdminNavbar breadCrumb={["Dashboard", "Create Patient"]} />
+      <AdminNavbar
+        breadCrumb={["Dashboard", { label: "Patient List", href: "/admin/patients" }, "Create Patient"]}
+      />
       <div className="relative bg-slate-800 md:pt-32 pb-32 pt-12">
         <div className="px-4 md:px-10 mx-auto w-full">
           <div></div>

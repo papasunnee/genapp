@@ -11,7 +11,9 @@ export default async function PatientDetailPage({
 
   return (
     <>
-      <AdminNavbar breadCrumb={["Dashboard", "Patient"]} />
+      <AdminNavbar
+        breadCrumb={["Dashboard", { label: "Patient List", href: "/admin/patients" }, "Patient"]}
+      />
       <div className="relative bg-slate-800 md:pt-32 pb-32 pt-12">
         <div className="px-4 md:px-10 mx-auto w-full">
           <div></div>

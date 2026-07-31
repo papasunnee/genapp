@@ -6,10 +6,12 @@ import { useSession } from "next-auth/react";
 import moment from "moment";
 import UserDropdown from "../Dropdowns/UserDropdown";
 
+export type BreadCrumbItem = string | { label: string; href: string };
+
 export default function AdminNavbar({
   breadCrumb = ["Dashboard"],
 }: {
-  breadCrumb?: string[];
+  breadCrumb?: BreadCrumbItem[];
 }) {
   const { data }: any = useSession();
   const [today, setToday] = useState<string | null>(null);
@@ -29,20 +31,29 @@ export default function AdminNavbar({
       <div className="w-full mx-auto flex items-center justify-between flex-wrap md:px-10 px-4 gap-3">
         <div>
           <div className="flex items-center flex-wrap text-xs uppercase font-semibold">
-            {breadCrumb.map((item, index) => (
-              <span key={index} className="flex items-center">
-                {index > 0 && (
-                  <i className="fas fa-chevron-right text-[9px] mx-2 text-white/40"></i>
-                )}
-                {index === 0 ? (
-                  <Link href="/admin" className="text-white hover:text-white/80 transition-colors">
-                    {item}
-                  </Link>
-                ) : (
-                  <span className="text-white/70">{item}</span>
-                )}
-              </span>
-            ))}
+            {breadCrumb.map((item, index) => {
+              const label = typeof item === "string" ? item : item.label;
+              const href =
+                typeof item === "object"
+                  ? item.href
+                  : index === 0
+                  ? "/admin"
+                  : undefined;
+              return (
+                <span key={index} className="flex items-center">
+                  {index > 0 && (
+                    <i className="fas fa-chevron-right text-[9px] mx-2 text-white/40"></i>
+                  )}
+                  {href ? (
+                    <Link href={href} className="text-white hover:text-white/80 transition-colors">
+                      {label}
+                    </Link>
+                  ) : (
+                    <span className="text-white/70">{label}</span>
+                  )}
+                </span>
+              );
+            })}
           </div>
           {isDashboard && (
             <h1 className="text-white text-lg font-semibold mt-1">
