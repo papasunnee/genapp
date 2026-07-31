@@ -5,6 +5,7 @@ import { getUserModel } from "@/models/User";
 import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
 import { withTenant } from "@/lib/apiTenant";
+import { getEffectivePlan, getPlanLimits } from "@/lib/planLimits";
 
 function trendPercent(current: number, previous: number) {
   if (previous === 0) return current > 0 ? 100 : 0;
@@ -88,11 +89,12 @@ export const GET = withTenant(async (req, tenant, session) => {
     const revenueThisMonth = revenueThisMonthAgg[0]?.total ?? 0;
     const revenueLastMonth = revenueLastMonthAgg[0]?.total ?? 0;
 
-    // Last 6 months of revenue + completed-test volume, always emitting
-    // exactly 6 buckets (even ones with zero activity) so the chart looks
-    // right for a brand-new tenant with little history, not just
-    // established ones.
-    const monthsBack = 6;
+    // Revenue + completed-test volume history, depth capped by plan (Free
+    // sees the current month only; Pro/Enterprise get deeper history) -
+    // always emitting exactly `monthsBack` buckets (even ones with zero
+    // activity) so the chart looks right for a brand-new tenant too.
+    const planLimits = getPlanLimits(tenant.organization);
+    const monthsBack = planLimits.analyticsHistoryMonths;
     const rangeStart = moment().subtract(monthsBack - 1, "months").startOf("month").toDate();
 
     const [revenueByMonth, testsByMonth] = await Promise.all([
@@ -151,6 +153,11 @@ export const GET = withTenant(async (req, tenant, session) => {
         ),
         revenue: metric(revenueThisMonth, revenueThisMonth, revenueLastMonth),
         monthlyTrend,
+        analytics: {
+          plan: getEffectivePlan(tenant.organization),
+          historyMonths: monthsBack,
+          isLimited: monthsBack < 6,
+        },
         pendingActions: { awaitingPayment, awaitingResult },
         recentActivity,
       },

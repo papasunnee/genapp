@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getOrganizationModel } from "@/models/Organization";
 import { getControlConnection } from "@/lib/controlPlane";
 import { withTenant } from "@/lib/apiTenant";
+import { getPlanLimits } from "@/lib/planLimits";
 
 export const GET = withTenant(async (req, tenant, session) => {
   if (!session) {
@@ -29,6 +30,15 @@ export const PATCH = withTenant(async (req, tenant, session) => {
   const requesterWeight = (session.user as any)?.role?.weight;
   if (![100, 200].includes(requesterWeight)) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+  if (!getPlanLimits(tenant.organization).branding) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Custom letterhead branding requires a Pro plan or higher.",
+      },
+      { status: 403 }
+    );
   }
 
   try {

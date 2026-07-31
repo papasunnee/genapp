@@ -6,6 +6,7 @@ import { fetcher } from "@/utils/fetcher";
 import { resizeImageToDataUrl } from "@/utils/functions";
 import { toast } from "@/components/ui/Toast";
 import Skeleton from "@/components/ui/Skeleton";
+import UpgradeNotice from "@/components/ui/UpgradeNotice";
 import { TABLE_CARD_CLASS, TABLE_HEADER_CLASS } from "@/components/ui/table";
 
 const INPUT_CLASS =
@@ -22,6 +23,8 @@ const EMPTY_FORM = {
 
 export default function OrgBranding() {
   const { data, isLoading, mutate }: any = useSWR("/api/organization/branding", fetcher);
+  const { data: planData }: any = useSWR("/api/organization/plan", fetcher);
+  const canEditBranding = planData?.data?.limits?.branding ?? true;
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -105,7 +108,16 @@ export default function OrgBranding() {
         </p>
       </div>
 
-      <div className="px-6 py-6 space-y-6">
+      {!canEditBranding && (
+        <div className="px-6 pt-4">
+          <UpgradeNotice
+            title="Letterhead branding is a Pro feature"
+            message="Upgrade to Pro to set a logo, tagline, and contact details for your printed reports."
+          />
+        </div>
+      )}
+
+      <fieldset disabled={!canEditBranding} className="px-6 py-6 space-y-6 disabled:opacity-60">
         <div className="flex items-center gap-4">
           {form.logo ? (
             <img
@@ -209,7 +221,7 @@ export default function OrgBranding() {
             {saving ? "Saving..." : "Save Letterhead"}
           </button>
         </div>
-      </div>
+      </fieldset>
     </div>
   );
 }

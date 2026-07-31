@@ -4,6 +4,7 @@ import { getPatientModel } from "@/models/Patient";
 import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
 import { withTenant } from "@/lib/apiTenant";
+import { getPlanLimits } from "@/lib/planLimits";
 
 const { ObjectId } = Types;
 
@@ -54,6 +55,18 @@ export const POST = withTenant(async (req, tenant, session) => {
   const Patient = getPatientModel(tenant.connection);
 
   try {
+    const limits = getPlanLimits(tenant.organization);
+    const patientCount = await Patient.countDocuments();
+    if (patientCount >= limits.maxPatients) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Your ${tenant.organization.plan} plan is limited to ${limits.maxPatients} patient records. Upgrade to add more.`,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const newRecord = await Patient.create({ ...body });
     return NextResponse.json({ success: true, data: newRecord }, { status: 201 });

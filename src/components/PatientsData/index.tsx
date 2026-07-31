@@ -30,6 +30,7 @@ export default function PatientsData({ addButton }: PatientsDataProps) {
     fetcher
   );
   const { data: dateData }: any = useSWR("/api/time", fetcher);
+  const { data: planData }: any = useSWR("/api/organization/plan", fetcher);
   const resPerPage = 5;
   const [testPage, setTestPage] = useState(1);
   const [startIndex, setStartIndex] = useState(0);
@@ -42,6 +43,8 @@ export default function PatientsData({ addButton }: PatientsDataProps) {
   };
 
   const patients = patientData?.data ?? [];
+  const maxPatients = planData?.data?.limits?.maxPatients;
+  const patientsAtLimit = typeof maxPatients === "number" && patients.length >= maxPatients;
 
   return (
     <div className={TABLE_CARD_CLASS}>
@@ -58,7 +61,16 @@ export default function PatientsData({ addButton }: PatientsDataProps) {
           </div>
 
           {addButton &&
-            [100, 200, 500].includes(data?.user?.role?.weight) && (
+            [100, 200, 500].includes(data?.user?.role?.weight) &&
+            (patientsAtLimit ? (
+              <div
+                title={`Your plan is limited to ${maxPatients} patient records`}
+                className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 text-xs font-semibold uppercase px-3 py-2 rounded-lg"
+              >
+                <i className="fas fa-lock"></i>
+                <span>Patient limit reached</span>
+              </div>
+            ) : (
               <div>
                 <Link
                   href="/admin/patients/newpatient"
@@ -71,8 +83,13 @@ export default function PatientsData({ addButton }: PatientsDataProps) {
                   </span>
                 </Link>
               </div>
-            )}
+            ))}
         </div>
+        {patientsAtLimit && (
+          <p className="text-xs text-amber-600 mt-2">
+            You&apos;ve reached your plan&apos;s {maxPatients}-patient limit. Upgrade to add more.
+          </p>
+        )}
       </div>
 
       {isLoading ? (

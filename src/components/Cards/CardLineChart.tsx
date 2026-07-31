@@ -36,6 +36,7 @@ const options = {
 export default function CardLineChart() {
   const { data, isLoading }: any = useSWR("/api/dashboard", fetcher);
   const monthlyTrend = data?.data?.monthlyTrend ?? [];
+  const analytics = data?.data?.analytics;
 
   const chartData = {
     labels: monthlyTrend.map((m: any) => m.month),
@@ -57,7 +58,7 @@ export default function CardLineChart() {
         <div className="flex flex-wrap items-center">
           <div className="relative w-full max-w-full flex-grow flex-1">
             <h6 className="uppercase text-slate-400 mb-1 text-xs font-semibold tracking-wide">
-              Last 6 Months
+              Last {analytics?.historyMonths ?? 6} Month{(analytics?.historyMonths ?? 6) === 1 ? "" : "s"}
             </h6>
             <h2 className="text-slate-800 text-xl font-semibold">Revenue Trend</h2>
           </div>
@@ -71,6 +72,12 @@ export default function CardLineChart() {
             <Line data={chartData} options={options} />
           )}
         </div>
+        {analytics?.isLimited && (
+          <p className="text-xs text-amber-600 mt-2">
+            <i className="fas fa-lock mr-1"></i>
+            Upgrade to Pro for up to 6 months of history.
+          </p>
+        )}
       </div>
     </div>
   );

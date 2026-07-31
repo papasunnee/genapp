@@ -4,6 +4,7 @@ import { getAccessModel } from "@/models/Access";
 import { getUserModel } from "@/models/User";
 import { getRoleModel } from "@/models/Role";
 import { withTenant } from "@/lib/apiTenant";
+import { getPlanLimits } from "@/lib/planLimits";
 
 const { ObjectId } = Types;
 
@@ -56,6 +57,18 @@ export const POST = withTenant(async (req, tenant, session) => {
   const conn = tenant.connection;
 
   try {
+    const limits = getPlanLimits(tenant.organization);
+    const staffCount = await User.countDocuments();
+    if (staffCount >= limits.maxStaff) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Your ${tenant.organization.plan} plan is limited to ${limits.maxStaff} staff accounts. Upgrade to add more.`,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     let userData: any[] = [];
     const mongooseSession = await conn.startSession();

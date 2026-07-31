@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/Toast";
 import { confirmDialog } from "@/components/ui/ConfirmDialog";
 import Modal from "@/components/ui/Modal";
 import { formatCurrency } from "@/utils/functions";
+import UpgradeNotice from "@/components/ui/UpgradeNotice";
 
 type ResultType = "numeric" | "text";
 type ParamRow = {
@@ -395,10 +396,12 @@ function CategoryCard({
   category,
   onEdit,
   onDelete,
+  canEdit,
 }: {
   category: any;
   onEdit: () => void;
   onDelete: () => void;
+  canEdit: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const grouped = category.nest === 2;
@@ -437,14 +440,16 @@ function CategoryCard({
             {grouped ? ` · ${category.type?.length ?? 0} sub-sections` : ""}
           </span>
         </button>
-        <div className="space-x-3 flex-shrink-0">
-          <button onClick={onEdit} className="text-blue-600 text-sm underline">
-            Edit
-          </button>
-          <button onClick={onDelete} className="text-red-600 text-sm underline">
-            Delete
-          </button>
-        </div>
+        {canEdit && (
+          <div className="space-x-3 flex-shrink-0">
+            <button onClick={onEdit} className="text-blue-600 text-sm underline">
+              Edit
+            </button>
+            <button onClick={onDelete} className="text-red-600 text-sm underline">
+              Delete
+            </button>
+          </div>
+        )}
       </div>
       <div
         className={`grid transition-all duration-300 ease-in-out ${
@@ -474,12 +479,14 @@ function CategoryCard({
 
 export default function TestCatalogData() {
   const { data, mutate }: any = useSWR("/api/test-catalog", fetcher);
+  const { data: planData }: any = useSWR("/api/organization/plan", fetcher);
   const [modal, setModal] = useState<null | { mode: "create" } | { mode: "edit"; category: any }>(
     null
   );
   const [loading, setLoading] = useState(false);
 
   const categories = data?.data ?? [];
+  const canCustomize = planData?.data?.limits?.customCatalog ?? true;
 
   const handleCreate = async (form: FormState) => {
     setLoading(true);
@@ -563,13 +570,22 @@ export default function TestCatalogData() {
             ultrasound that need a technologist&apos;s written analysis.
           </p>
         </div>
-        <button
-          onClick={() => setModal({ mode: "create" })}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm whitespace-nowrap transition-colors self-start"
-        >
-          + Add Category
-        </button>
+        {canCustomize && (
+          <button
+            onClick={() => setModal({ mode: "create" })}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm whitespace-nowrap transition-colors self-start"
+          >
+            + Add Category
+          </button>
+        )}
       </div>
+
+      {!canCustomize && (
+        <UpgradeNotice
+          title="Read-only on the Free plan"
+          message="You're using the default test catalog. Upgrade to Pro to add, edit, or remove tests and categories."
+        />
+      )}
 
       <div className="space-y-3">
         {categories.length === 0 && (
@@ -583,6 +599,7 @@ export default function TestCatalogData() {
             category={category}
             onEdit={() => setModal({ mode: "edit", category })}
             onDelete={() => handleDelete(category._id, category.name)}
+            canEdit={canCustomize}
           />
         ))}
       </div>

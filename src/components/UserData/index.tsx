@@ -27,6 +27,7 @@ export default function UserData({ addButton }: UserDataProps) {
   const { data }: any = useSession();
   const { data: userData, isLoading, mutate }: any = useSWR("/api/users", fetcher);
   const { data: dateData }: any = useSWR("/api/time", fetcher);
+  const { data: planData }: any = useSWR("/api/organization/plan", fetcher);
 
   const resPerPage = 5;
   const [userPage, setUserPage] = useState(1);
@@ -45,6 +46,8 @@ export default function UserData({ addButton }: UserDataProps) {
   };
 
   const canManageStaff = [100, 200].includes(data?.user?.role?.weight);
+  const maxStaff = planData?.data?.limits?.maxStaff;
+  const staffAtLimit = typeof maxStaff === "number" && (userDataList?.length || 0) >= maxStaff;
 
   const handleDelete = async (id: string, name: string) => {
     const confirmed = await confirmDialog({
@@ -88,7 +91,16 @@ export default function UserData({ addButton }: UserDataProps) {
           </div>
 
           {addButton &&
-            [100, 200, 500].includes(data?.user?.role?.weight) && (
+            [100, 200, 500].includes(data?.user?.role?.weight) &&
+            (staffAtLimit ? (
+              <div
+                title={`Your plan is limited to ${maxStaff} staff accounts`}
+                className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 text-xs font-semibold uppercase px-3 py-2 rounded-lg"
+              >
+                <i className="fas fa-lock"></i>
+                <span>Staff limit reached</span>
+              </div>
+            ) : (
               <div>
                 <Link
                   href="/admin/users/newuser"
@@ -99,8 +111,13 @@ export default function UserData({ addButton }: UserDataProps) {
                   <span className="hidden sm:inline-block">Add New Staff</span>
                 </Link>
               </div>
-            )}
+            ))}
         </div>
+        {staffAtLimit && (
+          <p className="text-xs text-amber-600 mt-2">
+            You&apos;ve reached your plan&apos;s {maxStaff}-staff limit. Upgrade to add more.
+          </p>
+        )}
       </div>
 
       {isLoading ? (

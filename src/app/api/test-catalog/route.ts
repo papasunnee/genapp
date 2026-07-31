@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getTestCategoryModel } from "@/models/TestCategory";
 import { withTenant } from "@/lib/apiTenant";
 import { seedTestCatalog } from "@/lib/seedTestCatalog";
+import { getPlanLimits } from "@/lib/planLimits";
+
+const UPGRADE_ERROR =
+  "Custom test catalogs require a Pro plan or higher. Upgrade to add, edit, or remove tests.";
 
 export const GET = withTenant(async (req, tenant, session) => {
   if (!session) {
@@ -29,6 +33,9 @@ export const POST = withTenant(async (req, tenant, session) => {
   if (![100, 200].includes((session.user as any)?.role?.weight)) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
+  if (!getPlanLimits(tenant.organization).customCatalog) {
+    return NextResponse.json({ success: false, error: UPGRADE_ERROR }, { status: 403 });
+  }
 
   const TestCategory = getTestCategoryModel(tenant.connection);
 
@@ -50,6 +57,9 @@ export const PUT = withTenant(async (req, tenant, session) => {
   }
   if (![100, 200].includes((session.user as any)?.role?.weight)) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+  if (!getPlanLimits(tenant.organization).customCatalog) {
+    return NextResponse.json({ success: false, error: UPGRADE_ERROR }, { status: 403 });
   }
 
   const TestCategory = getTestCategoryModel(tenant.connection);
@@ -86,6 +96,9 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   }
   if (![100, 200].includes((session.user as any)?.role?.weight)) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+  if (!getPlanLimits(tenant.organization).customCatalog) {
+    return NextResponse.json({ success: false, error: UPGRADE_ERROR }, { status: 403 });
   }
 
   const TestCategory = getTestCategoryModel(tenant.connection);
