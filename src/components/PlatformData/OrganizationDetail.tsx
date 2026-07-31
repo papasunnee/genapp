@@ -211,7 +211,7 @@ export default function OrganizationDetail({ id }: { id: string }) {
             <div>
               <h2 className="text-lg font-semibold text-slate-800">{organization.name}</h2>
               <p className="text-sm text-slate-400">
-                {organization.subdomain}.{process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost"}
+                {organization.subdomain}.{data?.data?.rootDomain || "localhost"}
               </p>
               <p className="text-xs text-slate-400 mt-1">
                 Created {moment(organization.createdAt).format("Do MMM, YYYY")}

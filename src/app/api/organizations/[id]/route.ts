@@ -46,6 +46,7 @@ export async function GET(
       success: true,
       data: {
         organization,
+        rootDomain: process.env.ROOT_DOMAIN || "localhost",
         stats: {
           staffCount,
           patientCount,
