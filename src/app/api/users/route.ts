@@ -5,6 +5,7 @@ import { getUserModel } from "@/models/User";
 import { getRoleModel } from "@/models/Role";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
+import { logActivity } from "@/lib/activityLog";
 
 const { ObjectId } = Types;
 
@@ -85,6 +86,12 @@ export const POST = withTenant(async (req, tenant, session) => {
     mongooseSession.endSession();
 
     if (userData.length > 0) {
+      await logActivity(
+        tenant.connection,
+        session,
+        "staff.created",
+        `Added staff member ${userData[0].firstname} ${userData[0].lastname}`
+      );
       return NextResponse.json(
         { success: true, data: userData[0] },
         { status: 201 }
@@ -186,6 +193,12 @@ export const DELETE = withTenant(async (req, tenant, session) => {
 
     const deleteUserResponse = await User.deleteOne({ _id: delete_id });
     await Access.deleteOne({ user: delete_id });
+    await logActivity(
+      tenant.connection,
+      session,
+      "staff.removed",
+      `Removed staff member ${targetUser.firstname} ${targetUser.lastname}`
+    );
     return NextResponse.json({ success: true, data: deleteUserResponse });
   } catch (error: any) {
     return NextResponse.json(

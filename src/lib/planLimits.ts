@@ -21,8 +21,8 @@ const UNLIMITED = 1_000_000;
 
 export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
   Free: {
-    maxStaff: 2,
-    maxPatients: 100,
+    maxStaff: 1,
+    maxPatients: 5,
     customCatalog: false,
     branding: false,
     customRoles: false,

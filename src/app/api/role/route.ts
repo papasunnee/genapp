@@ -3,6 +3,7 @@ import { getRoleModel } from "@/models/Role";
 import { getUserModel } from "@/models/User";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
+import { logActivity } from "@/lib/activityLog";
 
 const MANAGE_WEIGHTS = [100, 200];
 const UPGRADE_ERROR = "Custom role management requires a Pro plan or higher.";
@@ -100,6 +101,12 @@ export const POST = withTenant(async (req, tenant, session) => {
     }
 
     const newRecord = await Role.create({ name, weight: Number(weight), status: "Active" });
+    await logActivity(
+      tenant.connection,
+      session,
+      "role.created",
+      `Created role "${newRecord.name}" (weight ${newRecord.weight})`
+    );
     return NextResponse.json({ success: true, data: newRecord }, { status: 201 });
   } catch (error: any) {
     const duplicateField = isDuplicateKeyError(error);
@@ -182,6 +189,14 @@ export const PUT = withTenant(async (req, tenant, session) => {
       new: true,
       runValidators: true,
     });
+    await logActivity(
+      tenant.connection,
+      session,
+      "role.updated",
+      `Updated role "${existing.name}"${
+        updated && updated.name !== existing.name ? ` (renamed to "${updated.name}")` : ""
+      }`
+    );
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
@@ -264,6 +279,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
     }
 
     const result = await Role.deleteOne({ _id: delete_id });
+    await logActivity(tenant.connection, session, "role.deleted", `Deleted role "${role.name}"`);
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     return NextResponse.json(

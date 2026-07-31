@@ -5,6 +5,8 @@ import { getTestModel } from "@/models/Test";
 import { getUserModel } from "@/models/User";
 import { getRoleModel } from "@/models/Role";
 import { withTenant } from "@/lib/apiTenant";
+import { logActivity } from "@/lib/activityLog";
+import { formatCurrency } from "@/utils/functions";
 
 const { ObjectId } = Types;
 
@@ -84,6 +86,15 @@ export const POST = withTenant(async (req, tenant, session) => {
       },
     ]);
 
+    await logActivity(
+      tenant.connection,
+      session,
+      "payment.recorded",
+      `Recorded payment of ${formatCurrency(newRecord.amount_paid)} for "${
+        updatedTest?.test_title
+      }"`
+    );
+
     return NextResponse.json({ success: true, data: updatedTest }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
@@ -143,7 +154,14 @@ export const DELETE = withTenant(async (req, tenant, session) => {
       );
     }
 
+    const payment = await Payment.findById(delete_id);
     const deletePaymentResponse = await Payment.deleteOne({ _id: delete_id });
+    await logActivity(
+      tenant.connection,
+      session,
+      "payment.deleted",
+      `Deleted payment record${payment ? ` (invoice ${payment.invoice})` : ""}`
+    );
     return NextResponse.json({ success: true, data: deletePaymentResponse });
   } catch (error: any) {
     return NextResponse.json(

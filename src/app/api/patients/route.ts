@@ -5,6 +5,7 @@ import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
+import { logActivity } from "@/lib/activityLog";
 
 const { ObjectId } = Types;
 
@@ -69,6 +70,12 @@ export const POST = withTenant(async (req, tenant, session) => {
 
     const body = await req.json();
     const newRecord = await Patient.create({ ...body });
+    await logActivity(
+      tenant.connection,
+      session,
+      "patient.created",
+      `Registered patient ${newRecord.firstname} ${newRecord.lastname}`
+    );
     return NextResponse.json({ success: true, data: newRecord }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(

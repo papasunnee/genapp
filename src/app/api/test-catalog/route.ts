@@ -3,6 +3,7 @@ import { getTestCategoryModel } from "@/models/TestCategory";
 import { withTenant } from "@/lib/apiTenant";
 import { seedTestCatalog } from "@/lib/seedTestCatalog";
 import { getPlanLimits } from "@/lib/planLimits";
+import { logActivity } from "@/lib/activityLog";
 
 const UPGRADE_ERROR =
   "Custom test catalogs require a Pro plan or higher. Upgrade to add, edit, or remove tests.";
@@ -42,6 +43,12 @@ export const POST = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const newRecord = await TestCategory.create(body);
+    await logActivity(
+      tenant.connection,
+      session,
+      "catalog.created",
+      `Added test category "${newRecord.name}" to the catalog`
+    );
     return NextResponse.json({ success: true, data: newRecord }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
@@ -81,6 +88,12 @@ export const PUT = withTenant(async (req, tenant, session) => {
       body,
       { new: true }
     );
+    await logActivity(
+      tenant.connection,
+      session,
+      "catalog.updated",
+      `Updated test category "${updated?.name}"`
+    );
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
     return NextResponse.json(
@@ -113,7 +126,14 @@ export const DELETE = withTenant(async (req, tenant, session) => {
       );
     }
 
+    const category = await TestCategory.findById(delete_id);
     const result = await TestCategory.deleteOne({ _id: delete_id });
+    await logActivity(
+      tenant.connection,
+      session,
+      "catalog.deleted",
+      `Removed test category "${category?.name ?? delete_id}" from the catalog`
+    );
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     return NextResponse.json(

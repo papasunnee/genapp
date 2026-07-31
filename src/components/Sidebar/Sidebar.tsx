@@ -23,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
   { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },
   { href: "/admin/settings", label: "Settings", icon: "fa-cog", weights: [100, 200] },
+  { href: "/admin/activity-log", label: "Activity Log", icon: "fa-history", weights: [100] },
   { href: "/admin/profile", label: "My Profile", icon: "fa-id-badge" },
 ];
 

@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { getUserModel } from "@/models/User";
 import { getAccessModel } from "@/models/Access";
 import { getRoleModel } from "@/models/Role";
+import { getActivityLogModel } from "@/models/ActivityLog";
 import { resolveTenant, TenantResolutionError } from "@/lib/tenantContext";
 import { authConfig } from "./auth.config";
 
@@ -46,6 +47,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const passwordCompare = await access.comparePassword(password);
         if (!passwordCompare) {
           throw new Error("Invalid Login Credentials");
+        }
+
+        // Best-effort only - a logging failure must never block a login.
+        try {
+          const ActivityLog = getActivityLogModel(tenant.connection);
+          const roleName = (user.role as any)?.name;
+          await ActivityLog.create({
+            user: user._id,
+            userLabel: `${user.firstname} ${user.lastname}${roleName ? ` (${roleName})` : ""}`,
+            action: "auth.login",
+            description: `${user.firstname} ${user.lastname} signed in`,
+          });
+        } catch {
+          // swallow
         }
 
         // Auth.js v5 encodes the JWT via structuredClone, which can't

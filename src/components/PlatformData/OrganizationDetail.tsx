@@ -53,10 +53,12 @@ export default function OrganizationDetail({ id }: { id: string }) {
     `/api/organizations/${id}/subscription-history`,
     fetcher
   );
+  const { data: activityData }: any = useSWR(`/api/organizations/${id}/activity-log`, fetcher);
 
   const organization = data?.data?.organization;
   const stats = data?.data?.stats;
   const history = historyData?.data ?? [];
+  const activityLog = activityData?.data ?? [];
 
   const [form, setForm] = useState({ plan: "", subscriptionStatus: "", renewsAt: "", amount: "", note: "" });
   const [saving, setSaving] = useState(false);
@@ -456,6 +458,36 @@ export default function OrganizationDetail({ id }: { id: string }) {
             </div>
           )}
         </div>
+      </div>
+
+      <div className={TABLE_CARD_CLASS}>
+        <div className={TABLE_HEADER_CLASS}>
+          <h3 className="text-base font-semibold text-slate-800">Activity Log</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Recent staff actions inside this organization (most recent 100).
+          </p>
+        </div>
+        {activityLog.length === 0 ? (
+          <p className="px-6 py-5 text-sm text-slate-400">No activity recorded yet.</p>
+        ) : (
+          <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+            {activityLog.map((log: any) => (
+              <div
+                key={log._id}
+                className="px-6 py-3 flex flex-wrap items-center justify-between gap-2 text-sm"
+              >
+                <div>
+                  <span className="font-semibold text-slate-700">{log.userLabel}</span>
+                  <span className="text-slate-400"> &middot; {log.action}</span>
+                  <p className="text-xs text-slate-500 mt-0.5">{log.description}</p>
+                </div>
+                <p className="text-xs text-slate-400 flex-shrink-0">
+                  {moment(log.createdAt).format("Do MMM, YYYY | h:mm a")}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

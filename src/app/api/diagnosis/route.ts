@@ -7,6 +7,7 @@ import { getUserModel } from "@/models/User";
 import { getPaymentModel } from "@/models/Payment";
 import { getRoleModel } from "@/models/Role";
 import { withTenant } from "@/lib/apiTenant";
+import { logActivity } from "@/lib/activityLog";
 
 const { ObjectId } = Types;
 
@@ -187,6 +188,15 @@ export const POST = withTenant(async (req, tenant, session) => {
     });
     transactionSession.endSession();
 
+    await logActivity(
+      tenant.connection,
+      session,
+      "test.ordered",
+      `Ordered "${testProcess?.testData?.test_title}" for ${
+        testProcess?.updatePatient?.firstname ?? ""
+      } ${testProcess?.updatePatient?.lastname ?? ""}`.trim()
+    );
+
     return NextResponse.json({ success: true, data: testProcess }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
@@ -244,6 +254,15 @@ export const PUT = withTenant(async (req, tenant, session) => {
       },
     ]);
 
+    await logActivity(
+      tenant.connection,
+      session,
+      status === "Test Completed" ? "test.completed" : "test.result_updated",
+      status === "Test Completed"
+        ? `Completed results for "${updateTest?.test_title}"`
+        : `Saved partial results for "${updateTest?.test_title}"`
+    );
+
     return NextResponse.json({ success: true, data: updateTest });
   } catch (error: any) {
     return NextResponse.json(
@@ -270,7 +289,14 @@ export const DELETE = withTenant(async (req, tenant, session) => {
       );
     }
 
+    const test = await Test.findById(delete_id);
     const deleteTestResponse = await Test.deleteOne({ _id: delete_id });
+    await logActivity(
+      tenant.connection,
+      session,
+      "test.deleted",
+      `Deleted test "${test?.test_title ?? delete_id}"`
+    );
     return NextResponse.json({ success: true, data: deleteTestResponse });
   } catch (error: any) {
     return NextResponse.json(

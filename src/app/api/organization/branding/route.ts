@@ -3,6 +3,7 @@ import { getOrganizationModel } from "@/models/Organization";
 import { getControlConnection } from "@/lib/controlPlane";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
+import { logActivity } from "@/lib/activityLog";
 
 export const GET = withTenant(async (req, tenant, session) => {
   if (!session) {
@@ -58,6 +59,13 @@ export const PATCH = withTenant(async (req, tenant, session) => {
       new: true,
       runValidators: true,
     });
+
+    await logActivity(
+      tenant.connection,
+      session,
+      "branding.updated",
+      "Updated organization letterhead branding"
+    );
 
     return NextResponse.json({
       success: true,

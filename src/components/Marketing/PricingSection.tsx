@@ -15,8 +15,8 @@ const TIERS = [
     highlighted: false,
     features: [
       "1 organization",
-      "Up to 2 staff accounts",
-      "Up to 100 patient records",
+      "Up to 1 staff account",
+      "Up to 5 patient records",
       "Core patient, test & payment workflow",
       "Standard role set (fixed)",
       "Basic dashboard",
