@@ -830,7 +830,7 @@ export default function Test({ id }: { id?: string }) {
       <Modal
         open={showTestModal}
         onClose={handleCancelTestModal}
-        size="lg"
+        size="md"
         title={testData.test_title || "Test"}
       >
         <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-100">
@@ -876,11 +876,20 @@ export default function Test({ id }: { id?: string }) {
           <button
             type="button"
             onClick={() => setCurrentTab(1)}
+            title={
+              testData.status === "Awaiting Payment"
+                ? "Locked - payment must be recorded before results can be entered"
+                : undefined
+            }
             className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
               currentTab == 1 ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"
-            }`}
+            } ${testData.status === "Awaiting Payment" ? "opacity-60" : ""}`}
           >
-            <i className="fas fa-vials"></i>
+            <i
+              className={`fas ${
+                testData.status === "Awaiting Payment" ? "fa-lock" : "fa-vials"
+              }`}
+            ></i>
             Test Result
             {testData.status === "Test Completed" && (
               <i
@@ -897,14 +906,14 @@ export default function Test({ id }: { id?: string }) {
             <form className="flex flex-col my-2 items-start space-y-4 w-full">
               <div className="w-full">
                 <label className={LABEL_CLASS}>Payment method</label>
-                <div className="flex rounded-lg border border-slate-200 p-1">
+                <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentOption("cash")}
-                    className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
+                    className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
                       paymentOption === "cash"
-                        ? "bg-brand-600 text-white"
-                        : "text-slate-600 hover:bg-slate-50"
+                        ? "bg-brand-50 border-brand-500 text-brand-700"
+                        : "border-slate-200 text-slate-500 hover:bg-slate-50"
                     }`}
                   >
                     <i className="fas fa-money-bill-wave"></i>
@@ -913,10 +922,10 @@ export default function Test({ id }: { id?: string }) {
                   <button
                     type="button"
                     onClick={() => setPaymentOption("card")}
-                    className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
+                    className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
                       paymentOption === "card"
-                        ? "bg-brand-600 text-white"
-                        : "text-slate-600 hover:bg-slate-50"
+                        ? "bg-brand-50 border-brand-500 text-brand-700"
+                        : "border-slate-200 text-slate-500 hover:bg-slate-50"
                     }`}
                   >
                     <i className="fas fa-credit-card"></i>
@@ -1007,6 +1016,21 @@ export default function Test({ id }: { id?: string }) {
                   {testData?.payment?.user?.firstname} {testData?.payment?.user?.lastname}
                 </span>
               </div>
+            </div>
+          )}
+
+          {currentTab == 1 && testData.status === "Awaiting Payment" && (
+            <div className="text-center py-10 px-4">
+              <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <i className="fas fa-lock text-slate-400"></i>
+              </div>
+              <p className="text-sm font-semibold text-slate-600">
+                Results aren&apos;t available yet
+              </p>
+              <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                This test is still awaiting payment. Once payment is recorded
+                on the Payment tab, you&apos;ll be able to enter results here.
+              </p>
             </div>
           )}
 
