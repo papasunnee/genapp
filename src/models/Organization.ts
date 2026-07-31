@@ -11,6 +11,11 @@ export interface IOrganization extends Document {
   plan: OrganizationPlan;
   subscriptionStatus: SubscriptionStatus;
   subscriptionRenewsAt?: Date;
+  logo?: string;
+  tagline?: string;
+  address?: string;
+  phone?: string;
+  contactEmail?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +60,25 @@ const OrganizationSchema = new Schema<IOrganization>(
     },
     subscriptionRenewsAt: {
       type: Date,
+    },
+    logo: {
+      type: String,
+    },
+    tagline: {
+      type: String,
+      maxlength: [150, "Tagline cannot be more than 150 characters"],
+    },
+    address: {
+      type: String,
+      maxlength: [200, "Address cannot be more than 200 characters"],
+    },
+    phone: {
+      type: String,
+      maxlength: [60, "Phone cannot be more than 60 characters"],
+    },
+    contactEmail: {
+      type: String,
+      maxlength: [100, "Email cannot be more than 100 characters"],
     },
   },
   { timestamps: true }
