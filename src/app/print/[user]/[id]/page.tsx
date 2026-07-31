@@ -9,7 +9,7 @@ import Skeleton from "@/components/ui/Skeleton";
 
 function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="border border-slate-200 px-3 py-2">
+    <div className="border border-slate-200 px-3 py-2 print:px-2 print:py-1 break-inside-avoid">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </p>
@@ -66,23 +66,23 @@ export default function TestPrintPage({
     <div className="bg-slate-100 min-h-screen py-8 print:bg-white print:py-0">
       <div
         className="mx-auto bg-white shadow-sm print:shadow-none max-w-full"
-        style={{ width: "800px" }}
+        style={{ width: "210mm" }}
       >
-        <div className="px-8 pt-8 pb-4 flex items-start justify-between border-b-4 border-brand-700">
+        <div className="px-8 pt-6 pb-3 print:px-6 print:pt-3 print:pb-2 flex items-start justify-between border-b-4 border-brand-700 break-inside-avoid">
           <div className="flex items-center gap-3">
             {branding?.logo ? (
               <img
                 src={branding.logo}
                 alt={branding?.name || "Organization logo"}
-                className="h-16 w-16 object-contain"
+                className="h-14 w-14 print:h-10 print:w-10 object-contain"
               />
             ) : (
-              <div className="h-16 w-16 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0">
-                <i className="fas fa-flask text-2xl"></i>
+              <div className="h-14 w-14 print:h-10 print:w-10 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0">
+                <i className="fas fa-flask text-2xl print:text-lg"></i>
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-black uppercase text-brand-800 tracking-tight leading-none">
+              <h1 className="text-xl print:text-lg font-black uppercase text-brand-800 tracking-tight leading-none">
                 {branding?.name || "Laboratory"}
               </h1>
               <p className="text-xs text-slate-400 mt-1">
@@ -97,7 +97,7 @@ export default function TestPrintPage({
           )}
         </div>
 
-        <div className="px-8 py-2 flex items-center justify-between bg-slate-50 border-b border-slate-200 text-xs">
+        <div className="px-8 py-1.5 print:px-6 print:py-1 flex items-center justify-between bg-slate-50 border-b border-slate-200 text-xs break-inside-avoid">
           <span className="font-semibold text-slate-600">
             STATUS:{" "}
             <span
@@ -111,7 +111,7 @@ export default function TestPrintPage({
           <span className="font-semibold text-slate-600">REPORT NO: {reportNo}</span>
         </div>
 
-        <div className="px-8 py-5">
+        <div className="px-8 py-3 print:px-6 print:py-2">
           <div className="grid grid-cols-3">
             <InfoCell
               label="Patient Name"
@@ -141,39 +141,39 @@ export default function TestPrintPage({
           </div>
         </div>
 
-        <div className="px-8 pb-4">
-          <h2 className="text-center text-base font-bold uppercase tracking-wide border-b-2 border-slate-800 pb-2">
+        <div className="px-8 pb-3 print:px-6 print:pb-2">
+          <h2 className="text-center text-base font-bold uppercase tracking-wide border-b-2 border-slate-800 pb-2 print:pb-1 break-inside-avoid">
             {test?.test_title} Report
           </h2>
         </div>
 
-        <div className="px-8 pb-6 space-y-6">
+        <div className="px-8 pb-6 print:px-6 print:pb-3 space-y-4 print:space-y-2">
           {numericItems.length > 0 && (
             <table className="w-full text-xs border border-slate-300 border-collapse">
               <thead>
-                <tr className="bg-slate-800 text-white">
-                  <th className="text-left px-3 py-2 font-semibold">Parameter</th>
-                  <th className="text-left px-3 py-2 font-semibold">Value</th>
-                  <th className="text-left px-3 py-2 font-semibold">Unit</th>
-                  <th className="text-left px-3 py-2 font-semibold">Ref. Range</th>
+                <tr className="bg-slate-800 text-white break-inside-avoid">
+                  <th className="text-left px-3 py-2 print:py-1 font-semibold">Parameter</th>
+                  <th className="text-left px-3 py-2 print:py-1 font-semibold">Value</th>
+                  <th className="text-left px-3 py-2 print:py-1 font-semibold">Unit</th>
+                  <th className="text-left px-3 py-2 print:py-1 font-semibold">Ref. Range</th>
                 </tr>
               </thead>
               <tbody>
                 {numericItems.map((item: any, index: number) => (
                   <tr
                     key={index}
-                    className="border-b border-slate-200 last:border-b-0 even:bg-slate-50"
+                    className="border-b border-slate-200 last:border-b-0 even:bg-slate-50 break-inside-avoid"
                   >
-                    <td className="px-3 py-2 font-medium text-slate-700">
+                    <td className="px-3 py-2 print:py-1 font-medium text-slate-700">
                       {item.parameter.name}
                     </td>
-                    <td className="px-3 py-2 font-bold text-slate-900">
+                    <td className="px-3 py-2 print:py-1 font-bold text-slate-900">
                       {item.parameter.value}
                     </td>
-                    <td className="px-3 py-2 text-slate-500">
+                    <td className="px-3 py-2 print:py-1 text-slate-500">
                       {item.parameter.selectedunit || item.parameter.unit?.[0] || "-"}
                     </td>
-                    <td className="px-3 py-2 text-slate-500">{item.parameter.range || "-"}</td>
+                    <td className="px-3 py-2 print:py-1 text-slate-500">{item.parameter.range || "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -181,7 +181,7 @@ export default function TestPrintPage({
           )}
 
           {textItems.length > 0 && (
-            <div className="space-y-3 text-sm text-slate-700 leading-relaxed">
+            <div className="space-y-2.5 print:space-y-1.5 text-sm text-slate-700 leading-relaxed print:leading-snug">
               {textItems.map((item: any, index: number) => {
                 const name = (item.parameter.name || "").trim();
                 const value = (item.parameter.value || "").trim();
@@ -192,7 +192,7 @@ export default function TestPrintPage({
                   return (
                     <div
                       key={index}
-                      className="border border-slate-300 rounded bg-slate-50 px-4 py-3"
+                      className="border border-slate-300 rounded bg-slate-50 px-4 py-2.5 print:px-3 print:py-2 break-inside-avoid"
                     >
                       <p className="text-xs font-bold uppercase tracking-wide text-slate-800 mb-1">
                         Impression
@@ -203,14 +203,14 @@ export default function TestPrintPage({
                 }
                 if (isAdvice) {
                   return (
-                    <p key={index} className="italic text-slate-600 whitespace-pre-wrap">
+                    <p key={index} className="italic text-slate-600 whitespace-pre-wrap break-inside-avoid">
                       <span className="font-semibold not-italic">Advice: </span>
                       {value || "-"}
                     </p>
                   );
                 }
                 return (
-                  <p key={index} className="whitespace-pre-wrap">
+                  <p key={index} className="whitespace-pre-wrap break-inside-avoid">
                     <span className="font-bold underline">{name}</span>
                     {value ? `: ${value}` : ""}
                   </p>
@@ -226,7 +226,7 @@ export default function TestPrintPage({
           )}
         </div>
 
-        <div className="px-8 pb-8 flex items-end justify-between gap-6">
+        <div className="px-8 pb-6 print:px-6 print:pb-3 flex items-end justify-between gap-6 break-inside-avoid">
           <p className="text-[11px] text-slate-400 italic max-w-xs">
             Laboratory and clinical correlation is advised. This report was electronically
             generated and reflects results at the time of testing.
@@ -238,7 +238,7 @@ export default function TestPrintPage({
         </div>
 
         {hasContactFooter && (
-          <div className="bg-brand-900 text-white text-[11px] px-8 py-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="bg-brand-900 text-white text-[11px] px-8 py-2 print:px-6 print:py-1.5 flex flex-wrap items-center justify-between gap-2 break-inside-avoid">
             {branding?.address && (
               <span>
                 <i className="fas fa-map-marker-alt mr-1"></i>
@@ -276,8 +276,8 @@ export default function TestPrintPage({
       <style jsx global>{`
         @media print {
           @page {
-            size: A4;
-            margin: 12mm;
+            size: A5 landscape;
+            margin: 8mm;
           }
           * {
             -webkit-print-color-adjust: exact !important;
