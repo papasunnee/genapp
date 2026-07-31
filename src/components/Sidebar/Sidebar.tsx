@@ -1,335 +1,205 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import NotificationDropdown from "../Dropdowns/NotificationDropdown";
-import UserDropdown from "../Dropdowns/UserDropdown";
 import { signOut, useSession } from "next-auth/react";
+import Skeleton from "@/components/ui/Skeleton";
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: string;
+  weights?: number[];
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/admin", label: "Dashboard", icon: "fa-tv" },
+  { href: "/admin/patients", label: "Patients", icon: "fa-user" },
+  { href: "/admin/users", label: "Staff/Users", icon: "fa-users", weights: [100, 200, 500] },
+  { href: "/admin/results", label: "Results", icon: "fa-list", weights: [100, 200, 300] },
+  { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
+  { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },
+  { href: "/admin/profile", label: "My Profile", icon: "fa-id-badge" },
+];
+
+function isItemActive(pathname: string, href: string) {
+  return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+}
+
+function NavLink({
+  item,
+  active,
+  onNavigate,
+}: {
+  item: NavItem;
+  active: boolean;
+  onNavigate: (href: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate(item.href)}
+      className={
+        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors " +
+        (active
+          ? "bg-brand-50 text-brand-700"
+          : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")
+      }
+    >
+      <i
+        className={`fas ${item.icon} w-4 text-center ${
+          active ? "text-brand-600" : "text-slate-400"
+        }`}
+      ></i>
+      {item.label}
+    </button>
+  );
+}
 
 export default function Sidebar({ orgName }: { orgName: string }) {
   const { data, status } = useSession();
-  const [collapseShow, setCollapseShow] = useState("hidden");
+  const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname() ?? "";
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen]);
+
+  const handleNavigate = (href: string) => {
+    router.push(href);
+  };
+
+  const roleWeight = (data?.user as any)?.role?.weight;
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.weights || item.weights.includes(roleWeight)
+  );
+
+  const navContent = (
+    <>
+      <div className="px-3">
+        <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
+          Admin
+        </p>
+        <ul className="space-y-1">
+          {visibleItems.map((item) => (
+            <li key={item.href}>
+              <NavLink
+                item={item}
+                active={isItemActive(pathname, item.href)}
+                onNavigate={handleNavigate}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="px-3 mt-6">
+        <hr className="border-slate-100 mb-4" />
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors"
+        >
+          <i className="fas fa-power-off w-4 text-center text-slate-400"></i>
+          Logout
+        </button>
+      </div>
+
+      <div className="px-6 mt-6">
+        <hr className="border-slate-100 mb-4" />
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
+          Logged in as
+        </p>
+        {status === "loading" ? (
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-2.5 w-32" />
+          </div>
+        ) : (
+          data?.user && (
+            <div className="flex flex-col">
+              <span className="text-slate-700 text-sm font-semibold">
+                {(data.user as any).role?.name}
+              </span>
+              <span className="text-slate-400 text-xs">
+                {(data.user as any).firstname} {(data.user as any).lastname}
+              </span>
+            </div>
+          )
+        )}
+      </div>
+    </>
+  );
+
   return (
     <>
-      <nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
-        <div className="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto">
-          {/* Toggler */}
+      {/* Mobile top bar */}
+      <div className="md:hidden sticky top-0 z-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 h-16">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open navigation menu"
+          aria-expanded={mobileOpen}
+          className="p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+        >
+          <i className="fas fa-bars"></i>
+        </button>
+        <span className="text-sm font-semibold text-slate-700 truncate">{orgName}</span>
+        <div className="w-9" />
+      </div>
+
+      {/* Mobile drawer backdrop */}
+      <div
+        onClick={() => setMobileOpen(false)}
+        className={`md:hidden fixed inset-0 z-30 bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      />
+
+      {/* Mobile drawer */}
+      <div
+        className={`md:hidden fixed top-0 left-0 bottom-0 z-40 w-72 bg-white shadow-xl transform transition-transform duration-200 flex flex-col py-4 overflow-y-auto ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="px-4 flex items-center justify-between mb-4">
+          <span className="text-sm font-semibold text-slate-700 truncate">{orgName}</span>
           <button
-            className="cursor-pointer text-black opacity-50 md:hidden pr-3 py-1 text-xl leading-none bg-transparent rounded border border-solid border-transparent"
             type="button"
-            onClick={() => setCollapseShow("bg-white m-2 py-3 px-6")}
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation menu"
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
           >
-            <i className="fas fa-bars"></i>
+            <i className="fas fa-times"></i>
           </button>
-          {/* Brand */}
-          <Link
-            href=""
-            className="md:block text-center md:pb-2 text-slate-600 mr-0 inline-block text-xs  md:text-sm uppercase font-bold p-4 px-0"
-          >
-            {orgName}
-          </Link>
-          {/* User */}
-          {/* <ul className="md:hidden items-center flex flex-wrap list-none"> */}
-          <ul className="hidden items-center flex-wrap list-none">
-            <li className="inline-block relative">
-              <NotificationDropdown />
-            </li>
-            <li className="inline-block relative">
-              <UserDropdown />
-            </li>
-          </ul>
-          {/* Collapse */}
-          <div
-            className={
-              "md:flex md:flex-col md:items-stretch md:opacity-100 md:relative md:mt-4 md:shadow-none shadow absolute top-0 left-0 right-0 z-40 overflow-y-auto overflow-x-hidden h-auto items-center flex-1 rounded " +
-              collapseShow
-            }
-          >
-            {/* Collapse header */}
-            <div className="md:min-w-full md:hidden block pb-4 mb-4 border-b border-solid border-slate-200">
-              <div className="flex flex-wrap">
-                <div className="w-6/12">
-                  <Link
-                    href=""
-                    className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
-                  >
-                    {orgName}
-                  </Link>
-                </div>
-                <div className="w-6/12 flex justify-end">
-                  <button
-                    type="button"
-                    className="cursor-pointer text-black opacity-50 md:hidden px-3 py-1 text-xl leading-none bg-transparent rounded border border-solid border-transparent"
-                    onClick={() => setCollapseShow("hidden")}
-                  >
-                    <i className="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-            {/* Form */}
-            <form className="mt-6 mb-4 hidden">
-              <div className="mb-3 pt-0">
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="px-3 py-2 h-12 border border-solid  border-slate-500 placeholder-slate-300 text-slate-600 bg-white rounded text-base leading-snug shadow-none outline-none focus:outline-none w-full font-normal"
-                />
-              </div>
-            </form>
-
-            {/* Divider */}
-            <hr className="my-4 md:min-w-full" />
-            {/* Heading */}
-            <h6 className="md:min-w-full text-slate-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">
-              Admin Section
-            </h6>
-            {/* Navigation */}
-
-            <ul className="md:flex-col md:min-w-full flex flex-col list-none">
-              <li className="items-center">
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCollapseShow("hidden");
-                    router.push("/admin");
-                  }}
-                  className={
-                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (pathname == "/admin"
-                      ? "text-sky-500 hover:text-sky-600"
-                      : "text-slate-700 hover:text-slate-500")
-                  }
-                >
-                  <i
-                    className={
-                      "fas fa-tv mr-2 text-sm " +
-                      (pathname == "/admin" ? "opacity-75" : "text-slate-300")
-                    }
-                  ></i>{" "}
-                  Dashboard
-                </span>
-              </li>
-              <li className="items-center">
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCollapseShow("hidden");
-                    router.push("/admin/patients");
-                  }}
-                  className={
-                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (pathname.indexOf("/admin/patients") !== -1
-                      ? "text-sky-500 hover:text-sky-600"
-                      : "text-slate-700 hover:text-slate-500")
-                  }
-                >
-                  <i
-                    className={
-                      "fas fa-user mr-2 text-sm " +
-                      (pathname.indexOf("/admin/patients") !== -1
-                        ? "opacity-75"
-                        : "text-slate-300")
-                    }
-                  ></i>{" "}
-                  Patients
-                </span>
-              </li>
-
-              {[100, 200, 500].includes(
-                (data?.user as any)?.role?.weight
-              ) && (
-                <li className="items-center">
-                  <span
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCollapseShow("hidden");
-                      router.push("/admin/users");
-                    }}
-                    className={
-                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                      (pathname.indexOf("/admin/users") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
-                    }
-                  >
-                    <i
-                      className={
-                        "fas fa-users mr-2 text-sm " +
-                        (pathname.indexOf("/admin/users") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Staff/Users
-                  </span>
-                </li>
-              )}
-
-              {[100, 200, 300].includes(
-                (data?.user as any)?.role?.weight
-              ) && (
-                <li className="items-center">
-                  <span
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCollapseShow("hidden");
-                      router.push("/admin/results");
-                    }}
-                    className={
-                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                      (pathname.indexOf("/admin/results") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
-                    }
-                  >
-                    <i
-                      className={
-                        "fas fa-list mr-2 text-sm " +
-                        (pathname.indexOf("/admin/results") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Results
-                  </span>
-                </li>
-              )}
-
-              {[100, 200, 400].includes(
-                (data?.user as any)?.role?.weight
-              ) && (
-                <li className="items-center">
-                  <span
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCollapseShow("hidden");
-                      router.push("/admin/payments");
-                    }}
-                    className={
-                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                      (pathname.indexOf("/admin/payments") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
-                    }
-                  >
-                    <i
-                      className={
-                        "fas fa-fingerprint mr-2 text-sm " +
-                        (pathname.indexOf("/admin/payments") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Payments
-                  </span>
-                </li>
-              )}
-
-              <li className="items-center">
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCollapseShow("hidden");
-                    router.push("/admin/profile");
-                  }}
-                  className={
-                    "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                    (pathname.indexOf("/admin/profile") !== -1
-                      ? "text-sky-500 hover:text-sky-600"
-                      : "text-slate-700 hover:text-slate-500")
-                  }
-                >
-                  <i
-                    className={
-                      "fas fa-user mr-2 text-sm " +
-                      (pathname.indexOf("/admin/profile") !== -1
-                        ? "opacity-75"
-                        : "text-slate-300")
-                    }
-                  ></i>{" "}
-                  My Profile
-                </span>
-              </li>
-
-              {[100, 200].includes((data?.user as any)?.role?.weight) && (
-                <li className="items-center">
-                  <span
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCollapseShow("hidden");
-                      router.push("/admin/test-catalog");
-                    }}
-                    className={
-                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
-                      (pathname.indexOf("/admin/test-catalog") !== -1
-                        ? "text-sky-500 hover:text-sky-600"
-                        : "text-slate-700 hover:text-slate-500")
-                    }
-                  >
-                    <i
-                      className={
-                        "fas fa-flask mr-2 text-sm " +
-                        (pathname.indexOf("/admin/test-catalog") !== -1
-                          ? "opacity-75"
-                          : "text-slate-300")
-                      }
-                    ></i>{" "}
-                    Test Catalog
-                  </span>
-                </li>
-              )}
-            </ul>
-
-            {/* Divider */}
-            <hr className="my-4 md:min-w-full" />
-
-            <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
-              <li className="items-center">
-                <Link
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    signOut({
-                      callbackUrl: "/",
-                    });
-                  }}
-                  className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
-                >
-                  <i className="fas fa-power-off text-slate-400 mr-2 text-sm"></i>{" "}
-                  Logout
-                </Link>
-              </li>
-            </ul>
-
-            {/* Divider */}
-            <hr className="my-4 md:min-w-full" />
-            {/* Heading */}
-            <h6 className="md:min-w-full text-slate-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">
-              Logged in As
-            </h6>
-            {/* Navigation */}
-
-            {data?.user && (
-              <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
-                <li className="items-center">
-                  <div className="flex flex-col">
-                    <span className="text-slate-500 text-sm py-1 font-bold block">
-                      {(data.user as any).role?.name}
-                    </span>
-                    <span className="text-slate-400 text-xs py-1 font-semibold block">
-                      {(data.user as any).firstname?.toString().toUpperCase()}{" "}
-                      {(data.user as any).lastname?.toString().toUpperCase()}
-                    </span>
-                  </div>
-                </li>
-              </ul>
-            )}
-          </div>
         </div>
+        {navContent}
+      </div>
+
+      {/* Desktop sidebar */}
+      <nav className="hidden md:flex md:flex-col md:fixed md:top-0 md:left-0 md:bottom-0 md:w-64 bg-white border-r border-slate-200 py-4 overflow-y-auto">
+        <Link
+          href="/admin"
+          className="px-6 pb-4 mb-4 border-b border-slate-100 text-slate-700 text-sm font-bold truncate block"
+        >
+          {orgName}
+        </Link>
+        {navContent}
       </nav>
     </>
   );
