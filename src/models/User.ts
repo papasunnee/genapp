@@ -10,6 +10,10 @@ export interface IUser extends Document {
   lab_no?: string;
   gender?: string;
   image_url?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  description?: string;
   role: Types.ObjectId;
   status: "Active" | "Suspended" | "Quit" | "Sacked";
   created_by?: Types.ObjectId;
@@ -56,6 +60,19 @@ const UserSchema = new Schema<IUser>(
     },
     image_url: {
       type: String,
+    },
+    address: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
+    description: {
+      type: String,
+      maxlength: [500, "Description cannot be more than 500 characters"],
     },
     role: {
       type: Schema.Types.ObjectId,

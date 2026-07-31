@@ -86,8 +86,25 @@ export const POST = withTenant(async (req, tenant, session) => {
   }
 });
 
+// Self-service profile edit only - a user updates their own record, never
+// someone else's (no target id is even accepted from the request body).
+// The previous version accepted an arbitrary put_id with no ownership
+// check at all, and only wrote to title/paragraphs fields that don't
+// exist on this schema, so it never actually updated a profile.
+const EDITABLE_PROFILE_FIELDS = [
+  "firstname",
+  "lastname",
+  "phone",
+  "address",
+  "city",
+  "country",
+  "gender",
+  "description",
+  "image_url",
+] as const;
+
 export const PUT = withTenant(async (req, tenant, session) => {
-  if (!session) {
+  if (!session?.user?._id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
@@ -95,26 +112,21 @@ export const PUT = withTenant(async (req, tenant, session) => {
 
   try {
     const body = await req.json();
-    const put_id = body.put_id;
-    if (!put_id) {
-      return NextResponse.json(
-        { success: false, error: "unprocessed put_id" },
-        { status: 400 }
-      );
+    const update: Record<string, any> = {};
+    for (const field of EDITABLE_PROFILE_FIELDS) {
+      if (body[field] !== undefined) update[field] = body[field];
     }
 
-    delete body._id;
-    const updateUser = await User.findOneAndUpdate(
-      { _id: put_id },
-      { title: body.title, paragraphs: body.paragraphs },
-      { new: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(session.user._id, update, {
+      new: true,
+      runValidators: true,
+    }).populate("role");
 
-    return NextResponse.json({ success: true, data: updateUser });
+    return NextResponse.json({ success: true, data: updatedUser });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 400 }
     );
   }
 });
