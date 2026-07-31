@@ -26,6 +26,9 @@ export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
 
   const TestCategory = getTestCategoryModel(tenant.connection);
 
@@ -44,6 +47,9 @@ export const POST = withTenant(async (req, tenant, session) => {
 export const PUT = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
   const TestCategory = getTestCategoryModel(tenant.connection);
@@ -77,6 +83,9 @@ export const PUT = withTenant(async (req, tenant, session) => {
 export const DELETE = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
   const TestCategory = getTestCategoryModel(tenant.connection);

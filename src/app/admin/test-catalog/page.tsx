@@ -1,7 +1,14 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
 import TestCatalogData from "@/components/TestCatalogData";
 
-export default function TestCatalogPage() {
+export default async function TestCatalogPage() {
+  const session = await auth();
+  if (![100, 200].includes((session?.user as any)?.role?.weight)) {
+    redirect("/unauthorized?reason=forbidden");
+  }
+
   return (
     <>
       <AdminNavbar breadCrumb={["Dashboard", "Test Catalog"]} />
