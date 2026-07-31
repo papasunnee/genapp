@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrganizationModel } from "@/models/Organization";
+import { getSubscriptionEventModel } from "@/models/SubscriptionEvent";
 import { getRoleModel } from "@/models/Role";
 import { getUserModel } from "@/models/User";
 import { getAccessModel } from "@/models/Access";
@@ -57,11 +58,31 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, status, plan, subscriptionStatus, subscriptionRenewsAt } = body;
+    const {
+      id,
+      status,
+      plan,
+      subscriptionStatus,
+      subscriptionRenewsAt,
+      amount,
+      note,
+    } = body;
     if (!id) {
       return NextResponse.json(
         { success: false, error: "Missing organization id" },
         { status: 400 }
+      );
+    }
+
+    const controlConn = await getControlConnection();
+    const Organization = getOrganizationModel(controlConn);
+    const SubscriptionEvent = getSubscriptionEventModel(controlConn);
+
+    const existing = await Organization.findById(id);
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Organization not found" },
+        { status: 404 }
       );
     }
 
@@ -73,15 +94,25 @@ export async function PATCH(req: NextRequest) {
       update.subscriptionRenewsAt = subscriptionRenewsAt ? new Date(subscriptionRenewsAt) : null;
     }
 
-    const controlConn = await getControlConnection();
-    const Organization = getOrganizationModel(controlConn);
+    // Any change to plan, subscription status, or renewal date is a real
+    // subscription event worth an audit trail entry - not just an
+    // overwrite of the organization's current-state fields. Plain status
+    // (Active/Suspended, an access toggle, not a subscription concept)
+    // doesn't get logged here.
+    const isSubscriptionChange =
+      plan !== undefined || subscriptionStatus !== undefined || subscriptionRenewsAt !== undefined;
+
     const organization = await Organization.findByIdAndUpdate(id, update, { new: true });
 
-    if (!organization) {
-      return NextResponse.json(
-        { success: false, error: "Organization not found" },
-        { status: 404 }
-      );
+    if (isSubscriptionChange) {
+      await SubscriptionEvent.create({
+        organization: id,
+        plan: organization?.plan,
+        subscriptionStatus: organization?.subscriptionStatus,
+        amount: Number(amount) || 0,
+        renewsAt: organization?.subscriptionRenewsAt,
+        note,
+      });
     }
 
     return NextResponse.json({ success: true, data: organization });
@@ -243,6 +274,15 @@ export async function POST(req: NextRequest) {
       subdomain,
       dbName,
       status: "Active",
+    });
+
+    const SubscriptionEvent = getSubscriptionEventModel(controlConn);
+    await SubscriptionEvent.create({
+      organization: organization._id,
+      plan: organization.plan,
+      subscriptionStatus: organization.subscriptionStatus,
+      amount: 0,
+      note: "Organization created",
     });
 
     return NextResponse.json(

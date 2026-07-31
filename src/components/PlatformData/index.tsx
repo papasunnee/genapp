@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { fetcher } from "@/utils/fetcher";
 import { toast } from "@/components/ui/Toast";
@@ -18,11 +19,6 @@ import {
 const INPUT_CLASS =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors";
 const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
-const SELECT_CLASS =
-  "border border-slate-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors";
-
-const PLANS = ["Free", "Pro", "Enterprise"];
-const SUBSCRIPTION_STATUSES = ["Trial", "Active", "Expired", "Cancelled"];
 
 const EMPTY_FORM = {
   name: "",
@@ -43,6 +39,33 @@ function StatusBadge({ status }: { status: string }) {
     >
       {status}
     </span>
+  );
+}
+
+const PLAN_BADGE: Record<string, string> = {
+  Free: "bg-slate-100 text-slate-600",
+  Pro: "bg-brand-50 text-brand-700",
+  Enterprise: "bg-violet-50 text-violet-700",
+};
+
+const SUBSCRIPTION_BADGE: Record<string, string> = {
+  Trial: "bg-amber-50 text-amber-700",
+  Active: "bg-emerald-50 text-emerald-700",
+  Expired: "bg-red-50 text-red-700",
+  Cancelled: "bg-slate-100 text-slate-500",
+};
+
+function StatCard({ label, value, icon }: { label: string; value: number; icon: string }) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3">
+      <div className="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+        <i className={`fas ${icon}`}></i>
+      </div>
+      <div>
+        <p className="text-xl font-bold text-slate-800 leading-none">{value}</p>
+        <p className="text-xs text-slate-400 mt-1">{label}</p>
+      </div>
+    </div>
   );
 }
 
@@ -141,119 +164,120 @@ export default function PlatformData() {
     setCreating(false);
   };
 
+  const activeCount = organizations.filter((o: any) => o.status === "Active").length;
+  const trialCount = organizations.filter((o: any) => o.subscriptionStatus === "Trial").length;
+  const suspendedCount = organizations.filter((o: any) => o.status === "Suspended").length;
+
   return (
-    <div className={TABLE_CARD_CLASS}>
-      <div className={TABLE_HEADER_CLASS}>
-        <div className="flex flex-wrap items-center">
-          <div className="relative w-full max-w-full flex-grow flex-1">
-            <h6 className="text-slate-800 text-md md:text-lg font-semibold">
-              Organizations ({organizations.length})
-            </h6>
-            <span className="font-normal text-xs md:text-sm text-slate-400">
-              Manage tenant lifecycle and subscriptions
-            </span>
-          </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold uppercase px-3 py-2 rounded-lg transition-colors space-x-1"
-          >
-            <i className="fas fa-plus"></i>
-            <span>Add Organization</span>
-          </button>
-        </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="Organizations" value={organizations.length} icon="fa-building" />
+        <StatCard label="Active" value={activeCount} icon="fa-check-circle" />
+        <StatCard label="On Trial" value={trialCount} icon="fa-hourglass-half" />
+        <StatCard label="Suspended" value={suspendedCount} icon="fa-ban" />
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={5} />
-      ) : organizations.length > 0 ? (
-        <div className="block w-full overflow-x-auto">
-          <table className="items-center w-full bg-transparent border-collapse">
-            <thead>
-              <tr>
-                <th className={TABLE_TH_CLASS}>Organization</th>
-                <th className={TABLE_TH_CLASS}>Status</th>
-                <th className={TABLE_TH_CLASS}>Plan</th>
-                <th className={TABLE_TH_CLASS}>Subscription</th>
-                <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-right tracking-wide bg-slate-50 text-slate-500 border-slate-100">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {organizations.map((org: any) => (
-                <tr key={org._id} className={TABLE_TR_CLASS}>
-                  <th className="px-6 align-middle text-sm p-3 text-left">
-                    <span className="font-semibold text-slate-700 block">
-                      {org.name}
-                    </span>
-                    <span className="text-xs text-slate-400">{org.subdomain}</span>
+      <div className={TABLE_CARD_CLASS}>
+        <div className={TABLE_HEADER_CLASS}>
+          <div className="flex flex-wrap items-center">
+            <div className="relative w-full max-w-full flex-grow flex-1">
+              <h6 className="text-slate-800 text-md md:text-lg font-semibold">
+                Organizations ({organizations.length})
+              </h6>
+              <span className="font-normal text-xs md:text-sm text-slate-400">
+                Manage tenant lifecycle and subscriptions
+              </span>
+            </div>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold uppercase px-3 py-2 rounded-lg transition-colors space-x-1"
+            >
+              <i className="fas fa-plus"></i>
+              <span>Add Organization</span>
+            </button>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <TableSkeleton columns={5} />
+        ) : organizations.length > 0 ? (
+          <div className="block w-full overflow-x-auto">
+            <table className="items-center w-full bg-transparent border-collapse">
+              <thead>
+                <tr>
+                  <th className={TABLE_TH_CLASS}>Organization</th>
+                  <th className={TABLE_TH_CLASS}>Status</th>
+                  <th className={TABLE_TH_CLASS}>Plan</th>
+                  <th className={TABLE_TH_CLASS}>Subscription</th>
+                  <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-right tracking-wide bg-slate-50 text-slate-500 border-slate-100">
+                    Actions
                   </th>
-                  <td className={TABLE_TD_CLASS}>
-                    <StatusBadge status={org.status} />
-                  </td>
-                  <td className={TABLE_TD_CLASS}>
-                    <select
-                      value={org.plan}
-                      onChange={(e) => updateOrg(org._id, { plan: e.target.value })}
-                      className={SELECT_CLASS}
-                    >
-                      {PLANS.map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className={TABLE_TD_CLASS}>
-                    <div className="space-y-1">
-                      <select
-                        value={org.subscriptionStatus}
-                        onChange={(e) =>
-                          updateOrg(org._id, { subscriptionStatus: e.target.value })
-                        }
-                        className={SELECT_CLASS}
-                      >
-                        {SUBSCRIPTION_STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="date"
-                        value={
-                          org.subscriptionRenewsAt
-                            ? String(org.subscriptionRenewsAt).slice(0, 10)
-                            : ""
-                        }
-                        onChange={(e) =>
-                          updateOrg(org._id, { subscriptionRenewsAt: e.target.value })
-                        }
-                        title="Renews on"
-                        className={SELECT_CLASS + " block text-xs"}
-                      />
-                    </div>
-                  </td>
-                  <td className="px-6 align-middle text-sm p-3 text-right space-x-3 whitespace-nowrap">
-                    <button
-                      onClick={() => handleToggleStatus(org)}
-                      className={`text-xs font-semibold uppercase ${
-                        org.status === "Active"
-                          ? "text-red-600 hover:text-red-800"
-                          : "text-emerald-600 hover:text-emerald-800"
-                      }`}
-                    >
-                      {org.status === "Active" ? "Suspend" : "Activate"}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(org)}
-                      className="text-xs font-semibold uppercase text-slate-400 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  </td>
                 </tr>
-              ))}
+              </thead>
+              <tbody>
+                {organizations.map((org: any) => (
+                  <tr key={org._id} className={TABLE_TR_CLASS}>
+                    <th className="px-6 align-middle text-sm p-3 text-left">
+                      <Link
+                        href={`/platform/organizations/${org._id}`}
+                        className="font-semibold text-slate-700 hover:text-brand-600 hover:underline block"
+                      >
+                        {org.name}
+                      </Link>
+                      <span className="text-xs text-slate-400">{org.subdomain}</span>
+                    </th>
+                    <td className={TABLE_TD_CLASS}>
+                      <StatusBadge status={org.status} />
+                    </td>
+                    <td className={TABLE_TD_CLASS}>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          PLAN_BADGE[org.plan] || "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {org.plan}
+                      </span>
+                    </td>
+                    <td className={TABLE_TD_CLASS}>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          SUBSCRIPTION_BADGE[org.subscriptionStatus] || "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {org.subscriptionStatus}
+                      </span>
+                      {org.subscriptionRenewsAt && (
+                        <span className="block text-[11px] text-slate-400 mt-1">
+                          Renews {String(org.subscriptionRenewsAt).slice(0, 10)}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 align-middle text-sm p-3 text-right space-x-3 whitespace-nowrap">
+                      <Link
+                        href={`/platform/organizations/${org._id}`}
+                        className="text-xs font-semibold uppercase text-brand-600 hover:text-brand-800"
+                      >
+                        Manage
+                      </Link>
+                      <button
+                        onClick={() => handleToggleStatus(org)}
+                        className={`text-xs font-semibold uppercase ${
+                          org.status === "Active"
+                            ? "text-red-600 hover:text-red-800"
+                            : "text-emerald-600 hover:text-emerald-800"
+                        }`}
+                      >
+                        {org.status === "Active" ? "Suspend" : "Activate"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(org)}
+                        className="text-xs font-semibold uppercase text-slate-400 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -264,6 +288,7 @@ export default function PlatformData() {
           </p>
         </div>
       )}
+      </div>
 
       <Modal open={modalOpen} title="Add Organization" onClose={() => setModalOpen(false)}>
         <form onSubmit={handleCreate} className="space-y-4">
