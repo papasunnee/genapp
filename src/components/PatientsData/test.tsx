@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
+import moment from "moment";
 import { fetcher } from "@/utils/fetcher";
 import {
   assignValuesToTest,
@@ -80,6 +81,12 @@ const TestStatus: Record<
     deepcolor: "bg-green-500",
     textcolor: "text-green-500",
   },
+};
+
+const STATUS_BADGE: Record<string, string> = {
+  "Awaiting Payment": "bg-red-50 text-red-700",
+  "Awaiting Result": "bg-orange-50 text-orange-700",
+  "Test Completed": "bg-emerald-50 text-emerald-700",
 };
 
 export default function Test({ id }: { id?: string }) {
@@ -214,10 +221,6 @@ export default function Test({ id }: { id?: string }) {
     };
     setTestData(itemCopy);
     setShowTestModal(true);
-  };
-  const handlePaymentOption = (e: any) => {
-    const { value } = e.target;
-    setPaymentOption(value);
   };
   const handleSavePayment = async () => {
     setLoading(true);
@@ -830,93 +833,131 @@ export default function Test({ id }: { id?: string }) {
         size="lg"
         title={testData.test_title || "Test"}
       >
-        <div className="text-xl font-semibold mb-4">
-          Total Cost:{" "}
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-100">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">
+              Total Cost
+            </p>
+            <p
+              className={`text-2xl font-bold ${
+                testData.status == "Awaiting Payment" ? "text-red-600" : "text-emerald-600"
+              }`}
+            >
+              {formatCurrency(testData.total_cost)}
+            </p>
+          </div>
           <span
-            className={
-              testData.status == "Awaiting Payment"
-                ? "text-red-600"
-                : "text-emerald-600"
-            }
+            className={`text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap ${
+              STATUS_BADGE[testData.status] ?? "bg-slate-100 text-slate-600"
+            }`}
           >
-            {formatCurrency(testData.total_cost)}
+            {testData.status}
           </span>
         </div>
 
-        <div className="text-sm font-medium text-center text-slate-500 border-b border-slate-200">
-          <ul className="flex flex-wrap -mb-px">
-            <li className="mr-2 flex-grow">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setCurrentTab(0);
-                }}
-                className={currentTab == 0 ? "active_tab" : "non_active_tab"}
-              >
-                Payment
-              </a>
-            </li>
-            <li className="mr-2 flex-grow">
-              <a
-                onClick={(e) => {
-                  e.preventDefault();
-                  setCurrentTab(1);
-                }}
-                href="#"
-                className={currentTab == 1 ? "active_tab" : "non_active_tab"}
-              >
-                Test Result
-              </a>
-            </li>
-          </ul>
+        <div className="flex rounded-lg border border-slate-200 p-1 mb-5">
+          <button
+            type="button"
+            onClick={() => setCurrentTab(0)}
+            className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
+              currentTab == 0 ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            <i className="fas fa-money-bill-wave"></i>
+            Payment
+            {testData.status !== "Awaiting Payment" && (
+              <i
+                className={`fas fa-check-circle ${
+                  currentTab == 0 ? "text-white" : "text-emerald-500"
+                }`}
+              ></i>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentTab(1)}
+            className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
+              currentTab == 1 ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            <i className="fas fa-vials"></i>
+            Test Result
+            {testData.status === "Test Completed" && (
+              <i
+                className={`fas fa-check-circle ${
+                  currentTab == 1 ? "text-white" : "text-emerald-500"
+                }`}
+              ></i>
+            )}
+          </button>
+        </div>
 
+        <div className="text-sm text-slate-600">
           {currentTab == 0 && testData.status === "Awaiting Payment" && (
-            <form className="flex flex-col my-4 items-start space-y-4">
+            <form className="flex flex-col my-2 items-start space-y-4 w-full">
               <div className="w-full">
-                <label className={LABEL_CLASS} htmlFor="paymentOption">
-                  Select payment option
-                </label>
-                <select
-                  onChange={handlePaymentOption}
-                  id="paymentOption"
-                  className={MODAL_INPUT_CLASS}
-                >
-                  <option value="cash">Cash</option>
-                  <option value="card">Card Payment</option>
-                </select>
+                <label className={LABEL_CLASS}>Payment method</label>
+                <div className="flex rounded-lg border border-slate-200 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentOption("cash")}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
+                      paymentOption === "cash"
+                        ? "bg-brand-600 text-white"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <i className="fas fa-money-bill-wave"></i>
+                    Cash
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentOption("card")}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
+                      paymentOption === "card"
+                        ? "bg-brand-600 text-white"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <i className="fas fa-credit-card"></i>
+                    Card
+                  </button>
+                </div>
               </div>
               {paymentOption == "cash" && (
                 <>
-                  <div className="w-full">
-                    <label className={LABEL_CLASS} htmlFor="invoice">
-                      Invoice No.
-                    </label>
-                    <input
-                      id="invoice"
-                      ref={invoiceRef}
-                      type="text"
-                      className={MODAL_INPUT_CLASS}
-                    />
-                  </div>
-                  <div className="w-full">
-                    <label className={LABEL_CLASS} htmlFor="amountPaid">
-                      Amount Paid
-                    </label>
-                    <input
-                      id="amountPaid"
-                      ref={amountPaidRef}
-                      type="text"
-                      className={MODAL_INPUT_CLASS}
-                    />
+                  <div className="grid grid-cols-2 gap-4 w-full">
+                    <div>
+                      <label className={LABEL_CLASS} htmlFor="invoice">
+                        Invoice No.
+                      </label>
+                      <input
+                        id="invoice"
+                        ref={invoiceRef}
+                        type="text"
+                        className={MODAL_INPUT_CLASS}
+                      />
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS} htmlFor="amountPaid">
+                        Amount Paid
+                      </label>
+                      <input
+                        id="amountPaid"
+                        ref={amountPaidRef}
+                        type="text"
+                        className={MODAL_INPUT_CLASS}
+                      />
+                    </div>
                   </div>
                   <button
                     disabled={loading}
                     type="button"
                     onClick={handleSavePayment}
-                    className={MODAL_PRIMARY_BUTTON}
+                    className={MODAL_PRIMARY_BUTTON + " w-full"}
                   >
                     {loading && <Spinner />}
+                    <i className="fas fa-hand-holding-usd mr-2"></i>
                     Save Payment
                   </button>
                 </>
@@ -927,7 +968,7 @@ export default function Test({ id }: { id?: string }) {
                   onClick={() =>
                     toast.error("Card payments aren't available yet - please select cash for now")
                   }
-                  className={MODAL_PRIMARY_BUTTON}
+                  className={MODAL_PRIMARY_BUTTON + " w-full"}
                 >
                   Paystack Option
                 </button>
@@ -935,20 +976,35 @@ export default function Test({ id }: { id?: string }) {
             </form>
           )}
           {currentTab == 0 && testData.status !== "Awaiting Payment" && (
-            <div className="flex flex-col items-start my-4 space-y-2 text-left">
-              <div className="grid grid-cols-2 gap-3 text-sm text-left w-full">
-                <span className="font-semibold text-slate-700">Invoice Number:</span>
-                <span className="text-slate-600">{testData?.payment?.invoice}</span>
-                <span className="font-semibold text-slate-700">Amount Paid:</span>
-                <span className="text-slate-600">
+            <div className="rounded-lg border border-slate-200 divide-y divide-slate-100">
+              <div className="flex items-center gap-3 px-4 py-3">
+                <i className="fas fa-receipt text-slate-400 w-4"></i>
+                <span className="text-slate-500 flex-grow">Invoice Number</span>
+                <span className="font-semibold text-slate-800">
+                  {testData?.payment?.invoice}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <i className="fas fa-hand-holding-usd text-slate-400 w-4"></i>
+                <span className="text-slate-500 flex-grow">Amount Paid</span>
+                <span className="font-semibold text-emerald-600">
                   {formatCurrency(testData?.payment?.amount_paid)}
                 </span>
-                <span className="font-semibold text-slate-700">Date Paid:</span>
-                <span className="text-slate-600">{testData?.payment?.createdAt}</span>
-                <span className="font-semibold text-slate-700">Received by:</span>
-                <span className="text-slate-600">
-                  {testData?.payment?.user?.firstname}{" "}
-                  {testData?.payment?.user?.lastname}
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <i className="fas fa-calendar text-slate-400 w-4"></i>
+                <span className="text-slate-500 flex-grow">Date Paid</span>
+                <span className="font-semibold text-slate-800">
+                  {testData?.payment?.createdAt
+                    ? moment(testData.payment.createdAt).format("Do MMM YYYY, h:mm a")
+                    : "-"}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <i className="fas fa-user-nurse text-slate-400 w-4"></i>
+                <span className="text-slate-500 flex-grow">Received by</span>
+                <span className="font-semibold text-slate-800">
+                  {testData?.payment?.user?.firstname} {testData?.payment?.user?.lastname}
                 </span>
               </div>
             </div>
@@ -958,87 +1014,78 @@ export default function Test({ id }: { id?: string }) {
             <form
               ref={test_result_form}
               onSubmit={handleTestDataForm}
-              className="w-full py-4"
+              className="w-full py-2 space-y-3"
             >
-              <table className="w-full">
-                <tbody>
-                  {testData?.test_data?.map((test: any, i: number) => {
-                    let { parameter = {} } = test;
-                    if (parameter.resultType === "text") {
-                      return (
-                        <tr className="text-left mb-6 w-full" key={i}>
-                          <td className="w-full pb-4" colSpan={2}>
-                            <label className={LABEL_CLASS} htmlFor={parameter.id}>
-                              Enter analysis/findings for {parameter.name}
-                            </label>
-                            <textarea
-                              id={parameter.id}
-                              required
-                              name={parameter.id}
-                              value={resultForm[parameter.name] || ""}
-                              onChange={handleResultFormChange}
-                              className={MODAL_INPUT_CLASS + " h-32"}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    }
-                    return (
-                      <tr className="text-left mb-6 w-full" key={i}>
-                        <td className="w-1/2 pb-4 pr-2 align-top">
-                          <label className={LABEL_CLASS}>
-                            Select unit for {parameter.name}
-                          </label>
-                          <select
-                            name={`select${parameter.id}`}
-                            className={MODAL_INPUT_CLASS}
-                          >
-                            {parameter.unit?.length > 0 ? (
-                              parameter.unit.map((val: any, index: number) => (
-                                <option key={index}>{val}</option>
-                              ))
-                            ) : (
-                              <option value="">No unit configured</option>
-                            )}
-                          </select>
-                          {parameter.range && (
-                            <p className="text-xs text-slate-500 mt-1">
-                              Reference range: {parameter.range}
-                            </p>
-                          )}
-                        </td>
-                        <td className="w-1/2 pb-4 align-top">
-                          <label className={LABEL_CLASS} htmlFor={parameter.id}>
-                            Enter Value for {parameter.name}
-                          </label>
-                          <input
-                            id={parameter.id}
-                            type="number"
-                            required
-                            name={parameter.id}
-                            value={resultForm[parameter.name] || ""}
-                            onChange={handleResultFormChange}
-                            className={MODAL_INPUT_CLASS}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  <tr>
-                    <td className="text-left pt-2">
-                      <button
-                        disabled={loading}
-                        type="submit"
-                        name="submitbutton"
-                        className={MODAL_PRIMARY_BUTTON}
-                      >
-                        {loading && <Spinner />}
-                        Save Test Value/Result
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              {testData?.test_data?.map((test: any, i: number) => {
+                let { parameter = {} } = test;
+                if (parameter.resultType === "text") {
+                  return (
+                    <div key={i} className="rounded-lg border border-slate-200 p-4">
+                      <label className={LABEL_CLASS} htmlFor={parameter.id}>
+                        {parameter.name}{" "}
+                        <span className="text-slate-400 font-normal normal-case">
+                          (analysis/findings)
+                        </span>
+                      </label>
+                      <textarea
+                        id={parameter.id}
+                        required
+                        name={parameter.id}
+                        value={resultForm[parameter.name] || ""}
+                        onChange={handleResultFormChange}
+                        className={MODAL_INPUT_CLASS + " h-28"}
+                      />
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={i}
+                    className="rounded-lg border border-slate-200 p-4 grid grid-cols-2 gap-4"
+                  >
+                    <div>
+                      <label className={LABEL_CLASS} htmlFor={parameter.id}>
+                        {parameter.name}
+                      </label>
+                      <input
+                        id={parameter.id}
+                        type="number"
+                        required
+                        name={parameter.id}
+                        value={resultForm[parameter.name] || ""}
+                        onChange={handleResultFormChange}
+                        className={MODAL_INPUT_CLASS}
+                      />
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS}>Unit</label>
+                      <select name={`select${parameter.id}`} className={MODAL_INPUT_CLASS}>
+                        {parameter.unit?.length > 0 ? (
+                          parameter.unit.map((val: any, index: number) => (
+                            <option key={index}>{val}</option>
+                          ))
+                        ) : (
+                          <option value="">No unit configured</option>
+                        )}
+                      </select>
+                      {parameter.range && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          Reference range: {parameter.range}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              <button
+                disabled={loading}
+                type="submit"
+                name="submitbutton"
+                className={MODAL_PRIMARY_BUTTON + " w-full"}
+              >
+                {loading && <Spinner />}
+                Save Test Value/Result
+              </button>
             </form>
           )}
 

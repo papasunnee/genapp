@@ -73,54 +73,59 @@ export const assignValuesToTest = (arg: any[] = [], formData: Record<string, any
 export const displayTestResult = (testData: any = {}, patientData: any) => {
   const patientId = patientData.data._id;
   return (
-    <>
-      <div className="flex flex-col items-start my-4 space-y-2 border py-4">
-        <h1 className="text-center w-full underline text-xl font-bold">
-          {testData.test_title}
-        </h1>
-        <div className="w-full">
-          {testData.test_data.map((item: any, index: number) => {
-            if (item.parameter.resultType === "text") {
-              return (
-                <div className="w-full flex flex-col mt-0 border" key={index}>
-                  <div className="text-left px-2 font-semibold border-b bg-gray-50">
-                    {item.parameter.name}
-                  </div>
-                  <div className="px-2 py-1 whitespace-pre-wrap">
-                    {item.parameter.value}
-                  </div>
-                </div>
-              );
-            }
+    <div className="py-2">
+      <div className="rounded-lg border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+        {testData.test_data.map((item: any, index: number) => {
+          if (item.parameter.resultType === "text") {
             return (
-              <div className="w-full flex space-y-0 mt-0" key={index}>
-                <div className="text-left flex-grow w-1/2 border px-2">
+              <div key={index} className="px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">
                   {item.parameter.name}
-                </div>
-                <div className="flex-grow w-1/2 border">
+                </p>
+                <p className="text-sm text-slate-700 whitespace-pre-wrap">
                   {item.parameter.value}
-                </div>
-                <div className="flex-grow w-1/2 border">
-                  {item.parameter.selectedunit || item.parameter.unit?.[0] || "-"}
-                </div>
-                <div className="flex-grow w-1/2 border">
-                  {item.parameter.range || "-"}
-                </div>
+                </p>
               </div>
             );
-          })}
-        </div>
-
-        <div className="text-center w-full py-5 block">
-          <Link
-            target="_blank"
-            href={`/print/${patientId}/${testData._id}`}
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 mr-2 mb-2 focus:outline-none"
-          >
-            Launch Print View
-          </Link>
-        </div>
+          }
+          return (
+            <div
+              key={index}
+              className="px-4 py-3 flex items-center justify-between gap-4"
+            >
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-700 truncate">
+                  {item.parameter.name}
+                </p>
+                {item.parameter.range && (
+                  <p className="text-xs text-slate-400">
+                    Reference range: {item.parameter.range}
+                  </p>
+                )}
+              </div>
+              <div className="text-right flex-shrink-0">
+                <span className="text-base font-bold text-slate-800">
+                  {item.parameter.value}
+                </span>{" "}
+                <span className="text-sm text-slate-500">
+                  {item.parameter.selectedunit || item.parameter.unit?.[0] || ""}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
-    </>
+
+      <div className="text-center w-full pt-5">
+        <Link
+          target="_blank"
+          href={`/print/${patientId}/${testData._id}`}
+          className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg text-sm px-5 py-2.5 transition-colors"
+        >
+          <i className="fas fa-print"></i>
+          Launch Print View
+        </Link>
+      </div>
+    </div>
   );
 };
