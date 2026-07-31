@@ -18,6 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/order-test", label: "Order Test", icon: "fa-cart-plus", weights: [100, 200, 500] },
   { href: "/admin/patients", label: "Patients", icon: "fa-user" },
   { href: "/admin/users", label: "Staff/Users", icon: "fa-users", weights: [100, 200, 500] },
+  { href: "/admin/roles", label: "Roles", icon: "fa-user-shield", weights: [100, 200] },
   { href: "/admin/results", label: "Results", icon: "fa-list", weights: [100, 200, 300] },
   { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
   { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },

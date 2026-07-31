@@ -9,6 +9,7 @@ export interface PlanLimits {
   maxPatients: number;
   customCatalog: boolean;
   branding: boolean;
+  customRoles: boolean;
   analyticsHistoryMonths: number;
 }
 
@@ -24,6 +25,7 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     maxPatients: 100,
     customCatalog: false,
     branding: false,
+    customRoles: false,
     analyticsHistoryMonths: 1,
   },
   Pro: {
@@ -31,6 +33,7 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     maxPatients: UNLIMITED,
     customCatalog: true,
     branding: true,
+    customRoles: true,
     analyticsHistoryMonths: 6,
   },
   Enterprise: {
@@ -38,6 +41,7 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     maxPatients: UNLIMITED,
     customCatalog: true,
     branding: true,
+    customRoles: true,
     analyticsHistoryMonths: 12,
   },
 };
