@@ -2,6 +2,8 @@ import AdminNavbar from "@/components/Navbars/AdminNavbar";
 import HeaderStats from "@/components/Headers/HeaderStats";
 import CardLineChart from "@/components/Cards/CardLineChart";
 import CardBarChart from "@/components/Cards/CardBarChart";
+import CardRecentActivity from "@/components/Cards/CardRecentActivity";
+import CardPendingActions from "@/components/Cards/CardPendingActions";
 
 export default function AdminIndexPage() {
   return (
@@ -15,6 +17,14 @@ export default function AdminIndexPage() {
           </div>
           <div className="w-full xl:w-4/12 px-4">
             <CardBarChart />
+          </div>
+        </div>
+        <div className="flex flex-wrap">
+          <div className="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
+            <CardRecentActivity />
+          </div>
+          <div className="w-full xl:w-4/12 px-4">
+            <CardPendingActions />
           </div>
         </div>
       </div>
