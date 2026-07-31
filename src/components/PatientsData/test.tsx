@@ -1055,17 +1055,20 @@ export default function Test({ id }: { id?: string }) {
                         id={parameter.id}
                         required
                         name={parameter.id}
-                        value={resultForm[parameter.name] || ""}
+                        value={resultForm[parameter.id] || ""}
                         onChange={handleResultFormChange}
                         className={MODAL_INPUT_CLASS + " h-28"}
                       />
                     </div>
                   );
                 }
+                const hasUnit = parameter.unit?.length > 0;
                 return (
                   <div
                     key={i}
-                    className="rounded-lg border border-slate-200 p-4 grid grid-cols-2 gap-4"
+                    className={`rounded-lg border border-slate-200 p-4 grid gap-4 ${
+                      hasUnit ? "grid-cols-2" : "grid-cols-1"
+                    }`}
                   >
                     <div>
                       <label className={LABEL_CLASS} htmlFor={parameter.id}>
@@ -1076,28 +1079,26 @@ export default function Test({ id }: { id?: string }) {
                         type="number"
                         required
                         name={parameter.id}
-                        value={resultForm[parameter.name] || ""}
+                        value={resultForm[parameter.id] || ""}
                         onChange={handleResultFormChange}
                         className={MODAL_INPUT_CLASS}
                       />
-                    </div>
-                    <div>
-                      <label className={LABEL_CLASS}>Unit</label>
-                      <select name={`select${parameter.id}`} className={MODAL_INPUT_CLASS}>
-                        {parameter.unit?.length > 0 ? (
-                          parameter.unit.map((val: any, index: number) => (
-                            <option key={index}>{val}</option>
-                          ))
-                        ) : (
-                          <option value="">No unit configured</option>
-                        )}
-                      </select>
                       {parameter.range && (
                         <p className="text-xs text-slate-500 mt-1">
                           Reference range: {parameter.range}
                         </p>
                       )}
                     </div>
+                    {hasUnit && (
+                      <div>
+                        <label className={LABEL_CLASS}>Unit</label>
+                        <select name={`select${parameter.id}`} className={MODAL_INPUT_CLASS}>
+                          {parameter.unit.map((val: any, index: number) => (
+                            <option key={index}>{val}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                 );
               })}
