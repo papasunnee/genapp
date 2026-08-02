@@ -46,6 +46,22 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
   },
 };
 
+// The public demo is a shared sandbox, not a real customer on some plan -
+// it gets its own fixed limits regardless of whatever `plan` its
+// Organization record happens to carry: roomier than Free on the numeric
+// caps (a prospective customer should be able to see the product actually
+// work, not hit a wall after one patient), but locked out of anything that
+// would let a visitor deface the shared experience for the next one
+// (catalog, branding, roles).
+export const DEMO_LIMITS: PlanLimits = {
+  maxStaff: 3,
+  maxPatients: 20,
+  customCatalog: false,
+  branding: false,
+  customRoles: false,
+  analyticsHistoryMonths: 1,
+};
+
 /**
  * A `plan` label alone isn't the whole story - an org whose subscription
  * has lapsed (Expired/Cancelled) is billed as Free regardless of what
@@ -68,6 +84,8 @@ export function getEffectivePlan(organization: {
 export function getPlanLimits(organization: {
   plan: OrganizationPlan;
   subscriptionStatus: SubscriptionStatus;
+  isDemo?: boolean;
 }): PlanLimits {
+  if (organization.isDemo) return DEMO_LIMITS;
   return PLAN_LIMITS[getEffectivePlan(organization)];
 }

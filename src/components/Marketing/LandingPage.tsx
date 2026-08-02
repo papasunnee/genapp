@@ -62,12 +62,20 @@ export default function LandingPage() {
             </div>
             <span className="font-bold text-slate-800 tracking-tight">LabFlow</span>
           </div>
-          <a
-            href="#pricing"
-            className="text-sm font-semibold text-slate-500 hover:text-brand-600 transition-colors"
-          >
-            Pricing
-          </a>
+          <div className="flex items-center gap-6">
+            <a
+              href="#pricing"
+              className="text-sm font-semibold text-slate-500 hover:text-brand-600 transition-colors"
+            >
+              Pricing
+            </a>
+            <a
+              href="/demo"
+              className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors"
+            >
+              Try the Demo
+            </a>
+          </div>
         </div>
       </nav>
 
@@ -85,11 +93,17 @@ export default function LandingPage() {
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
-            href="#pricing"
+            href="/demo"
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-6 py-3 transition-colors"
           >
+            <i className="fas fa-play text-xs"></i>
+            Try the Demo
+          </a>
+          <a
+            href="#pricing"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-6 py-3 transition-colors"
+          >
             View Pricing
-            <i className="fas fa-arrow-right text-xs"></i>
           </a>
           <a
             href="mailto:hello@labflow.app"
@@ -98,6 +112,7 @@ export default function LandingPage() {
             Talk to Us
           </a>
         </div>
+        <p className="text-xs text-slate-400 mt-4">No signup required - sample data included.</p>
         <p className="text-xs text-slate-400 mt-6">
           Already have a lab account?{" "}
           <span className="text-slate-500">

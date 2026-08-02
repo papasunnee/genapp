@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Session } from "next-auth";
 import { auth } from "@/auth";
 import {
-  resolveTenant,
+  resolveTenantForRequest,
   TenantResolutionError,
   TenantContext,
 } from "./tenantContext";
@@ -23,8 +23,8 @@ type Handler = (
 export function withTenant(handler: Handler) {
   return async function (req: NextRequest): Promise<NextResponse> {
     try {
-      const tenant = await resolveTenant(req.headers.get("host"));
       const session = await auth();
+      const tenant = await resolveTenantForRequest(req.headers.get("host"), session);
 
       if (
         session?.user?.organizationId &&

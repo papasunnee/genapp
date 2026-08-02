@@ -4,7 +4,11 @@ import { getUserModel } from "@/models/User";
 import { getAccessModel } from "@/models/Access";
 import { getRoleModel } from "@/models/Role";
 import { getActivityLogModel } from "@/models/ActivityLog";
-import { resolveTenant, TenantResolutionError } from "@/lib/tenantContext";
+import {
+  resolveTenant,
+  resolveTenantBySubdomain,
+  TenantResolutionError,
+} from "@/lib/tenantContext";
 import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -13,9 +17,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     CredentialsProvider({
       credentials: {},
       async authorize(credentials, request) {
+        // The subdomain is normally read from the Host header - but a
+        // deployment with no wildcard DNS yet (or the public demo) has no
+        // subdomain to read there at all, so it can be passed explicitly
+        // instead. Real logins never send this; only the demo entry point
+        // does.
+        const explicitSubdomain = (credentials as any)?.subdomain as
+          | string
+          | undefined;
+
         let tenant;
         try {
-          tenant = await resolveTenant(request.headers.get("host"));
+          tenant = explicitSubdomain
+            ? await resolveTenantBySubdomain(explicitSubdomain)
+            : await resolveTenant(request.headers.get("host"));
         } catch (error) {
           if (error instanceof TenantResolutionError) {
             throw new Error("This organization could not be found.");

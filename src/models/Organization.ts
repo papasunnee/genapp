@@ -16,6 +16,8 @@ export interface IOrganization extends Document {
   address?: string;
   phone?: string;
   contactEmail?: string;
+  isDemo: boolean;
+  demoLastResetAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,6 +81,13 @@ const OrganizationSchema = new Schema<IOrganization>(
     contactEmail: {
       type: String,
       maxlength: [100, "Email cannot be more than 100 characters"],
+    },
+    isDemo: {
+      type: Boolean,
+      default: false,
+    },
+    demoLastResetAt: {
+      type: Date,
     },
   },
   { timestamps: true }
