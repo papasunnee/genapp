@@ -16,7 +16,8 @@ const DEMO_SUBDOMAIN = "demo";
 const DEMO_DB_NAME = "labflow_demo";
 const DEMO_USER_EMAIL = "demo@labflow.app";
 const DEMO_USER_PASSWORD = process.env.DEMO_USER_PASSWORD || "labflowdemo";
-const RESET_INTERVAL_MINUTES = Number(process.env.DEMO_RESET_INTERVAL_MINUTES) || 30;
+const RESET_INTERVAL_MINUTES =
+  Number(process.env.DEMO_RESET_INTERVAL_MINUTES) || 30;
 
 const DEFAULT_ROLES = [
   { name: "Super Admin", weight: 100 },
@@ -40,7 +41,9 @@ export async function POST() {
     const controlConn = await getControlConnection();
     const Organization = getOrganizationModel(controlConn);
 
-    let organization = await Organization.findOne({ subdomain: DEMO_SUBDOMAIN });
+    let organization = await Organization.findOne({
+      subdomain: DEMO_SUBDOMAIN,
+    });
     if (!organization) {
       organization = await Organization.create({
         name: "LabFlow Demo",
@@ -52,6 +55,12 @@ export async function POST() {
         isDemo: true,
         tagline: "Public demo - shared sandbox, resets periodically",
       });
+    } else if (!organization.isDemo) {
+      // Self-healing: fixes up a demo org record that was ever created
+      // while isDemo wasn't actually persisting (e.g. a stale cached
+      // Mongoose model on a long-lived connection, predating this field).
+      organization.isDemo = true;
+      await organization.save();
     }
 
     const tenantConn = await getTenantConnection(organization.dbName);
@@ -62,7 +71,8 @@ export async function POST() {
     let demoUser = await User.findOne({ email: DEMO_USER_EMAIL });
     if (!demoUser) {
       const roles = await Role.find();
-      const roleDocs = roles.length > 0 ? roles : await Role.insertMany(DEFAULT_ROLES);
+      const roleDocs =
+        roles.length > 0 ? roles : await Role.insertMany(DEFAULT_ROLES);
       const superAdminRole = roleDocs.find((r) => r.weight === 100)!;
 
       demoUser = await User.create({
@@ -79,8 +89,12 @@ export async function POST() {
 
     await seedTestCatalog(tenantConn);
 
-    const staleAfter = new Date(Date.now() - RESET_INTERVAL_MINUTES * 60 * 1000);
-    const needsReset = !organization.demoLastResetAt || organization.demoLastResetAt < staleAfter;
+    const staleAfter = new Date(
+      Date.now() - RESET_INTERVAL_MINUTES * 60 * 1000
+    );
+    const needsReset =
+      !organization.demoLastResetAt ||
+      organization.demoLastResetAt < staleAfter;
 
     if (needsReset) {
       const Patient = getPatientModel(tenantConn);
@@ -110,6 +124,9 @@ export async function POST() {
       },
     });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
   }
 }
