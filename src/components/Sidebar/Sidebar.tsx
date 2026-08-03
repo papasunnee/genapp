@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
-import { getLogoutDestination } from "@/lib/logoutDestination";
+import { useSession } from "next-auth/react";
 import Skeleton from "@/components/ui/Skeleton";
 
 type NavItem = {
@@ -14,19 +13,45 @@ type NavItem = {
   weights?: number[];
 };
 
-const NAV_ITEMS: NavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: "fa-tv" },
-  { href: "/admin/order-test", label: "Order Test", icon: "fa-cart-plus", weights: [100, 200, 500] },
-  { href: "/admin/patients", label: "Patients", icon: "fa-user" },
-  { href: "/admin/users", label: "Staff/Users", icon: "fa-users", weights: [100, 200, 500] },
-  { href: "/admin/roles", label: "Roles", icon: "fa-user-shield", weights: [100, 200] },
-  { href: "/admin/results", label: "Results", icon: "fa-list", weights: [100, 200, 300] },
-  { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
-  { href: "/admin/invoices", label: "Invoices", icon: "fa-file-invoice-dollar", weights: [100, 200, 400] },
-  { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },
-  { href: "/admin/settings", label: "Settings", icon: "fa-cog", weights: [100, 200] },
-  { href: "/admin/activity-log", label: "Activity Log", icon: "fa-history", weights: [100] },
-  { href: "/admin/profile", label: "My Profile", icon: "fa-id-badge" },
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [{ href: "/admin", label: "Dashboard", icon: "fa-tv" }],
+  },
+  {
+    label: "Clinical",
+    items: [
+      { href: "/admin/order-test", label: "Order Test", icon: "fa-cart-plus", weights: [100, 200, 500] },
+      { href: "/admin/patients", label: "Patients", icon: "fa-user" },
+      { href: "/admin/results", label: "Results", icon: "fa-list", weights: [100, 200, 300] },
+      { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },
+    ],
+  },
+  {
+    label: "Billing",
+    items: [
+      { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
+      { href: "/admin/invoices", label: "Invoices", icon: "fa-file-invoice-dollar", weights: [100, 200, 400] },
+    ],
+  },
+  {
+    label: "Administration",
+    items: [
+      { href: "/admin/users", label: "Staff/Users", icon: "fa-users", weights: [100, 200, 500] },
+      { href: "/admin/roles", label: "Roles", icon: "fa-user-shield", weights: [100, 200] },
+      { href: "/admin/settings", label: "Settings", icon: "fa-cog", weights: [100, 200] },
+      { href: "/admin/activity-log", label: "Activity Log", icon: "fa-history", weights: [100] },
+    ],
+  },
+  {
+    label: "Account",
+    items: [{ href: "/admin/profile", label: "My Profile", icon: "fa-id-badge" }],
+  },
 ];
 
 function isItemActive(pathname: string, href: string) {
@@ -91,67 +116,58 @@ export default function Sidebar({ orgName }: { orgName: string }) {
   };
 
   const roleWeight = (data?.user as any)?.role?.weight;
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.weights || item.weights.includes(roleWeight)
+  const visibleGroups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !item.weights || item.weights.includes(roleWeight)),
+  })).filter((group) => group.items.length > 0);
+
+  const navGroups = (
+    <div className="px-3 space-y-5">
+      {visibleGroups.map((group) => (
+        <div key={group.label}>
+          <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
+            {group.label}
+          </p>
+          <ul className="space-y-1">
+            {group.items.map((item) => (
+              <li key={item.href}>
+                <NavLink
+                  item={item}
+                  active={isItemActive(pathname, item.href)}
+                  onNavigate={handleNavigate}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 
-  const navContent = (
-    <>
-      <div className="px-3">
-        <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
-          Admin
-        </p>
-        <ul className="space-y-1">
-          {visibleItems.map((item) => (
-            <li key={item.href}>
-              <NavLink
-                item={item}
-                active={isItemActive(pathname, item.href)}
-                onNavigate={handleNavigate}
-              />
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="px-3 mt-6">
-        <hr className="border-slate-100 mb-4" />
-        <button
-          type="button"
-          onClick={() =>
-            signOut({ callbackUrl: `${window.location.origin}${getLogoutDestination(data)}` })
-          }
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors"
-        >
-          <i className="fas fa-power-off w-4 text-center text-slate-400"></i>
-          Logout
-        </button>
-      </div>
-
-      <div className="px-6 mt-6">
-        <hr className="border-slate-100 mb-4" />
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
-          Logged in as
-        </p>
-        {status === "loading" ? (
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-2.5 w-32" />
+  const userFooter = (
+    <Link
+      href="/admin/profile"
+      className="flex-shrink-0 block px-6 py-4 border-t border-slate-100 hover:bg-slate-50 transition-colors"
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
+        Logged in as
+      </p>
+      {status === "loading" ? (
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-2.5 w-32" />
+        </div>
+      ) : (
+        data?.user && (
+          <div className="flex flex-col">
+            <span className="text-slate-700 text-sm font-semibold">
+              {(data.user as any).firstname} {(data.user as any).lastname}
+            </span>
+            <span className="text-slate-400 text-xs">{(data.user as any).role?.name}</span>
           </div>
-        ) : (
-          data?.user && (
-            <div className="flex flex-col">
-              <span className="text-slate-700 text-sm font-semibold">
-                {(data.user as any).role?.name}
-              </span>
-              <span className="text-slate-400 text-xs">
-                {(data.user as any).firstname} {(data.user as any).lastname}
-              </span>
-            </div>
-          )
-        )}
-      </div>
-    </>
+        )
+      )}
+    </Link>
   );
 
   return (
@@ -181,11 +197,11 @@ export default function Sidebar({ orgName }: { orgName: string }) {
 
       {/* Mobile drawer */}
       <div
-        className={`md:hidden fixed top-0 left-0 bottom-0 z-40 w-72 bg-white shadow-xl transform transition-transform duration-200 flex flex-col py-4 overflow-y-auto ${
+        className={`md:hidden fixed top-0 left-0 bottom-0 z-40 w-72 bg-white shadow-xl transform transition-transform duration-200 flex flex-col ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="px-4 flex items-center justify-between mb-4">
+        <div className="flex-shrink-0 px-4 py-4 flex items-center justify-between border-b border-slate-100">
           <span className="text-sm font-semibold text-slate-700 truncate">{orgName}</span>
           <button
             type="button"
@@ -196,18 +212,20 @@ export default function Sidebar({ orgName }: { orgName: string }) {
             <i className="fas fa-times"></i>
           </button>
         </div>
-        {navContent}
+        <div className="flex-1 min-h-0 overflow-y-auto py-4">{navGroups}</div>
+        {userFooter}
       </div>
 
       {/* Desktop sidebar */}
-      <nav className="hidden md:flex md:flex-col md:fixed md:top-0 md:left-0 md:bottom-0 md:w-64 bg-white border-r border-slate-200 py-4 overflow-y-auto">
+      <nav className="hidden md:flex md:flex-col md:fixed md:top-0 md:left-0 md:bottom-0 md:w-64 bg-white border-r border-slate-200">
         <Link
           href="/admin"
-          className="px-6 pb-4 mb-4 border-b border-slate-100 text-slate-700 text-sm font-bold truncate block"
+          className="flex-shrink-0 px-6 py-4 border-b border-slate-100 text-slate-700 text-sm font-bold truncate block"
         >
           {orgName}
         </Link>
-        {navContent}
+        <div className="flex-1 min-h-0 overflow-y-auto py-4">{navGroups}</div>
+        {userFooter}
       </nav>
     </>
   );

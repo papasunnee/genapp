@@ -15,12 +15,12 @@ export default function FooterAdmin() {
             <div className="w-full md:w-4/12 px-4">
               <div className="text-sm text-slate-500 font-semibold py-1 text-center md:text-left">
                 Copyright © {data?.currentYear || new Date().getFullYear()}{" "}
-                <a
+                {/* <a
                   href="https://www.creative-tim.com?ref=nnjs-footer-admin"
                   className="text-slate-500 hover:text-slate-700 text-sm font-semibold py-1"
                 >
                   Cradle of Innovation
-                </a>
+                </a> */}
               </div>
             </div>
           </div>
