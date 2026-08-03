@@ -1,6 +1,6 @@
-# LabFlow
+# LabSuite
 
-LabFlow is a lab management system: patient registration, test ordering and result entry, payments, and staff/role administration for diagnostic laboratories. Each lab runs as its own organization on a shared LabFlow deployment.
+LabSuite is a lab management system: patient registration, test ordering and result entry, payments, and staff/role administration for diagnostic laboratories. Each lab runs as its own organization on a shared LabSuite deployment.
 
 Built with Next.js (App Router), TypeScript, MongoDB/Mongoose, and Auth.js.
 

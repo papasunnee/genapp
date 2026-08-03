@@ -37,7 +37,7 @@ export default function PlatformLoginPage() {
       <div className="w-full max-w-sm bg-white rounded-xl border border-slate-200 shadow-sm p-8">
         <div className="flex items-center justify-center space-x-2 mb-6">
           <i className="fas fa-shield-alt text-xl text-brand-600"></i>
-          <span className="text-xl font-bold text-slate-800">LabFlow Platform</span>
+          <span className="text-xl font-bold text-slate-800">LabSuite Platform</span>
         </div>
         <h1 className="text-lg font-semibold text-slate-800 text-center mb-1">
           Platform Admin

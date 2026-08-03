@@ -13,7 +13,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "LabFlow",
+  title: "LabSuite",
 };
 
 export const viewport: Viewport = {

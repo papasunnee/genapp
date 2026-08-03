@@ -47,7 +47,7 @@ export default function DemoPage() {
         <div className="h-14 w-14 rounded-full bg-brand-600 text-white flex items-center justify-center mx-auto mb-5">
           <i className="fas fa-flask text-2xl"></i>
         </div>
-        <h1 className="text-xl font-bold text-slate-900">Try the LabFlow Demo</h1>
+        <h1 className="text-xl font-bold text-slate-900">Try the LabSuite Demo</h1>
         <p className="text-sm text-slate-500 mt-3">
           A shared sandbox with sample patients and tests already loaded - explore the full
           workflow, no signup required.

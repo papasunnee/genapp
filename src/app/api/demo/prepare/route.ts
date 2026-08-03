@@ -13,9 +13,9 @@ import { seedTestCatalog } from "@/lib/seedTestCatalog";
 import { seedDemoSampleData } from "@/lib/seedDemoData";
 
 const DEMO_SUBDOMAIN = "demo";
-const DEMO_DB_NAME = "labflow_demo";
-const DEMO_USER_EMAIL = "demo@labflow.app";
-const DEMO_USER_PASSWORD = process.env.DEMO_USER_PASSWORD || "labflowdemo";
+const DEMO_DB_NAME = "labsuite_demo";
+const DEMO_USER_EMAIL = "demo@thelabsuite.com";
+const DEMO_USER_PASSWORD = process.env.DEMO_USER_PASSWORD || "labsuitedemo";
 const RESET_INTERVAL_MINUTES =
   Number(process.env.DEMO_RESET_INTERVAL_MINUTES) || 30;
 
@@ -46,7 +46,7 @@ export async function POST() {
     });
     if (!organization) {
       organization = await Organization.create({
-        name: "LabFlow Demo",
+        name: "LabSuite Demo",
         subdomain: DEMO_SUBDOMAIN,
         dbName: DEMO_DB_NAME,
         status: "Active",

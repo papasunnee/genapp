@@ -228,7 +228,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const dbName = `labflow_tenant_${subdomain}`;
+    const dbName = `labsuite_tenant_${subdomain}`;
 
     // Seed the tenant's own data first, and only register the Organization
     // (the thing that makes this tenant reachable) once that succeeds -

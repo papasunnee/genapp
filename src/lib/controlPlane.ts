@@ -1,6 +1,6 @@
 import { getTenantConnection } from "./tenantConnection";
 
-const CONTROL_DB_NAME = process.env.CONTROL_DB_NAME || "labflow_control";
+const CONTROL_DB_NAME = process.env.CONTROL_DB_NAME || "labsuite_control";
 
 /**
  * The control-plane database holds the Organization registry - the one

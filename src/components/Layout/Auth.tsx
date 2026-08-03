@@ -6,7 +6,7 @@ export default function Auth({ children }: { children: React.ReactNode }) {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-brand-700 to-brand-900 text-white p-12">
         <div className="flex items-center space-x-2">
           <i className="fas fa-flask text-2xl"></i>
-          <span className="text-2xl font-bold tracking-tight">LabFlow</span>
+          <span className="text-2xl font-bold tracking-tight">LabSuite</span>
         </div>
         <div className="max-w-md">
           <h1 className="text-3xl font-semibold leading-snug mb-4">
@@ -17,14 +17,14 @@ export default function Auth({ children }: { children: React.ReactNode }) {
           </p>
         </div>
         <div className="text-xs text-brand-200">
-          &copy; {new Date().getFullYear()} LabFlow
+          &copy; {new Date().getFullYear()} LabSuite
         </div>
       </div>
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-white px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center justify-center space-x-2 mb-10">
             <i className="fas fa-flask text-xl text-brand-600"></i>
-            <span className="text-xl font-bold text-slate-800">LabFlow</span>
+            <span className="text-xl font-bold text-slate-800">LabSuite</span>
           </div>
           {children}
         </div>

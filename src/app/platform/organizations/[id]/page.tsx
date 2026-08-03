@@ -20,7 +20,7 @@ export default async function PlatformOrganizationDetailPage({
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <i className="fas fa-shield-alt text-brand-600"></i>
-            <span className="font-bold text-slate-800">LabFlow Platform</span>
+            <span className="font-bold text-slate-800">LabSuite Platform</span>
           </div>
           <LogoutButton />
         </div>

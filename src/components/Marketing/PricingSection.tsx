@@ -10,7 +10,7 @@ const TIERS = [
     name: "Free",
     monthly: 0,
     yearly: 0,
-    tagline: "For a single lab trying LabFlow out.",
+    tagline: "For a single lab trying LabSuite out.",
     cta: "Start Free",
     highlighted: false,
     features: [
@@ -143,7 +143,7 @@ export default function PricingSection() {
                   ))}
                 </ul>
                 <a
-                  href="mailto:hello@labflow.app"
+                  href="mailto:hello@thelabsuite.com"
                   className={`mt-6 block text-center rounded-lg text-sm font-semibold px-4 py-2.5 transition-colors ${
                     tier.highlighted
                       ? "bg-brand-600 hover:bg-brand-700 text-white"

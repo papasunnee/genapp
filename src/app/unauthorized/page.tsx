@@ -8,7 +8,7 @@ const CONTENT: Record<
     icon: "fa-ban",
     title: "Organization suspended",
     message:
-      "This organization's account has been suspended. Contact your administrator or LabFlow support to have it reactivated.",
+      "This organization's account has been suspended. Contact your administrator or LabSuite support to have it reactivated.",
   },
   "not-found": {
     icon: "fa-question-circle",
@@ -20,7 +20,7 @@ const CONTENT: Record<
     icon: "fa-unlink",
     title: "Wrong address",
     message:
-      "This page has to be opened through your organization's own address (e.g. yourlab.labflow.com), not the base site.",
+      "This page has to be opened through your organization's own address (e.g. yourlab.thelabsuite.com), not the base site.",
   },
   forbidden: {
     icon: "fa-lock",

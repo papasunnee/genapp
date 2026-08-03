@@ -60,7 +60,7 @@ export default function LandingPage() {
             <div className="h-8 w-8 rounded-lg bg-brand-600 text-white flex items-center justify-center">
               <i className="fas fa-flask text-sm"></i>
             </div>
-            <span className="font-bold text-slate-800 tracking-tight">LabFlow</span>
+            <span className="font-bold text-slate-800 tracking-tight">LabSuite</span>
           </div>
           <div className="flex items-center gap-6">
             <a
@@ -87,7 +87,7 @@ export default function LandingPage() {
           Run your diagnostic lab from one place
         </h1>
         <p className="text-lg text-slate-500 mt-5 max-w-2xl mx-auto">
-          Patients, test orders, results, payments, and branded reports - LabFlow gives every lab
+          Patients, test orders, results, payments, and branded reports - LabSuite gives every lab
           its own private, isolated workspace with the tools to run day-to-day operations without
           the spreadsheets.
         </p>
@@ -106,7 +106,7 @@ export default function LandingPage() {
             View Pricing
           </a>
           <a
-            href="mailto:hello@labflow.app"
+            href="mailto:hello@thelabsuite.com"
             className="inline-flex items-center gap-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-6 py-3 transition-colors"
           >
             Talk to Us
@@ -117,7 +117,7 @@ export default function LandingPage() {
           Already have a lab account?{" "}
           <span className="text-slate-500">
             Visit your organization&apos;s own address to sign in - e.g.{" "}
-            <span className="font-mono">yourlab.labflow.app</span>
+            <span className="font-mono">yourlab.thelabsuite.com</span>
           </span>
         </p>
       </header>
@@ -147,9 +147,9 @@ export default function LandingPage() {
 
       <footer className="border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-          <span>&copy; {new Date().getFullYear()} LabFlow. All rights reserved.</span>
-          <a href="mailto:hello@labflow.app" className="hover:text-slate-600 transition-colors">
-            hello@labflow.app
+          <span>&copy; {new Date().getFullYear()} LabSuite. All rights reserved.</span>
+          <a href="mailto:hello@thelabsuite.com" className="hover:text-slate-600 transition-colors">
+            hello@thelabsuite.com
           </a>
         </div>
       </footer>
