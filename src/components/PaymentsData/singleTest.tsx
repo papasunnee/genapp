@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { toast } from "@/components/ui/Toast";
 import { fetcher } from "@/utils/fetcher";
@@ -16,7 +17,6 @@ const SingleTest = ({ id }: { id?: string }) => {
   const [loading, setLoading] = useState(false);
   const [paymentOption, setPaymentOption] = useState("cash");
 
-  const invoiceRef = useRef<HTMLInputElement>(null);
   const amountPaidRef = useRef<HTMLInputElement>(null);
   const { data, mutate: mutateTest }: any = useSWR(
     `/api/diagnosis/test?id=${id}`,
@@ -35,7 +35,6 @@ const SingleTest = ({ id }: { id?: string }) => {
 
   const handleSavePayment = async () => {
     setLoading(true);
-    const invoice = invoiceRef.current?.value;
     const amountPaid = amountPaidRef.current?.value;
     if (amountPaid == testData.total_cost) {
       try {
@@ -43,7 +42,6 @@ const SingleTest = ({ id }: { id?: string }) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            invoice,
             amount_paid: amountPaid,
             test: testData._id,
             payment_option: paymentOption,
@@ -59,6 +57,8 @@ const SingleTest = ({ id }: { id?: string }) => {
             test_data: JSON.parse(data.data.test_data),
           };
           setTestData(itemCopy);
+        } else {
+          toast.error(data.error || "Failed to record payment");
         }
       } catch (error: any) {
         toast.error(error.message);
@@ -82,6 +82,8 @@ const SingleTest = ({ id }: { id?: string }) => {
           </p>
           <p className="font-medium text-slate-500">Test Title</p>
           <p className="font-semibold text-slate-800">{testData?.test_title}</p>
+          <p className="font-medium text-slate-500">Invoice Number</p>
+          <p className="font-semibold text-slate-800">{testData?.invoice?.invoiceNumber}</p>
           <p className="font-medium text-slate-500">Total Cost</p>
           <p
             className={`font-semibold ${
@@ -95,6 +97,16 @@ const SingleTest = ({ id }: { id?: string }) => {
           <p className="font-medium text-slate-500">Status</p>
           <p className="font-semibold text-slate-800">{testData?.status}</p>
         </div>
+        {testData?.invoice?._id && (
+          <Link
+            href={`/print/invoice/${testData.invoice._id}`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 mt-4 text-sm text-brand-600 hover:underline font-semibold"
+          >
+            <i className="fas fa-print"></i>
+            Print Invoice
+          </Link>
+        )}
       </div>
 
       <div className="px-6 py-5">
@@ -116,12 +128,6 @@ const SingleTest = ({ id }: { id?: string }) => {
             {paymentOption == "cash" && (
               <>
                 <div className="w-full">
-                  <label className={LABEL_CLASS} htmlFor="invoice">
-                    Invoice No.
-                  </label>
-                  <input id="invoice" ref={invoiceRef} type="text" className={INPUT_CLASS} />
-                </div>
-                <div className="w-full">
                   <label className={LABEL_CLASS} htmlFor="amountPaid">
                     Amount Paid
                   </label>
@@ -129,6 +135,7 @@ const SingleTest = ({ id }: { id?: string }) => {
                     id="amountPaid"
                     ref={amountPaidRef}
                     type="text"
+                    placeholder={formatCurrency(testData?.total_cost)}
                     className={INPUT_CLASS}
                   />
                 </div>
@@ -176,7 +183,7 @@ const SingleTest = ({ id }: { id?: string }) => {
         ) : (
           <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm max-w-sm">
             <span className="font-medium text-slate-500">Invoice Number</span>
-            <span className="text-slate-800">{testData?.payment?.invoice}</span>
+            <span className="text-slate-800">{testData?.invoice?.invoiceNumber}</span>
             <span className="font-medium text-slate-500">Amount Paid</span>
             <span className="text-slate-800">
               {formatCurrency(testData?.payment?.amount_paid)}

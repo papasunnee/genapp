@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { getPatientModel } from "@/models/Patient";
 import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
+import { getInvoiceModel } from "@/models/Invoice";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
 import { logActivity } from "@/lib/activityLog";
@@ -17,6 +18,7 @@ export const GET = withTenant(async (req, tenant, session) => {
   const Patient = getPatientModel(tenant.connection);
   getTestModel(tenant.connection);
   getPaymentModel(tenant.connection);
+  getInvoiceModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
 
   try {
@@ -27,12 +29,15 @@ export const GET = withTenant(async (req, tenant, session) => {
         {
           path: "tests",
           options: { sort: { createdAt: -1 } },
-          populate: {
-            path: "payment",
-            populate: {
-              path: "user",
+          populate: [
+            {
+              path: "payment",
+              populate: {
+                path: "user",
+              },
             },
-          },
+            { path: "invoice" },
+          ],
         },
       ]);
       return NextResponse.json({ success: true, data: singlePatient });

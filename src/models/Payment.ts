@@ -1,7 +1,7 @@
 import { Connection, Document, Model, Schema, Types } from "mongoose";
 
 export interface IPayment extends Document {
-  invoice: string;
+  invoice: Types.ObjectId;
   amount_paid: number;
   payment_option: "cash" | "card";
   test: Types.ObjectId;
@@ -12,10 +12,13 @@ export interface IPayment extends Document {
 
 const PaymentSchema = new Schema<IPayment>(
   {
+    // References the Invoice created automatically when the test was
+    // ordered - a payment can never exist without one, so there's nothing
+    // for staff to type in here anymore (was a free-text field).
     invoice: {
-      type: String,
-      required: [true, "Please provide invoice number for this payment."],
-      maxlength: [60, "First Name cannot be more than 60 characters"],
+      type: Schema.Types.ObjectId,
+      ref: "Invoice",
+      required: [true, "Please provide the invoice this payment is for."],
     },
     amount_paid: {
       type: Number,

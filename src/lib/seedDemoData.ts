@@ -2,6 +2,8 @@ import { Connection, Types } from "mongoose";
 import { getPatientModel } from "@/models/Patient";
 import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
+import { getInvoiceModel } from "@/models/Invoice";
+import { nextInvoiceNumber } from "@/lib/invoiceNumber";
 
 /**
  * A small, realistic starting dataset so the demo never looks like an
@@ -17,6 +19,7 @@ export async function seedDemoSampleData(
   const Patient = getPatientModel(connection);
   const Test = getTestModel(connection);
   const Payment = getPaymentModel(connection);
+  const Invoice = getInvoiceModel(connection);
   const stamp = Date.now();
 
   const completedPatient = await Patient.create({
@@ -54,15 +57,27 @@ export async function seedDemoSampleData(
     total_cost: 2000,
   });
 
+  const completedInvoice = await Invoice.create({
+    invoiceNumber: await nextInvoiceNumber(connection),
+    test: completedTest._id,
+    patient: completedPatient._id,
+    amount: 2000,
+    amountPaid: 2000,
+    status: "Paid",
+  });
+
   const payment = await Payment.create({
-    invoice: `DEMO-${stamp}`,
+    invoice: completedInvoice._id,
     amount_paid: 2000,
     payment_option: "cash",
     test: completedTest._id,
     user: demoUserId,
   });
 
-  await Test.findByIdAndUpdate(completedTest._id, { payment: payment._id });
+  await Test.findByIdAndUpdate(completedTest._id, {
+    payment: payment._id,
+    invoice: completedInvoice._id,
+  });
   await Patient.findByIdAndUpdate(completedPatient._id, {
     $push: { tests: completedTest._id },
   });
@@ -100,6 +115,15 @@ export async function seedDemoSampleData(
     user: demoUserId,
     total_cost: 3500,
   });
+
+  const awaitingInvoice = await Invoice.create({
+    invoiceNumber: await nextInvoiceNumber(connection),
+    test: awaitingPaymentTest._id,
+    patient: awaitingPaymentPatient._id,
+    amount: 3500,
+    status: "Unpaid",
+  });
+  await Test.findByIdAndUpdate(awaitingPaymentTest._id, { invoice: awaitingInvoice._id });
 
   await Patient.findByIdAndUpdate(awaitingPaymentPatient._id, {
     $push: { tests: awaitingPaymentTest._id },

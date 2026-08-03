@@ -192,8 +192,18 @@ export default function ResultDetail({ id }: { id: string }) {
       </div>
 
       <div className={TABLE_CARD_CLASS}>
-        <div className={TABLE_HEADER_CLASS}>
+        <div className={`${TABLE_HEADER_CLASS} flex flex-wrap items-center justify-between gap-3`}>
           <h3 className="text-base font-semibold text-slate-800">Payment</h3>
+          {test.invoice?._id && (
+            <Link
+              href={`/print/invoice/${test.invoice._id}`}
+              target="_blank"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:underline"
+            >
+              <i className="fas fa-print"></i>
+              Print Invoice
+            </Link>
+          )}
         </div>
         <div className="px-6 py-5">
           {test.payment ? (
@@ -202,7 +212,7 @@ export default function ResultDetail({ id }: { id: string }) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Invoice No.
                 </p>
-                <p className="font-semibold text-slate-800">{test.payment.invoice}</p>
+                <p className="font-semibold text-slate-800">{test.invoice?.invoiceNumber}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">

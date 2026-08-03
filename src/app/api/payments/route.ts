@@ -5,6 +5,7 @@ import { getPatientModel } from "@/models/Patient";
 import { getPaymentModel } from "@/models/Payment";
 import { getUserModel } from "@/models/User";
 import { getRoleModel } from "@/models/Role";
+import { getInvoiceModel } from "@/models/Invoice";
 import { withTenant } from "@/lib/apiTenant";
 
 function escapeRegex(value: string) {
@@ -29,6 +30,7 @@ export const GET = withTenant(async (req, tenant, session) => {
   getPaymentModel(tenant.connection);
   getUserModel(tenant.connection);
   getRoleModel(tenant.connection);
+  getInvoiceModel(tenant.connection);
 
   try {
     const params = req.nextUrl.searchParams;
@@ -57,6 +59,7 @@ export const GET = withTenant(async (req, tenant, session) => {
           { test_title: regex },
           { "patient.firstname": regex },
           { "patient.lastname": regex },
+          { "invoice.invoiceNumber": regex },
         ],
       });
     }
@@ -74,6 +77,15 @@ export const GET = withTenant(async (req, tenant, session) => {
         },
       },
       { $unwind: { path: "$patient", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "invoices",
+          localField: "invoice",
+          foreignField: "_id",
+          as: "invoice",
+        },
+      },
+      { $unwind: { path: "$invoice", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "payments",

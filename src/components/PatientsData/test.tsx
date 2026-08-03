@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import moment from "moment";
 import { fetcher } from "@/utils/fetcher";
@@ -117,7 +118,6 @@ export default function Test({ id }: { id?: string }) {
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(resPerPage);
 
-  const invoiceRef = useRef<HTMLInputElement>(null);
   const amountPaidRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -224,7 +224,6 @@ export default function Test({ id }: { id?: string }) {
   };
   const handleSavePayment = async () => {
     setLoading(true);
-    const invoice = invoiceRef.current?.value;
     const amountPaid = amountPaidRef.current?.value;
     if (amountPaid == testData.total_cost) {
       try {
@@ -232,7 +231,6 @@ export default function Test({ id }: { id?: string }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            invoice,
             amount_paid: amountPaid,
             test: testData._id,
             payment_option: paymentOption,
@@ -248,20 +246,12 @@ export default function Test({ id }: { id?: string }) {
           setTestData(itemCopy);
           toast.success("Payment for test successful");
         } else {
-          if (data?.error?.includes("getaddrinfo ENOTFOUND")) {
-            throw new Error(
-              "Something went wrong, please check your internet connection!"
-            );
-          }
-
-          throw new Error("Something went wrong, please try again!");
+          throw new Error(data.error || "Something went wrong, please try again!");
         }
       } catch (error: any) {
-        console.log(error.message);
         toast.error(error.message);
       }
     } else {
-      console.log("Amount Invalid");
       toast.error("Invalid Amount for this test");
     }
     setLoading(false);
@@ -904,6 +894,21 @@ export default function Test({ id }: { id?: string }) {
         <div className="text-sm text-slate-600">
           {currentTab == 0 && testData.status === "Awaiting Payment" && (
             <form className="flex flex-col my-2 items-start space-y-4 w-full">
+              {testData?.invoice?.invoiceNumber && (
+                <div className="w-full flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+                  <span className="text-slate-500">
+                    <i className="fas fa-receipt mr-1.5 text-slate-400"></i>
+                    Invoice {testData.invoice.invoiceNumber}
+                  </span>
+                  <Link
+                    href={`/print/invoice/${testData.invoice._id}`}
+                    target="_blank"
+                    className="font-semibold text-brand-600 hover:underline"
+                  >
+                    Print
+                  </Link>
+                </div>
+              )}
               <div className="w-full">
                 <label className={LABEL_CLASS}>Payment method</label>
                 <div className="flex gap-2">
@@ -935,29 +940,17 @@ export default function Test({ id }: { id?: string }) {
               </div>
               {paymentOption == "cash" && (
                 <>
-                  <div className="grid grid-cols-2 gap-4 w-full">
-                    <div>
-                      <label className={LABEL_CLASS} htmlFor="invoice">
-                        Invoice No.
-                      </label>
-                      <input
-                        id="invoice"
-                        ref={invoiceRef}
-                        type="text"
-                        className={MODAL_INPUT_CLASS}
-                      />
-                    </div>
-                    <div>
-                      <label className={LABEL_CLASS} htmlFor="amountPaid">
-                        Amount Paid
-                      </label>
-                      <input
-                        id="amountPaid"
-                        ref={amountPaidRef}
-                        type="text"
-                        className={MODAL_INPUT_CLASS}
-                      />
-                    </div>
+                  <div className="w-full">
+                    <label className={LABEL_CLASS} htmlFor="amountPaid">
+                      Amount Paid
+                    </label>
+                    <input
+                      id="amountPaid"
+                      ref={amountPaidRef}
+                      type="text"
+                      placeholder={formatCurrency(testData?.total_cost)}
+                      className={MODAL_INPUT_CLASS}
+                    />
                   </div>
                   <button
                     disabled={loading}
@@ -990,7 +983,7 @@ export default function Test({ id }: { id?: string }) {
                 <i className="fas fa-receipt text-slate-400 w-4"></i>
                 <span className="text-slate-500 flex-grow">Invoice Number</span>
                 <span className="font-semibold text-slate-800">
-                  {testData?.payment?.invoice}
+                  {testData?.invoice?.invoiceNumber}
                 </span>
               </div>
               <div className="flex items-center gap-3 px-4 py-3">
@@ -1016,6 +1009,18 @@ export default function Test({ id }: { id?: string }) {
                   {testData?.payment?.user?.firstname} {testData?.payment?.user?.lastname}
                 </span>
               </div>
+              {testData?.invoice?._id && (
+                <div className="px-4 py-3">
+                  <Link
+                    href={`/print/invoice/${testData.invoice._id}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 text-brand-600 hover:underline font-semibold"
+                  >
+                    <i className="fas fa-print"></i>
+                    Print Invoice
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

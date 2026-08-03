@@ -123,7 +123,7 @@ export default function ResultsData() {
                               {formatCurrency(item?.payment?.amount_paid)}
                             </span>
                             <span className="font-normal text-xs italic text-slate-400 block">
-                              Invoice No. {item?.payment?.invoice}
+                              {item?.invoice?.invoiceNumber}
                             </span>
                             <span className="font-normal text-xs text-slate-500 block">
                               {item?.payment?.payment_option?.toString().toUpperCase()}

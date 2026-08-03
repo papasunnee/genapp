@@ -8,6 +8,9 @@ import { getTestCategoryModel } from "@/models/TestCategory";
 import { getPatientModel } from "@/models/Patient";
 import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
+import { getInvoiceModel } from "@/models/Invoice";
+import { getCounterModel } from "@/models/Counter";
+import { getActivityLogModel } from "@/models/ActivityLog";
 import { getControlConnection } from "@/lib/controlPlane";
 import { getTenantConnection } from "@/lib/tenantConnection";
 import { seedTestCatalog } from "@/lib/seedTestCatalog";
@@ -184,6 +187,9 @@ export async function DELETE(req: NextRequest) {
       getTestModel(tenantConn).deleteMany({}),
       getPaymentModel(tenantConn).deleteMany({}),
       getTestCategoryModel(tenantConn).deleteMany({}),
+      getInvoiceModel(tenantConn).deleteMany({}),
+      getCounterModel(tenantConn).deleteMany({}),
+      getActivityLogModel(tenantConn).deleteMany({}),
     ]);
 
     await Organization.deleteOne({ _id: id });

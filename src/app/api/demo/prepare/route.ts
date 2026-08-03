@@ -6,6 +6,8 @@ import { getAccessModel } from "@/models/Access";
 import { getPatientModel } from "@/models/Patient";
 import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
+import { getInvoiceModel } from "@/models/Invoice";
+import { getCounterModel } from "@/models/Counter";
 import { getActivityLogModel } from "@/models/ActivityLog";
 import { getControlConnection } from "@/lib/controlPlane";
 import { getTenantConnection } from "@/lib/tenantConnection";
@@ -100,12 +102,16 @@ export async function POST() {
       const Patient = getPatientModel(tenantConn);
       const Test = getTestModel(tenantConn);
       const Payment = getPaymentModel(tenantConn);
+      const Invoice = getInvoiceModel(tenantConn);
+      const Counter = getCounterModel(tenantConn);
       const ActivityLog = getActivityLogModel(tenantConn);
 
       await Promise.all([
         Patient.deleteMany({}),
         Test.deleteMany({}),
         Payment.deleteMany({}),
+        Invoice.deleteMany({}),
+        Counter.deleteMany({}),
         ActivityLog.deleteMany({}),
       ]);
       await seedDemoSampleData(tenantConn, demoUser._id);

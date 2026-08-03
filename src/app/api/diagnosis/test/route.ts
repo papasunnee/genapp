@@ -5,6 +5,7 @@ import { getPatientModel } from "@/models/Patient";
 import { getPaymentModel } from "@/models/Payment";
 import { getUserModel } from "@/models/User";
 import { getRoleModel } from "@/models/Role";
+import { getInvoiceModel } from "@/models/Invoice";
 import { withTenant } from "@/lib/apiTenant";
 
 const { ObjectId } = Types;
@@ -19,6 +20,7 @@ export const GET = withTenant(async (req, tenant, session) => {
   getPaymentModel(tenant.connection);
   getUserModel(tenant.connection);
   getRoleModel(tenant.connection);
+  getInvoiceModel(tenant.connection);
   const testId = req.nextUrl.searchParams.get("testId");
   const id = req.nextUrl.searchParams.get("id");
   const patientId = req.nextUrl.searchParams.get("patientId");
@@ -40,6 +42,7 @@ export const GET = withTenant(async (req, tenant, session) => {
         {
           path: "patient",
         },
+        { path: "invoice" },
       ]);
       const resultArray = JSON.parse(singleTest.test_data);
       return NextResponse.json({ success: true, data: singleTest, resultArray });
@@ -49,9 +52,7 @@ export const GET = withTenant(async (req, tenant, session) => {
       }).populate({
         path: "tests",
         match: { _id: new ObjectId(testId) },
-        populate: {
-          path: "payment",
-        },
+        populate: [{ path: "payment" }, { path: "invoice" }],
       });
       const resultArray = JSON.parse(singleTest.tests[0].test_data);
       return NextResponse.json({ success: true, data: singleTest, resultArray });

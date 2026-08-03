@@ -6,8 +6,11 @@ import { getPatientModel } from "@/models/Patient";
 import { getUserModel } from "@/models/User";
 import { getPaymentModel } from "@/models/Payment";
 import { getRoleModel } from "@/models/Role";
+import { getInvoiceModel } from "@/models/Invoice";
 import { withTenant } from "@/lib/apiTenant";
 import { logActivity } from "@/lib/activityLog";
+import { nextInvoiceNumber } from "@/lib/invoiceNumber";
+import { formatCurrency } from "@/utils/functions";
 
 const { ObjectId } = Types;
 
@@ -21,6 +24,7 @@ export const GET = withTenant(async (req, tenant, session) => {
   getUserModel(tenant.connection);
   getPaymentModel(tenant.connection);
   getRoleModel(tenant.connection);
+  getInvoiceModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
   const filterFlag = req.nextUrl.searchParams.get("filter");
 
@@ -40,6 +44,7 @@ export const GET = withTenant(async (req, tenant, session) => {
             },
           },
         },
+        { path: "invoice" },
       ]);
       return NextResponse.json({ success: true, data: singleTest });
     }
@@ -63,6 +68,7 @@ export const GET = withTenant(async (req, tenant, session) => {
               },
             },
           },
+          { path: "invoice" },
         ])
         .sort({ createdAt: -1 });
 
@@ -150,6 +156,7 @@ export const GET = withTenant(async (req, tenant, session) => {
             },
           },
         },
+        { path: "invoice" },
       ])
       .sort({ createdAt: -1 });
     return NextResponse.json({ success: true, data: allRecords });
@@ -168,31 +175,59 @@ export const POST = withTenant(async (req, tenant, session) => {
 
   const Test = getTestModel(tenant.connection);
   const Patient = getPatientModel(tenant.connection);
+  const Invoice = getInvoiceModel(tenant.connection);
   const conn = tenant.connection;
 
   try {
     const body = await req.json();
     const transactionSession = await conn.startSession();
     const testProcess = await transactionSession.withTransaction(async () => {
-      const testData = await Test.create({
-        ...body,
-        user: session.user?._id,
-      });
+      // Every operation below must pass {session: transactionSession}
+      // explicitly - simply being inside this callback does not enrol a
+      // query in the transaction, and the previous version of this code
+      // didn't pass it anywhere, so the "transaction" never actually
+      // provided atomicity between the test create and the patient
+      // update. That's a real correctness gap now that a third write
+      // (the invoice) has to succeed or fail together with the other two.
+      const [testData] = await Test.create(
+        [{ ...body, user: session.user?._id }],
+        { session: transactionSession }
+      );
 
       const updatePatient = await Patient.findOneAndUpdate(
         { _id: new ObjectId(body.patient) },
-        { $push: { tests: testData._id } }
+        { $push: { tests: testData._id } },
+        { session: transactionSession }
       );
 
-      return { testData, updatePatient };
+      const invoiceNumber = await nextInvoiceNumber(conn, transactionSession);
+      const [invoice] = await Invoice.create(
+        [
+          {
+            invoiceNumber,
+            test: testData._id,
+            patient: testData.patient,
+            amount: testData.total_cost,
+            status: "Unpaid",
+          },
+        ],
+        { session: transactionSession }
+      );
+
+      testData.invoice = invoice._id;
+      await testData.save({ session: transactionSession });
+
+      return { testData, updatePatient, invoice };
     });
     transactionSession.endSession();
 
     await logActivity(
       tenant.connection,
       session,
-      "test.ordered",
-      `Ordered "${testProcess?.testData?.test_title}" for ${
+      "invoice.created",
+      `Invoice ${testProcess?.invoice?.invoiceNumber} created for "${
+        testProcess?.testData?.test_title
+      }" (${formatCurrency(testProcess?.testData?.total_cost)}) - ${
         testProcess?.updatePatient?.firstname ?? ""
       } ${testProcess?.updatePatient?.lastname ?? ""}`.trim()
     );

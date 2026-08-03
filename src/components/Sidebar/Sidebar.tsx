@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/roles", label: "Roles", icon: "fa-user-shield", weights: [100, 200] },
   { href: "/admin/results", label: "Results", icon: "fa-list", weights: [100, 200, 300] },
   { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
+  { href: "/admin/invoices", label: "Invoices", icon: "fa-file-invoice-dollar", weights: [100, 200, 400] },
   { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },
   { href: "/admin/settings", label: "Settings", icon: "fa-cog", weights: [100, 200] },
   { href: "/admin/activity-log", label: "Activity Log", icon: "fa-history", weights: [100] },

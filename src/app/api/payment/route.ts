@@ -4,6 +4,7 @@ import { getPaymentModel } from "@/models/Payment";
 import { getTestModel } from "@/models/Test";
 import { getUserModel } from "@/models/User";
 import { getRoleModel } from "@/models/Role";
+import { getInvoiceModel } from "@/models/Invoice";
 import { withTenant } from "@/lib/apiTenant";
 import { logActivity } from "@/lib/activityLog";
 import { formatCurrency } from "@/utils/functions";
@@ -19,6 +20,7 @@ export const GET = withTenant(async (req, tenant, session) => {
   getTestModel(tenant.connection);
   getUserModel(tenant.connection);
   getRoleModel(tenant.connection);
+  getInvoiceModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
   const test_id = req.nextUrl.searchParams.get("test_id");
 
@@ -26,18 +28,19 @@ export const GET = withTenant(async (req, tenant, session) => {
     if (id) {
       const singlePayment = await Payment.findOne({
         _id: new ObjectId(id),
-      }).populate(["user", "test"]);
+      }).populate(["user", "test", "invoice"]);
       return NextResponse.json({ success: true, data: singlePayment });
     } else if (test_id) {
       const singlePaymentByTestId = await Payment.findOne({
-        test_id: new ObjectId(test_id),
-      }).populate(["user", "test"]);
+        test: new ObjectId(test_id),
+      }).populate(["user", "test", "invoice"]);
       return NextResponse.json({ success: true, data: singlePaymentByTestId });
     }
 
     const allRecords = await Payment.find()
       .populate([
         { path: "test" },
+        { path: "invoice" },
         {
           path: "user",
           populate: {
@@ -55,6 +58,15 @@ export const GET = withTenant(async (req, tenant, session) => {
   }
 });
 
+/**
+ * Records a payment against a test's invoice - the invoice already exists
+ * (created automatically when the test was ordered, see POST
+ * /api/diagnosis), so there is nothing for staff to type in here beyond
+ * the amount and method. The amount is validated against the invoice's
+ * own total server-side now, not just checked client-side (the previous
+ * version trusted whatever amount_paid was posted with no cross-check at
+ * all against the test's actual cost).
+ */
 export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -62,19 +74,67 @@ export const POST = withTenant(async (req, tenant, session) => {
 
   const Payment = getPaymentModel(tenant.connection);
   const Test = getTestModel(tenant.connection);
+  const Invoice = getInvoiceModel(tenant.connection);
   getUserModel(tenant.connection);
 
   try {
     const body = await req.json();
-    const newRecord = await Payment.create({
-      ...body,
+    const { test: testId, amount_paid, payment_option } = body;
+
+    const invoice = await Invoice.findOne({ test: testId });
+    if (!invoice) {
+      return NextResponse.json(
+        { success: false, error: "No invoice found for this test." },
+        { status: 404 }
+      );
+    }
+    if (invoice.status === "Paid") {
+      return NextResponse.json(
+        { success: false, error: "This invoice has already been paid in full." },
+        { status: 400 }
+      );
+    }
+    if (invoice.status === "Void") {
+      return NextResponse.json(
+        { success: false, error: "This invoice has been voided and can no longer be paid." },
+        { status: 400 }
+      );
+    }
+
+    const amountPaidNumber = Number(amount_paid);
+    if (!amountPaidNumber || amountPaidNumber <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Enter a valid amount." },
+        { status: 400 }
+      );
+    }
+    if (amountPaidNumber !== invoice.amount) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Amount must match the invoice total of ${formatCurrency(invoice.amount)}.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    const newPayment = await Payment.create({
+      invoice: invoice._id,
+      amount_paid: amountPaidNumber,
+      payment_option,
+      test: testId,
       user: session.user?._id,
     });
+
+    invoice.amountPaid = amountPaidNumber;
+    invoice.status = "Paid";
+    await invoice.save();
+
     const updatedTest = await Test.findOneAndUpdate(
-      { _id: new ObjectId(newRecord.test) },
+      { _id: new ObjectId(testId) },
       {
         status: "Awaiting Result",
-        payment: new ObjectId(newRecord._id),
+        payment: newPayment._id,
       },
       { new: true }
     ).populate([
@@ -84,13 +144,14 @@ export const POST = withTenant(async (req, tenant, session) => {
           path: "user",
         },
       },
+      { path: "invoice" },
     ]);
 
     await logActivity(
       tenant.connection,
       session,
-      "payment.recorded",
-      `Recorded payment of ${formatCurrency(newRecord.amount_paid)} for "${
+      "invoice.paid",
+      `Invoice ${invoice.invoiceNumber} paid in full (${formatCurrency(amountPaidNumber)}) for "${
         updatedTest?.test_title
       }"`
     );
@@ -100,73 +161,6 @@ export const POST = withTenant(async (req, tenant, session) => {
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 400 }
-    );
-  }
-});
-
-export const PUT = withTenant(async (req, tenant, session) => {
-  if (!session) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const Payment = getPaymentModel(tenant.connection);
-
-  try {
-    const body = await req.json();
-    const put_id = body.put_id;
-    if (!put_id) {
-      return NextResponse.json(
-        { success: false, error: "unprocessed put_id" },
-        { status: 400 }
-      );
-    }
-
-    delete body._id;
-    const updatePayment = await Payment.findOneAndUpdate(
-      { _id: put_id },
-      { title: body.title, paragraphs: body.paragraphs },
-      { new: true }
-    );
-
-    return NextResponse.json({ success: true, data: updatePayment });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
-});
-
-export const DELETE = withTenant(async (req, tenant, session) => {
-  if (!session) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const Payment = getPaymentModel(tenant.connection);
-
-  try {
-    const body = await req.json();
-    const delete_id = body.delete_id;
-    if (!delete_id) {
-      return NextResponse.json(
-        { success: false, error: "Unprocessed delete_id" },
-        { status: 400 }
-      );
-    }
-
-    const payment = await Payment.findById(delete_id);
-    const deletePaymentResponse = await Payment.deleteOne({ _id: delete_id });
-    await logActivity(
-      tenant.connection,
-      session,
-      "payment.deleted",
-      `Deleted payment record${payment ? ` (invoice ${payment.invoice})` : ""}`
-    );
-    return NextResponse.json({ success: true, data: deletePaymentResponse });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
     );
   }
 });

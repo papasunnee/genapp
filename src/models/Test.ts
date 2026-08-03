@@ -12,6 +12,7 @@ export interface ITest extends Document {
   patient?: Types.ObjectId;
   user?: Types.ObjectId;
   payment?: Types.ObjectId;
+  invoice?: Types.ObjectId;
   total_cost: number;
   createdAt: Date;
   updatedAt: Date;
@@ -62,6 +63,10 @@ const TestSchema = new Schema<ITest>(
     payment: {
       type: Schema.Types.ObjectId,
       ref: "Payment",
+    },
+    invoice: {
+      type: Schema.Types.ObjectId,
+      ref: "Invoice",
     },
     total_cost: {
       type: Number,
