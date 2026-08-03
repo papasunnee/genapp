@@ -19,7 +19,7 @@ const SELECT_CLASS =
 const INPUT_CLASS =
   "border border-slate-300 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors bg-white";
 
-const STATUS_OPTIONS = ["All", "Awaiting Payment", "Awaiting Result", "Test Completed"];
+const STATUS_OPTIONS = ["All", "Awaiting Payment", "Awaiting Result", "Test Completed", "Cancelled"];
 const LIMIT_OPTIONS = [5, 10, 25, 50];
 
 export default function PaymentsData() {

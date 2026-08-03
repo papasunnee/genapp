@@ -46,9 +46,9 @@ export default function PaymentsStats() {
   const stats = data?.stats;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
       {isLoading || !stats ? (
-        Array.from({ length: 4 }).map((_, i) => (
+        Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-[72px] w-full rounded-xl" />
         ))
       ) : (
@@ -82,6 +82,14 @@ export default function PaymentsStats() {
             iconClass="bg-orange-50 text-orange-600"
             active={status === "Awaiting Result"}
             onClick={() => toggleStatus("Awaiting Result")}
+          />
+          <StatTile
+            label="Cancelled"
+            value={stats.cancelledCount}
+            icon="fa-ban"
+            iconClass="bg-slate-100 text-slate-500"
+            active={status === "Cancelled"}
+            onClick={() => toggleStatus("Cancelled")}
           />
         </>
       )}

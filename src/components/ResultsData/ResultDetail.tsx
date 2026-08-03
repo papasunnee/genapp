@@ -14,6 +14,7 @@ const STATUS_BADGE: Record<string, string> = {
   "Awaiting Payment": "bg-red-50 text-red-700",
   "Awaiting Result": "bg-orange-50 text-orange-700",
   "Test Completed": "bg-emerald-50 text-emerald-700",
+  Cancelled: "bg-slate-100 text-slate-500",
 };
 
 const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
@@ -239,6 +240,11 @@ export default function ResultDetail({ id }: { id: string }) {
                 </p>
               </div>
             </div>
+          ) : test.status === "Cancelled" ? (
+            <p className="text-sm text-slate-500">
+              <i className="fas fa-ban mr-1.5 text-slate-400"></i>
+              This test was cancelled - its invoice was voided before payment was recorded.
+            </p>
           ) : (
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <p className="text-sm text-slate-500">
@@ -266,6 +272,15 @@ export default function ResultDetail({ id }: { id: string }) {
               <i className="fas fa-lock text-2xl text-slate-300 mb-3"></i>
               <p className="text-sm text-slate-500">
                 Results can be entered once payment has been recorded for this test.
+              </p>
+            </div>
+          )}
+
+          {test.status === "Cancelled" && (
+            <div className="text-center py-8">
+              <i className="fas fa-ban text-2xl text-slate-300 mb-3"></i>
+              <p className="text-sm text-slate-500">
+                This test was cancelled - its invoice was voided before payment was recorded.
               </p>
             </div>
           )}

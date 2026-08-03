@@ -82,12 +82,19 @@ const TestStatus: Record<
     deepcolor: "bg-green-500",
     textcolor: "text-green-500",
   },
+  "Cancelled": {
+    value: 0,
+    lightcolor: "bg-slate-200",
+    deepcolor: "bg-slate-400",
+    textcolor: "text-slate-500",
+  },
 };
 
 const STATUS_BADGE: Record<string, string> = {
   "Awaiting Payment": "bg-red-50 text-red-700",
   "Awaiting Result": "bg-orange-50 text-orange-700",
   "Test Completed": "bg-emerald-50 text-emerald-700",
+  Cancelled: "bg-slate-100 text-slate-500",
 };
 
 export default function Test({ id }: { id?: string }) {
@@ -855,7 +862,7 @@ export default function Test({ id }: { id?: string }) {
           >
             <i className="fas fa-money-bill-wave"></i>
             Payment
-            {testData.status !== "Awaiting Payment" && (
+            {testData.status !== "Awaiting Payment" && testData.status !== "Cancelled" && (
               <i
                 className={`fas fa-check-circle ${
                   currentTab == 0 ? "text-white" : "text-emerald-500"
@@ -869,15 +876,25 @@ export default function Test({ id }: { id?: string }) {
             title={
               testData.status === "Awaiting Payment"
                 ? "Locked - payment must be recorded before results can be entered"
+                : testData.status === "Cancelled"
+                ? "This test was cancelled - no results to enter"
                 : undefined
             }
             className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-medium py-2 rounded-md transition-colors ${
               currentTab == 1 ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"
-            } ${testData.status === "Awaiting Payment" ? "opacity-60" : ""}`}
+            } ${
+              testData.status === "Awaiting Payment" || testData.status === "Cancelled"
+                ? "opacity-60"
+                : ""
+            }`}
           >
             <i
               className={`fas ${
-                testData.status === "Awaiting Payment" ? "fa-lock" : "fa-vials"
+                testData.status === "Awaiting Payment"
+                  ? "fa-lock"
+                  : testData.status === "Cancelled"
+                  ? "fa-ban"
+                  : "fa-vials"
               }`}
             ></i>
             Test Result
@@ -977,7 +994,19 @@ export default function Test({ id }: { id?: string }) {
               )}
             </form>
           )}
-          {currentTab == 0 && testData.status !== "Awaiting Payment" && (
+          {currentTab == 0 && testData.status === "Cancelled" && (
+            <div className="text-center py-10 px-4">
+              <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <i className="fas fa-ban text-slate-400"></i>
+              </div>
+              <p className="text-sm font-semibold text-slate-600">This test was cancelled</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                Its invoice was voided before payment was recorded, so this order was called
+                off.
+              </p>
+            </div>
+          )}
+          {currentTab == 0 && testData.status !== "Awaiting Payment" && testData.status !== "Cancelled" && (
             <div className="rounded-lg border border-slate-200 divide-y divide-slate-100">
               <div className="flex items-center gap-3 px-4 py-3">
                 <i className="fas fa-receipt text-slate-400 w-4"></i>
@@ -1122,6 +1151,18 @@ export default function Test({ id }: { id?: string }) {
           {currentTab == 1 &&
             testData.status === "Test Completed" &&
             displayTestResult(testData, patientData)}
+
+          {currentTab == 1 && testData.status === "Cancelled" && (
+            <div className="text-center py-10 px-4">
+              <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <i className="fas fa-ban text-slate-400"></i>
+              </div>
+              <p className="text-sm font-semibold text-slate-600">This test was cancelled</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                No results to enter - this order was cancelled before payment was completed.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center pt-4 mt-2 border-t border-slate-100">

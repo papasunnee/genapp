@@ -61,6 +61,7 @@ export const PATCH = withTenant(async (req, tenant, session) => {
   }
 
   const Invoice = getInvoiceModel(tenant.connection);
+  const Test = getTestModel(tenant.connection);
 
   try {
     const body = await req.json();
@@ -93,13 +94,26 @@ export const PATCH = withTenant(async (req, tenant, session) => {
     invoice.voidedReason = reason || undefined;
     await invoice.save();
 
+    // An unpaid invoice being voided means the order itself is being
+    // called off - leaving the test at "Awaiting Payment" forever would
+    // strand it with no path forward and no explanation anywhere in the
+    // portal. Only touches the test if it hadn't already moved on its own
+    // (defensive - an Unpaid invoice's test should always still be
+    // "Awaiting Payment", but never overwrite a state this cascade didn't
+    // cause).
+    const test = await Test.findOneAndUpdate(
+      { _id: invoice.test, status: "Awaiting Payment" },
+      { status: "Cancelled" },
+      { new: true }
+    );
+
     await logActivity(
       tenant.connection,
       session,
       "invoice.voided",
       `Voided invoice ${invoice.invoiceNumber} (${formatCurrency(invoice.amount)})${
         reason ? ` - ${reason}` : ""
-      }`
+      }${test ? ` - test "${test.test_title}" cancelled` : ""}`
     );
 
     return NextResponse.json({ success: true, data: invoice });

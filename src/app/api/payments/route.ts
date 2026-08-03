@@ -161,6 +161,7 @@ export const GET = withTenant(async (req, tenant, session) => {
         completedCount: statusCounts["Test Completed"] ?? 0,
         awaitingPaymentCount: statusCounts["Awaiting Payment"] ?? 0,
         awaitingResultCount: statusCounts["Awaiting Result"] ?? 0,
+        cancelledCount: statusCounts["Cancelled"] ?? 0,
       },
     });
   } catch (error: any) {

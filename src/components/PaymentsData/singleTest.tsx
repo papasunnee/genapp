@@ -89,6 +89,8 @@ const SingleTest = ({ id }: { id?: string }) => {
             className={`font-semibold ${
               testData?.status == "Awaiting Payment"
                 ? "text-red-600"
+                : testData?.status == "Cancelled"
+                ? "text-slate-500"
                 : "text-emerald-600"
             }`}
           >
@@ -110,7 +112,12 @@ const SingleTest = ({ id }: { id?: string }) => {
       </div>
 
       <div className="px-6 py-5">
-        {testData?.status === "Awaiting Payment" ? (
+        {testData?.status === "Cancelled" ? (
+          <p className="text-sm text-slate-500">
+            <i className="fas fa-ban mr-1.5 text-slate-400"></i>
+            This test was cancelled - its invoice was voided before payment was recorded.
+          </p>
+        ) : testData?.status === "Awaiting Payment" ? (
           <form className="flex flex-col items-start space-y-4 max-w-sm">
             <div className="w-full">
               <label className={LABEL_CLASS} htmlFor="paymentOption">

@@ -71,6 +71,7 @@ export default function ResultsData() {
             <option value="Test Completed">Test Completed</option>
             <option value="Awaiting Result">Awaiting Result</option>
             <option value="Awaiting Payment">Awaiting Payment</option>
+            <option value="Cancelled">Cancelled</option>
           </select>
         </div>
       </div>

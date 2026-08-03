@@ -9,6 +9,7 @@ const STATUS_BADGE: Record<string, string> = {
   "Awaiting Payment": "bg-red-50 text-red-700",
   "Awaiting Result": "bg-orange-50 text-orange-700",
   "Test Completed": "bg-emerald-50 text-emerald-700",
+  Cancelled: "bg-slate-100 text-slate-500",
 };
 
 export default function CardRecentActivity() {

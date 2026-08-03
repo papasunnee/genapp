@@ -1,6 +1,10 @@
 import { Connection, Document, Model, Schema, Types } from "mongoose";
 
-export type TestStatus = "Awaiting Payment" | "Awaiting Result" | "Test Completed";
+export type TestStatus =
+  | "Awaiting Payment"
+  | "Awaiting Result"
+  | "Test Completed"
+  | "Cancelled";
 
 export interface ITest extends Document {
   test_title: string;
@@ -50,7 +54,7 @@ const TestSchema = new Schema<ITest>(
     status: {
       type: String,
       default: "Awaiting Payment",
-      enum: ["Awaiting Payment", "Awaiting Result", "Test Completed"],
+      enum: ["Awaiting Payment", "Awaiting Result", "Test Completed", "Cancelled"],
     },
     patient: {
       type: Schema.Types.ObjectId,
