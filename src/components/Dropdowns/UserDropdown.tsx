@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import Avatar from "@/components/ui/Avatar";
+import { getLogoutDestination } from "@/lib/logoutDestination";
 
 export default function UserDropdown() {
   const { data }: any = useSession();
@@ -72,7 +73,9 @@ export default function UserDropdown() {
         </Link>
         <button
           type="button"
-          onClick={() => signOut({ callbackUrl: `${window.location.origin}/` })}
+          onClick={() =>
+            signOut({ callbackUrl: `${window.location.origin}${getLogoutDestination(data)}` })
+          }
           className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
         >
           <i className="fas fa-power-off text-red-400 w-4"></i>

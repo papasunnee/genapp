@@ -14,6 +14,31 @@ export const authConfig: NextAuthConfig = {
   },
   providers: [],
   callbacks: {
+    // Auth.js's default redirect callback only allows a callback URL whose
+    // origin exactly matches `baseUrl` (derived from AUTH_URL/NEXTAUTH_URL
+    // when that's set) - anything else silently falls back to baseUrl.
+    // That's wrong for a multi-tenant app: every subdomain is a legitimate
+    // redirect target (sign-in/sign-out on acmelabs.thelabsuite.com should
+    // land back on acmelabs.thelabsuite.com, not thelabsuite.com just
+    // because that's the one fixed origin Auth.js was configured with).
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+
+      try {
+        const targetHost = new URL(url).hostname.toLowerCase();
+        const rootDomain = (process.env.ROOT_DOMAIN || "").toLowerCase();
+        if (
+          rootDomain &&
+          (targetHost === rootDomain || targetHost.endsWith(`.${rootDomain}`))
+        ) {
+          return url;
+        }
+      } catch {
+        // Malformed URL - fall through to the safe default below.
+      }
+
+      return baseUrl;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.firstname = (user as any).firstname;
