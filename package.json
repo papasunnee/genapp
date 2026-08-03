@@ -12,6 +12,7 @@
     "@fortawesome/fontawesome-free": "5.15.3",
     "bcrypt": "^5.1.0",
     "chart.js": "^4",
+    "cloudinary": "^2.10.0",
     "cookie": "^0.5.0",
     "eslint": "8.57.1",
     "eslint-config-next": "16.2.11",

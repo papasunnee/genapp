@@ -129,10 +129,22 @@ export default function Profile() {
     setUploadingPhoto(true);
     try {
       const dataUrl = await resizeImageToDataUrl(file);
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl, type: "avatar" }),
+      });
+      const uploadJson = await uploadRes.json();
+      if (!uploadJson.success) {
+        toast.error(uploadJson.error || "Failed to upload photo");
+        setUploadingPhoto(false);
+        return;
+      }
+
       const res = await fetch("/api/users", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image_url: dataUrl }),
+        body: JSON.stringify({ image_url: uploadJson.data.url }),
       });
       const json = await res.json();
       if (json.success) {

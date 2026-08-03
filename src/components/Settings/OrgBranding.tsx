@@ -58,7 +58,17 @@ export default function OrgBranding() {
     setUploadingLogo(true);
     try {
       const dataUrl = await resizeImageToDataUrl(file, 240);
-      setForm((prev) => ({ ...prev, logo: dataUrl }));
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl, type: "logo" }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setForm((prev) => ({ ...prev, logo: json.data.url }));
+      } else {
+        toast.error(json.error || "Failed to upload logo");
+      }
     } catch (error: any) {
       toast.error(error.message);
     }
