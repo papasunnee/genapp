@@ -1,14 +1,39 @@
 import moment from "moment";
 import Link from "next/link";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+// The billing currency itself is fixed - a lab operating in Naira charges
+// in Naira no matter who's looking at the screen, so this never converts
+// to another currency based on where it's viewed. What *does* localize is
+// the formatting convention (grouping separators, symbol placement,
+// symbol vs. code) via Intl.NumberFormat's locale argument - en-NG reads
+// "₦25,000.00", a locale with no NGN symbol mapping falls back to
+// "NGN 25,000.00", and de-DE would group digits as "25.000,00 NGN".
+const DEFAULT_LOCALE = "en-NG";
+const CURRENCY = "NGN";
 
-export const formatCurrency = (amount: any): string => {
+function detectLocale(): string {
+  if (typeof navigator !== "undefined" && navigator.language) {
+    return navigator.language;
+  }
+  return DEFAULT_LOCALE;
+}
+
+export const formatCurrency = (amount: any, locale?: string): string => {
   const value = Number(amount);
-  return `NGN ${currencyFormatter.format(Number.isFinite(value) ? value : 0)}`;
+  const safeValue = Number.isFinite(value) ? value : 0;
+  const resolvedLocale = locale || detectLocale();
+
+  try {
+    return new Intl.NumberFormat(resolvedLocale, {
+      style: "currency",
+      currency: CURRENCY,
+    }).format(safeValue);
+  } catch {
+    return new Intl.NumberFormat(DEFAULT_LOCALE, {
+      style: "currency",
+      currency: CURRENCY,
+    }).format(safeValue);
+  }
 };
 
 export function resizeImageToDataUrl(file: File, maxSize = 160): Promise<string> {

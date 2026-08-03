@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { formatCurrency } from "@/utils/functions";
 
-const formatNaira = (amount: number) =>
-  `₦${new Intl.NumberFormat("en-US").format(amount)}`;
+const PRO_MONTHLY = 35000;
 
 const TIERS = [
   {
@@ -18,14 +18,15 @@ const TIERS = [
       "Up to 1 staff account",
       "Up to 5 patient records",
       "Core patient, test & payment workflow",
+      "Digital invoicing & printable reports",
       "Standard role set (fixed)",
       "Basic dashboard",
     ],
   },
   {
     name: "Pro",
-    monthly: 25000,
-    yearly: 250000,
+    monthly: PRO_MONTHLY,
+    yearly: PRO_MONTHLY * 10, // 2 months free vs. paying monthly
     tagline: "For a growing lab that needs the full toolkit.",
     cta: "Talk to Sales",
     highlighted: true,
@@ -35,6 +36,7 @@ const TIERS = [
       "Full test catalog customization",
       "Organization branding & letterhead",
       "Custom role management",
+      "AI-assisted result interpretation",
       "Revenue analytics & reporting",
       "Priority support",
     ],
@@ -120,7 +122,7 @@ export default function PricingSection() {
 
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="text-3xl font-black text-slate-900">
-                    {isCustom ? "Custom" : formatNaira(price!)}
+                    {isCustom ? "Custom" : formatCurrency(price!)}
                   </span>
                   {!isCustom && (
                     <span className="text-sm text-slate-400">
@@ -130,7 +132,7 @@ export default function PricingSection() {
                 </div>
                 {monthlyEquivalent !== null && (
                   <p className="text-xs text-emerald-600 mt-1 font-medium">
-                    {formatNaira(monthlyEquivalent)}/month billed annually
+                    {formatCurrency(monthlyEquivalent)}/month billed annually
                   </p>
                 )}
 
