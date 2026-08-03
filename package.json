@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@fortawesome/fontawesome-free": "5.15.3",
     "bcrypt": "^5.1.0",
     "chart.js": "^4",

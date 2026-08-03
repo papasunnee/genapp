@@ -115,6 +115,9 @@ export default function Test({ id }: { id?: string }) {
   const [showTestModal, setShowTestModal] = useState(false);
   const [testData, setTestData] = useState<any>({});
   const [resultForm, setResultForm] = useState<any>({});
+  const [remark, setRemark] = useState("");
+  const [remarkAiAssisted, setRemarkAiAssisted] = useState(false);
+  const [suggestingRemark, setSuggestingRemark] = useState(false);
   const [proceedState, setProceedState] = useState(false);
   const [loading, setLoading] = useState(false);
   const [testStatsDisplay, setTestStatsDisplay] = useState(false);
@@ -227,6 +230,8 @@ export default function Test({ id }: { id?: string }) {
       test_data: JSON.parse(item.test_data),
     };
     setTestData(itemCopy);
+    setRemark(item.labRemark || "");
+    setRemarkAiAssisted(Boolean(item.remarkAiAssisted));
     setShowTestModal(true);
   };
   const handleSavePayment = async () => {
@@ -360,6 +365,45 @@ export default function Test({ id }: { id?: string }) {
     const { name, value } = e.target;
     setResultForm((prev: any) => ({ ...prev, [name]: value }));
   };
+  const handleSuggestRemark = async () => {
+    const parameters = (testData?.test_data ?? [])
+      .map((item: any) => {
+        const { parameter = {} } = item;
+        const value = resultForm[parameter.id];
+        if (!value) return null;
+        return {
+          name: parameter.name,
+          value,
+          unit: parameter.unit?.[0],
+          range: parameter.range,
+        };
+      })
+      .filter(Boolean);
+
+    if (parameters.length === 0) {
+      toast.error("Enter at least one result value before requesting a suggestion");
+      return;
+    }
+
+    setSuggestingRemark(true);
+    try {
+      const res = await fetch("/api/ai/suggest-remark", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ testTitle: testData.test_title, parameters }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRemark(data.data.suggestion);
+        setRemarkAiAssisted(true);
+      } else {
+        toast.error(data.error || "Failed to generate a suggestion");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+    setSuggestingRemark(false);
+  };
   const handleTestDataForm = async (e: any) => {
     e.preventDefault();
     setLoading(true);
@@ -387,6 +431,8 @@ export default function Test({ id }: { id?: string }) {
         body: JSON.stringify({
           put_id: testData._id,
           test_data: JSON.stringify(resp),
+          labRemark: remark,
+          remarkAiAssisted,
         }),
       });
       const data = await res.json();
@@ -1136,6 +1182,41 @@ export default function Test({ id }: { id?: string }) {
                   </div>
                 );
               })}
+
+              <div className="rounded-lg border border-slate-200 p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <label className={LABEL_CLASS}>
+                    Clinical Remark{" "}
+                    <span className="text-slate-400 font-normal normal-case">(optional)</span>
+                  </label>
+                  <button
+                    type="button"
+                    disabled={suggestingRemark}
+                    onClick={handleSuggestRemark}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 disabled:opacity-50 transition-colors"
+                  >
+                    <i className={`fas ${suggestingRemark ? "fa-spinner fa-spin" : "fa-magic"}`}></i>
+                    {suggestingRemark ? "Thinking..." : "Suggest with AI"}
+                  </button>
+                </div>
+                <textarea
+                  value={remark}
+                  onChange={(e) => {
+                    setRemark(e.target.value);
+                  }}
+                  rows={3}
+                  placeholder="Add your own interpretation, or generate a draft to review and edit"
+                  className={MODAL_INPUT_CLASS}
+                />
+                {remarkAiAssisted && (
+                  <p className="text-xs text-amber-600 mt-1.5">
+                    <i className="fas fa-exclamation-circle mr-1"></i>
+                    AI-drafted - review and edit before saving. You have final say on what's
+                    recorded.
+                  </p>
+                )}
+              </div>
+
               <button
                 disabled={loading}
                 type="submit"

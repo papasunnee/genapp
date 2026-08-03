@@ -18,6 +18,8 @@ export interface ITest extends Document {
   payment?: Types.ObjectId;
   invoice?: Types.ObjectId;
   total_cost: number;
+  labRemark?: string;
+  remarkAiAssisted?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -75,6 +77,18 @@ const TestSchema = new Schema<ITest>(
     total_cost: {
       type: Number,
       required: [true, "Cannot Compute Cost of the test"],
+    },
+    // The lab scientist's final, approved remark - may have started as an
+    // AI-generated draft (remarkAiAssisted: true), but this field only ever
+    // holds what a human actually signed off on, never the raw AI output
+    // unedited-by-default.
+    labRemark: {
+      type: String,
+      maxlength: [1000, "Remark cannot be more than 1000 characters"],
+    },
+    remarkAiAssisted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

@@ -167,6 +167,15 @@ export const displayTestResult = (testData: any = {}, patientData: any) => {
         })}
       </div>
 
+      {testData.labRemark && (
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">
+            Clinical Remark
+          </p>
+          <p className="text-sm text-slate-700 whitespace-pre-wrap">{testData.labRemark}</p>
+        </div>
+      )}
+
       <div className="text-center w-full pt-5">
         <Link
           target="_blank"

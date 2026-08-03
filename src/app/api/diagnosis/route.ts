@@ -276,9 +276,16 @@ export const PUT = withTenant(async (req, tenant, session) => {
       status = undefined;
     }
 
+    const update: Record<string, any> = { test_data: body.test_data };
+    if (status) update.status = status;
+    if (body.labRemark !== undefined) {
+      update.labRemark = body.labRemark;
+      update.remarkAiAssisted = Boolean(body.remarkAiAssisted);
+    }
+
     const updateTest = await Test.findOneAndUpdate(
       { _id: put_id },
-      status ? { test_data: body.test_data, status } : { test_data: body.test_data },
+      update,
       { new: true }
     ).populate([
       {

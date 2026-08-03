@@ -224,6 +224,15 @@ export default function TestPrintPage({
               No result data recorded for this test.
             </p>
           )}
+
+          {test?.labRemark && (
+            <div className="border border-slate-300 rounded bg-slate-50 px-4 py-2.5 print:px-3 print:py-2 break-inside-avoid">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-800 mb-1">
+                Clinical Remark
+              </p>
+              <p className="text-sm whitespace-pre-wrap">{test.labRemark}</p>
+            </div>
+          )}
         </div>
 
         <div className="px-8 pb-6 print:px-6 print:pb-3 flex items-end justify-between gap-6 break-inside-avoid">
