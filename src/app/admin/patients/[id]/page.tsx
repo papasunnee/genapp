@@ -1,5 +1,6 @@
 import AdminNavbar from "@/components/Navbars/AdminNavbar";
 import PatientProfile from "@/components/PatientsData/profile";
+import Documents from "@/components/PatientsData/documents";
 import Test from "@/components/PatientsData/test";
 
 export default async function PatientDetailPage({
@@ -23,6 +24,7 @@ export default async function PatientDetailPage({
         <div className="flex flex-wrap">
           <div className="w-full xl:w-4/12 px-4">
             <PatientProfile id={id} />
+            <Documents id={id} />
           </div>
           <div className="w-full xl:w-8/12 px-4">
             <Test id={id} />

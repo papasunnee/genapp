@@ -11,6 +11,7 @@ type NavItem = {
   label: string;
   icon: string;
   weights?: number[];
+  comingSoon?: boolean;
 };
 
 type NavGroup = {
@@ -30,6 +31,14 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/patients", label: "Patients", icon: "fa-user" },
       { href: "/admin/results", label: "Results", icon: "fa-list", weights: [100, 200, 300] },
       { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },
+      { href: "/admin/qc-logs", label: "QC Log", icon: "fa-vial", weights: [100, 200, 300] },
+      {
+        href: "/admin/inventory",
+        label: "Inventory",
+        icon: "fa-boxes",
+        weights: [100, 200, 300],
+        comingSoon: true,
+      },
     ],
   },
   {
@@ -68,6 +77,21 @@ function NavLink({
   active: boolean;
   onNavigate: (href: string) => void;
 }) {
+  if (item.comingSoon) {
+    return (
+      <div
+        title={`${item.label} - coming soon`}
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 cursor-default select-none"
+      >
+        <i className={`fas ${item.icon} w-4 text-center text-slate-300`}></i>
+        <span className="flex-1">{item.label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded-full">
+          Soon
+        </span>
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"

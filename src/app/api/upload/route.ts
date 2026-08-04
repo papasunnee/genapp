@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { withTenant } from "@/lib/apiTenant";
-import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { uploadImageToCloudinary, uploadDocumentToCloudinary } from "@/lib/cloudinary";
 import { getPlanLimits } from "@/lib/planLimits";
 
 const MAX_DATA_URI_LENGTH = 8_000_000; // ~6MB decoded - client already resizes before this
+const MAX_DOCUMENT_DATA_URI_LENGTH = 14_000_000; // ~10MB decoded - documents aren't resized client-side
 
 export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
@@ -12,7 +13,42 @@ export const POST = withTenant(async (req, tenant, session) => {
 
   try {
     const body = await req.json();
-    const { image, type } = body as { image?: string; type?: "avatar" | "logo" };
+    const { image, type, name } = body as {
+      image?: string;
+      type?: "avatar" | "logo" | "document";
+      name?: string;
+    };
+
+    if (type === "document") {
+      if (
+        !image ||
+        typeof image !== "string" ||
+        !(image.startsWith("data:image/") || image.startsWith("data:application/pdf"))
+      ) {
+        return NextResponse.json(
+          { success: false, error: "A valid image or PDF file is required." },
+          { status: 400 }
+        );
+      }
+      if (image.length > MAX_DOCUMENT_DATA_URI_LENGTH) {
+        return NextResponse.json(
+          { success: false, error: "File is too large - please choose a file under 10MB." },
+          { status: 400 }
+        );
+      }
+      if (!name || typeof name !== "string" || !name.trim()) {
+        return NextResponse.json(
+          { success: false, error: "A document name is required." },
+          { status: 400 }
+        );
+      }
+
+      const uploaded = await uploadDocumentToCloudinary(
+        image,
+        `documents/${tenant.organization.subdomain}`
+      );
+      return NextResponse.json({ success: true, data: uploaded });
+    }
 
     if (!image || typeof image !== "string" || !image.startsWith("data:image/")) {
       return NextResponse.json(
@@ -57,7 +93,7 @@ export const POST = withTenant(async (req, tenant, session) => {
     }
 
     return NextResponse.json(
-      { success: false, error: 'type must be "avatar" or "logo".' },
+      { success: false, error: 'type must be "avatar", "logo", or "document".' },
       { status: 400 }
     );
   } catch (error: any) {

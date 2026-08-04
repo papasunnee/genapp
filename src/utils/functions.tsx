@@ -62,6 +62,20 @@ export function resizeImageToDataUrl(file: File, maxSize = 160): Promise<string>
   });
 }
 
+/**
+ * Reads a file (image or PDF) as a base64 data URI with no resizing or
+ * re-encoding - unlike resizeImageToDataUrl, this must also work for PDFs,
+ * which can't be drawn onto a canvas.
+ */
+export function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read file"));
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsDataURL(file);
+  });
+}
+
 export const getAge = (date?: string | Date) => {
   if (date) {
     return moment(Date.now()).diff(moment(date), "years") + " years";

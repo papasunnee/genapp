@@ -1,6 +1,17 @@
 import { Connection, Document, Model, Schema, Types } from "mongoose";
 import { validateEmail } from "@/utils/validateEmail";
 
+export interface IPatientDocument {
+  _id?: Types.ObjectId;
+  name: string;
+  url: string;
+  publicId: string;
+  resourceType: "image" | "raw";
+  uploadedBy?: Types.ObjectId;
+  uploadedByLabel?: string;
+  uploadedAt: Date;
+}
+
 export interface IPatient extends Document {
   firstname: string;
   lastname: string;
@@ -14,6 +25,7 @@ export interface IPatient extends Document {
   email: string;
   image_url?: string;
   tests: Types.ObjectId[];
+  documents: IPatientDocument[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,6 +88,17 @@ const PatientSchema = new Schema<IPatient>(
       {
         type: Schema.Types.ObjectId,
         ref: "Test",
+      },
+    ],
+    documents: [
+      {
+        name: { type: String, required: true, maxlength: 150 },
+        url: { type: String, required: true },
+        publicId: { type: String, required: true },
+        resourceType: { type: String, enum: ["image", "raw"], required: true },
+        uploadedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        uploadedByLabel: { type: String },
+        uploadedAt: { type: Date, default: Date.now },
       },
     ],
   },
