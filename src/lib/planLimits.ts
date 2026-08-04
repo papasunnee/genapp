@@ -12,6 +12,7 @@ export interface PlanLimits {
   customRoles: boolean;
   analyticsHistoryMonths: number;
   aiAssistance: boolean;
+  multiBranch: boolean;
 }
 
 // A large finite sentinel, not Infinity - these limits are serialized as
@@ -29,6 +30,7 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     customRoles: false,
     analyticsHistoryMonths: 1,
     aiAssistance: false,
+    multiBranch: false,
   },
   Starter: {
     maxStaff: 3,
@@ -38,6 +40,7 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     customRoles: false,
     analyticsHistoryMonths: 3,
     aiAssistance: false,
+    multiBranch: false,
   },
   Pro: {
     maxStaff: UNLIMITED,
@@ -47,6 +50,7 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     customRoles: true,
     analyticsHistoryMonths: 6,
     aiAssistance: true,
+    multiBranch: false,
   },
   Enterprise: {
     maxStaff: UNLIMITED,
@@ -56,6 +60,7 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     customRoles: true,
     analyticsHistoryMonths: 12,
     aiAssistance: true,
+    multiBranch: true,
   },
 };
 
@@ -74,6 +79,7 @@ export const DEMO_LIMITS: PlanLimits = {
   customRoles: false,
   analyticsHistoryMonths: 1,
   aiAssistance: false,
+  multiBranch: false,
 };
 
 /**

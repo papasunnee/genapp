@@ -26,6 +26,8 @@ export interface IPatient extends Document {
   image_url?: string;
   tests: Types.ObjectId[];
   documents: IPatientDocument[];
+  referrer?: Types.ObjectId;
+  branch?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -101,6 +103,14 @@ const PatientSchema = new Schema<IPatient>(
         uploadedAt: { type: Date, default: Date.now },
       },
     ],
+    referrer: {
+      type: Schema.Types.ObjectId,
+      ref: "Referrer",
+    },
+    branch: {
+      type: Schema.Types.ObjectId,
+      ref: "Branch",
+    },
   },
   { timestamps: true }
 );

@@ -4,6 +4,8 @@ import { getPatientModel } from "@/models/Patient";
 import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
 import { getInvoiceModel } from "@/models/Invoice";
+import { getReferrerModel } from "@/models/Referrer";
+import { getBranchModel } from "@/models/Branch";
 import { withTenant } from "@/lib/apiTenant";
 import { hasPermission } from "@/lib/permissions";
 import { getPlanLimits } from "@/lib/planLimits";
@@ -20,6 +22,8 @@ export const GET = withTenant(async (req, tenant, session) => {
   getTestModel(tenant.connection);
   getPaymentModel(tenant.connection);
   getInvoiceModel(tenant.connection);
+  getReferrerModel(tenant.connection);
+  getBranchModel(tenant.connection);
   const id = req.nextUrl.searchParams.get("id");
 
   try {
@@ -46,11 +50,15 @@ export const GET = withTenant(async (req, tenant, session) => {
             { path: "invoice" },
           ],
         },
+        { path: "referrer" },
+        { path: "branch" },
       ]);
       return NextResponse.json({ success: true, data: singlePatient });
     }
 
-    const allRecords = await Patient.find().sort({ createdAt: -1 });
+    const allRecords = await Patient.find()
+      .populate([{ path: "referrer" }, { path: "branch" }])
+      .sort({ createdAt: -1 });
     return NextResponse.json({ success: true, data: allRecords });
   } catch (error: any) {
     return NextResponse.json(
@@ -71,7 +79,13 @@ const EDITABLE_PATIENT_FIELDS = [
   "phone",
   "description",
   "email",
+  "referrer",
+  "branch",
 ] as const;
+
+// referrer/branch are optional <select> fields - an unselected one submits
+// "" rather than omitting the key, which would otherwise fail ObjectId cast.
+const REF_FIELDS = new Set(["referrer", "branch"]);
 
 export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
@@ -96,7 +110,9 @@ export const POST = withTenant(async (req, tenant, session) => {
     const body = await req.json();
     const patientFields: Record<string, any> = {};
     for (const field of EDITABLE_PATIENT_FIELDS) {
-      if (body[field] !== undefined) patientFields[field] = body[field];
+      if (body[field] === undefined) continue;
+      if (REF_FIELDS.has(field) && !body[field]) continue;
+      patientFields[field] = body[field];
     }
     const newRecord = await Patient.create(patientFields);
     await logActivity(
@@ -137,7 +153,12 @@ export const PUT = withTenant(async (req, tenant, session) => {
     // the same allow-list POST uses.
     const update: Record<string, any> = {};
     for (const field of EDITABLE_PATIENT_FIELDS) {
-      if (body[field] !== undefined) update[field] = body[field];
+      if (body[field] === undefined) continue;
+      if (REF_FIELDS.has(field) && !body[field]) {
+        update[field] = null;
+        continue;
+      }
+      update[field] = body[field];
     }
 
     const updatePatient = await Patient.findOneAndUpdate(

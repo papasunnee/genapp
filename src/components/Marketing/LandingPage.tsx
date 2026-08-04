@@ -6,7 +6,7 @@ const FEATURES = [
     icon: "fa-user-md",
     title: "Patient Records",
     description:
-      "Register patients once and keep their full history, demographics, and test history in one place.",
+      "Register patients once and keep their full history, demographics, test history, and attached documents (consent forms, referral letters) in one place.",
   },
   {
     icon: "fa-vials",
@@ -49,6 +49,30 @@ const FEATURES = [
     title: "Your Own Organization",
     description:
       "Every lab runs on its own private address and its own isolated data - your records are never mixed with anyone else's.",
+  },
+  {
+    icon: "fa-calendar-check",
+    title: "Appointment Scheduling",
+    description:
+      "Book sample-collection and consultation slots for walk-ins or registered patients, and track them by day with status updates.",
+  },
+  {
+    icon: "fa-user-md",
+    title: "Referral Tracking",
+    description:
+      "Keep a directory of referring doctors and clinics, link patients to who referred them, and see referral volume by source.",
+  },
+  {
+    icon: "fa-clipboard-check",
+    title: "QC & Maintenance Logs",
+    description:
+      "Log daily quality-control checks and analyzer calibration/maintenance history - the compliance records regulators expect on file.",
+  },
+  {
+    icon: "fa-file-export",
+    title: "Reports & Export",
+    description:
+      "Monthly revenue and test-volume reports, broken down by test type, exportable as CSV or a printable PDF for accounting and audits.",
   },
 ];
 
@@ -152,6 +176,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
           <span>&copy; {new Date().getFullYear()} LabSuite. All rights reserved.</span>
           <div className="flex items-center gap-4">
+            <a href="/manual" className="hover:text-slate-600 transition-colors">
+              User Manual
+            </a>
             <a href="/terms" className="hover:text-slate-600 transition-colors">
               Terms
             </a>

@@ -40,6 +40,9 @@ export default function LegalPageShell({
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
           <span>&copy; {new Date().getFullYear()} LabSuite. All rights reserved.</span>
           <div className="flex items-center gap-4">
+            <Link href="/manual" className="hover:text-slate-600 transition-colors">
+              User Manual
+            </Link>
             <Link href="/terms" className="hover:text-slate-600 transition-colors">
               Terms
             </Link>

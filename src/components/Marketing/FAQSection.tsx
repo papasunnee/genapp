@@ -53,6 +53,16 @@ const FAQS = [
     answer:
       "Both are linked in the footer below - the Privacy Policy covers exactly what data we collect, which third parties (Paystack, Cloudinary, MongoDB Atlas, Anthropic) process it, and how organization data stays isolated.",
   },
+  {
+    question: "Do appointments, referrer tracking, and compliance logs cost extra?",
+    answer:
+      "No - appointment scheduling, the referring doctor/clinic directory, patient document uploads, and QC/maintenance compliance logs are included on every plan, including Free.",
+  },
+  {
+    question: "Is there a full guide to every feature?",
+    answer:
+      "Yes - the User Manual (linked in the footer) walks through every module in the portal, from patient registration to reports, with who can access what and step-by-step instructions.",
+  },
 ];
 
 export default function FAQSection() {

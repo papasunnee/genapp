@@ -15,6 +15,8 @@ export default function Create() {
   const [loading, setLoading] = useState(false);
   const [dob, onChange] = useState<any>(new Date("1/1/2020"));
   const { mutate } = useSWR("/api/patients", fetcher);
+  const { data: referrerData }: any = useSWR("/api/referrers", fetcher);
+  const { data: branchData }: any = useSWR("/api/branches", fetcher);
   const firstnameRef = useRef<HTMLInputElement>(null);
   const lastnameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -25,6 +27,12 @@ export default function Create() {
   const countryRef = useRef<HTMLInputElement>(null);
   const genderRef = useRef<HTMLSelectElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const referrerRef = useRef<HTMLSelectElement>(null);
+  const branchRef = useRef<HTMLSelectElement>(null);
+
+  const referrers = referrerData?.data ?? [];
+  const branches = branchData?.data ?? [];
+  const multiBranch = branchData?.multiBranch ?? false;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +46,8 @@ export default function Create() {
     const gender = genderRef.current?.value;
     const country = countryRef.current?.value;
     const description = descriptionRef.current?.value;
+    const referrer = referrerRef.current?.value;
+    const branch = branchRef.current?.value;
 
     try {
       const res = await fetch("/api/patients", {
@@ -54,6 +64,8 @@ export default function Create() {
           country,
           description,
           gender,
+          referrer,
+          branch,
         }),
       });
       const data = await res.json();
@@ -67,6 +79,8 @@ export default function Create() {
         if (cityRef.current) cityRef.current.value = "";
         if (countryRef.current) countryRef.current.value = "";
         if (descriptionRef.current) descriptionRef.current.value = "";
+        if (referrerRef.current) referrerRef.current.value = "";
+        if (branchRef.current) branchRef.current.value = "";
         onChange(new Date("1/1/2020"));
         toast.success("New patient created successfully");
       } else {
@@ -244,6 +258,37 @@ export default function Create() {
             <h6 className="text-slate-400 text-xs mb-4 font-semibold uppercase tracking-wide">
               Additional Info
             </h6>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className={LABEL_CLASS} htmlFor="patient-referrer">
+                  Referring Doctor/Clinic{" "}
+                  <span className="text-slate-400 font-normal normal-case">(optional)</span>
+                </label>
+                <select id="patient-referrer" ref={referrerRef} className={INPUT_CLASS}>
+                  <option value="">None</option>
+                  {referrers.map((r: any) => (
+                    <option key={r._id} value={r._id}>
+                      {r.name} ({r.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {multiBranch && (
+                <div>
+                  <label className={LABEL_CLASS} htmlFor="patient-branch">
+                    Branch <span className="text-slate-400 font-normal normal-case">(optional)</span>
+                  </label>
+                  <select id="patient-branch" ref={branchRef} className={INPUT_CLASS}>
+                    <option value="">None</option>
+                    {branches.map((b: any) => (
+                      <option key={b._id} value={b._id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
             <label className={LABEL_CLASS} htmlFor="patient-description">
               About Patient
             </label>

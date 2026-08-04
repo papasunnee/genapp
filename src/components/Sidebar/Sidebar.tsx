@@ -12,6 +12,7 @@ type NavItem = {
   icon: string;
   weights?: number[];
   comingSoon?: boolean;
+  external?: boolean;
 };
 
 type NavGroup = {
@@ -28,15 +29,25 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Clinical",
     items: [
       { href: "/admin/order-test", label: "Order Test", icon: "fa-cart-plus", weights: [100, 200, 500] },
+      { href: "/admin/appointments", label: "Appointments", icon: "fa-calendar-check", weights: [100, 200, 300, 500] },
       { href: "/admin/patients", label: "Patients", icon: "fa-user" },
       { href: "/admin/results", label: "Results", icon: "fa-list", weights: [100, 200, 300] },
       { href: "/admin/test-catalog", label: "Test Catalog", icon: "fa-flask", weights: [100, 200] },
       { href: "/admin/qc-logs", label: "QC Log", icon: "fa-vial", weights: [100, 200, 300] },
+      { href: "/admin/maintenance-log", label: "Maintenance Log", icon: "fa-tools", weights: [100, 200, 300] },
+      { href: "/admin/referrers", label: "Referrers", icon: "fa-user-md", weights: [100, 200, 500] },
       {
         href: "/admin/inventory",
         label: "Inventory",
         icon: "fa-boxes",
         weights: [100, 200, 300],
+        comingSoon: true,
+      },
+      {
+        href: "/admin/sms-notifications",
+        label: "SMS/WhatsApp Alerts",
+        icon: "fa-comment-dots",
+        weights: [100, 200, 300, 500],
         comingSoon: true,
       },
     ],
@@ -46,6 +57,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
       { href: "/admin/invoices", label: "Invoices", icon: "fa-file-invoice-dollar", weights: [100, 200, 400] },
+      { href: "/admin/reports", label: "Reports", icon: "fa-chart-bar", weights: [100, 200, 400] },
       { href: "/admin/billing", label: "Subscription", icon: "fa-credit-card", weights: [100, 200] },
     ],
   },
@@ -54,13 +66,17 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/users", label: "Staff/Users", icon: "fa-users", weights: [100, 200, 500] },
       { href: "/admin/roles", label: "Roles", icon: "fa-user-shield", weights: [100, 200] },
+      { href: "/admin/branches", label: "Branches", icon: "fa-code-branch", weights: [100, 200] },
       { href: "/admin/settings", label: "Settings", icon: "fa-cog", weights: [100, 200] },
       { href: "/admin/activity-log", label: "Activity Log", icon: "fa-history", weights: [100] },
     ],
   },
   {
     label: "Account",
-    items: [{ href: "/admin/profile", label: "My Profile", icon: "fa-id-badge" }],
+    items: [
+      { href: "/admin/profile", label: "My Profile", icon: "fa-id-badge" },
+      { href: "/manual", label: "User Manual", icon: "fa-book", external: true },
+    ],
   },
 ];
 
@@ -77,6 +93,21 @@ function NavLink({
   active: boolean;
   onNavigate: (href: string) => void;
 }) {
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors"
+      >
+        <i className={`fas ${item.icon} w-4 text-center text-slate-400`}></i>
+        <span className="flex-1">{item.label}</span>
+        <i className="fas fa-external-link-alt text-[10px] text-slate-300"></i>
+      </a>
+    );
+  }
+
   if (item.comingSoon) {
     return (
       <div

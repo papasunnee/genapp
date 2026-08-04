@@ -63,6 +63,18 @@ export default function Profile({ id }: { id?: string }) {
             <i className="fas fa-phone mr-3 text-slate-400 w-4"></i>
             {isLoading ? <Skeleton className="h-3 w-28" /> : patient?.phone || "-"}
           </div>
+          {!isLoading && patient?.referrer && (
+            <div className="flex items-center text-slate-600">
+              <i className="fas fa-user-md mr-3 text-slate-400 w-4"></i>
+              Referred by {patient.referrer.name}
+            </div>
+          )}
+          {!isLoading && patient?.branch && (
+            <div className="flex items-center text-slate-600">
+              <i className="fas fa-map-pin mr-3 text-slate-400 w-4"></i>
+              {patient.branch.name}
+            </div>
+          )}
         </div>
       </div>
     </div>
