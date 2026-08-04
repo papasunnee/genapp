@@ -6,7 +6,7 @@ import { provisionRenewalFromReference } from "@/lib/provisionRenewal";
 /**
  * Server-to-server notification from Paystack - the durable path for
  * provisioning in case the customer's browser never makes it back to
- * /signup/callback (closed tab, network drop mid-redirect, etc). The
+ * /payment/callback (closed tab, network drop mid-redirect, etc). The
  * callback page does the same provisioning call for the common case where
  * the browser does return, so whichever of the two fires first wins; see
  * provisionOrganizationFromReference for how that race is resolved.

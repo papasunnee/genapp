@@ -52,7 +52,7 @@ export const POST = withTenant(async (req, tenant, session) => {
       email: (session.user as any)?.email,
       amountKobo,
       reference,
-      callbackUrl: `${req.nextUrl.origin}/admin/billing/callback`,
+      callbackUrl: `${req.nextUrl.origin}/payment/callback`,
       metadata: {
         kind: "renewal",
         organizationId: organization._id.toString(),

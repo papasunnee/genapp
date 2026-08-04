@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
       email: adminEmail,
       amountKobo,
       reference,
-      callbackUrl: `${req.nextUrl.origin}/signup/callback`,
+      callbackUrl: `${req.nextUrl.origin}/payment/callback`,
       metadata: { organizationName, subdomain, plan, billing },
     });
 
