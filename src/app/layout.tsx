@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import Providers from "./providers";
+import { Analytics } from "@vercel/analytics/next";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "react-date-picker/dist/DatePicker.css";
@@ -54,6 +55,7 @@ export default function RootLayout({
         <Providers>
           <main className={roboto.className}>{children}</main>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
