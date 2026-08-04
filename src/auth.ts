@@ -9,6 +9,7 @@ import {
   resolveTenantBySubdomain,
   TenantResolutionError,
 } from "@/lib/tenantContext";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -37,6 +38,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const email = rawEmail;
         const password = rawPassword;
+
+        // Keyed by IP+email so a scripted credential-stuffing run against
+        // many accounts from one IP is throttled, and so is repeated
+        // guessing against one account from rotating IPs - either alone
+        // would miss half the real attack shapes.
+        const clientIp = getClientIp(request);
+        const rateLimit = await checkRateLimit(
+          `login:${clientIp}:${email.toLowerCase()}`,
+          10,
+          15 * 60 * 1000
+        );
+        if (!rateLimit.allowed) {
+          throw new Error(
+            `Too many login attempts. Try again in ${Math.ceil(rateLimit.retryAfterSeconds / 60)} minute(s).`
+          );
+        }
 
         // The subdomain is normally read from the Host header - but a
         // deployment with no wildcard DNS yet (or the public demo) has no
@@ -67,6 +84,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await User.findOne({ email }).populate("role");
         if (!user) {
           throw new Error("Invalid Login Credentials");
+        }
+        if (user.status !== "Active") {
+          throw new Error(
+            "This account is no longer active. Contact your organization's admin."
+          );
         }
 
         const access = await Access.findOne({ user: user._id });

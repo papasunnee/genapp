@@ -6,6 +6,7 @@ import { getRoleModel } from "@/models/Role";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
 import { logActivity } from "@/lib/activityLog";
+import { hasPermission } from "@/lib/permissions";
 
 const { ObjectId } = Types;
 
@@ -72,11 +73,11 @@ export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  // Only Super Admin/Admin may add staff - without this check any signed-in
-  // account (e.g. a Front Desk user) could create new accounts, and could
+  // Only staff with the manageStaff permission may add staff - without
+  // this check any signed-in account could create new accounts, and could
   // hand them any role at all (see the weight check below).
   const requesterWeight = session.user?.role?.weight;
-  if (![100, 200].includes(requesterWeight as number)) {
+  if (!hasPermission(session.user?.role, "manageStaff")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
@@ -120,9 +121,9 @@ export const POST = withTenant(async (req, tenant, session) => {
     }
 
     const password = body.password;
-    if (typeof password !== "string" || password.length < 8) {
+    if (typeof password !== "string" || password.length < 8 || password.length > 128) {
       return NextResponse.json(
-        { success: false, error: "Password must be at least 8 characters" },
+        { success: false, error: "Password must be between 8 and 128 characters" },
         { status: 400 }
       );
     }

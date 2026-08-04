@@ -246,9 +246,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (adminPassword.length < 8) {
+    if (adminPassword.length < 8 || adminPassword.length > 128) {
       return NextResponse.json(
-        { success: false, error: "Password must be at least 8 characters" },
+        { success: false, error: "Password must be between 8 and 128 characters" },
         { status: 400 }
       );
     }

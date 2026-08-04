@@ -5,29 +5,42 @@ import { getUserModel } from "@/models/User";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
 import { logActivity } from "@/lib/activityLog";
+import {
+  ALL_PERMISSIONS,
+  STANDARD_TIERS,
+  hasPermission,
+  tierDefaultsForWeight,
+} from "@/lib/permissions";
 
 const { ObjectId } = Types;
 
-const MANAGE_WEIGHTS = [100, 200];
 const UPGRADE_ERROR = "Custom role management requires a Pro plan or higher.";
 
-function isDuplicateKeyError(error: any): "name" | "weight" | null {
-  if (error?.code !== 11000) return null;
-  const key = Object.keys(error.keyPattern || {})[0];
-  return key === "weight" ? "weight" : "name";
+function isDuplicateNameError(error: any): boolean {
+  return error?.code === 11000 && Object.keys(error.keyPattern || {})[0] === "name";
+}
+
+function isStandardTierWeight(weight: unknown): weight is number {
+  const n = Number(weight);
+  return STANDARD_TIERS.some((t) => t.weight === n);
 }
 
 /**
- * Every weight-based check elsewhere in this app (sidebar visibility, API
- * gates) assumes weights are positive whole numbers spaced out like the
- * standard tiers (100/200/300/400/500) - a negative, zero, or fractional
- * weight wouldn't break any single check, but could produce incoherent
- * access-tier boundaries wherever a comparison sits between two hardcoded
- * values.
+ * Only ever persists permission keys that grant something the role's base
+ * tier doesn't already include - so permissionOverrides always reads as
+ * "what makes this role different from a plain standard tier," never a
+ * redundant restatement of the tier's own defaults.
  */
-function isValidWeight(weight: unknown): boolean {
-  const n = Number(weight);
-  return Number.isInteger(n) && n > 0;
+function sanitizeOverrides(weight: number, rawOverrides: unknown): Record<string, true> {
+  if (!rawOverrides || typeof rawOverrides !== "object") return {};
+  const defaults = tierDefaultsForWeight(weight);
+  const sanitized: Record<string, true> = {};
+  for (const permission of ALL_PERMISSIONS) {
+    if ((rawOverrides as any)[permission] === true && !defaults[permission]) {
+      sanitized[permission] = true;
+    }
+  }
+  return sanitized;
 }
 
 export const GET = withTenant(async (req, tenant, session) => {
@@ -54,10 +67,9 @@ export const GET = withTenant(async (req, tenant, session) => {
 
     // The Roles management page needs the full roster (including Disabled
     // roles, unfiltered by the requester's own weight) - a separate opt-in
-    // path from the "roles I'm allowed to assign to new staff" list below,
-    // gated to Admin/Super Admin same as every other role mutation.
+    // path from the "roles I'm allowed to assign to new staff" list below.
     if (req.nextUrl.searchParams.get("all") === "true") {
-      if (!MANAGE_WEIGHTS.includes(roleWeight as number)) {
+      if (!hasPermission(session.user?.role, "manageRoles")) {
         return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
       }
       const User = getUserModel(tenant.connection);
@@ -103,7 +115,7 @@ export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (!MANAGE_WEIGHTS.includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "manageRoles")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   if (!getPlanLimits(tenant.organization).customRoles) {
@@ -115,32 +127,33 @@ export const POST = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const { name, weight } = body;
-    if (typeof name !== "string" || !name.trim() || !isValidWeight(weight)) {
+    if (typeof name !== "string" || !name.trim() || !isStandardTierWeight(weight)) {
       return NextResponse.json(
-        { success: false, error: "Name and a positive whole-number weight are required" },
+        { success: false, error: "Name and a valid base tier are required" },
         { status: 400 }
       );
     }
 
-    const newRecord = await Role.create({ name, weight: Number(weight), status: "Active" });
+    const numericWeight = Number(weight);
+    const permissionOverrides = sanitizeOverrides(numericWeight, body.permissionOverrides);
+
+    const newRecord = await Role.create({
+      name,
+      weight: numericWeight,
+      status: "Active",
+      permissionOverrides,
+    });
     await logActivity(
       tenant.connection,
       session,
       "role.created",
-      `Created role "${newRecord.name}" (weight ${newRecord.weight})`
+      `Created role "${newRecord.name}" (base tier weight ${newRecord.weight})`
     );
     return NextResponse.json({ success: true, data: newRecord }, { status: 201 });
   } catch (error: any) {
-    const duplicateField = isDuplicateKeyError(error);
-    if (duplicateField) {
+    if (isDuplicateNameError(error)) {
       return NextResponse.json(
-        {
-          success: false,
-          error:
-            duplicateField === "weight"
-              ? "Another role already uses that weight - each role needs a unique weight."
-              : "A role with that name already exists.",
-        },
+        { success: false, error: "A role with that name already exists." },
         { status: 400 }
       );
     }
@@ -155,7 +168,7 @@ export const PUT = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (!MANAGE_WEIGHTS.includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "manageRoles")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   if (!getPlanLimits(tenant.organization).customRoles) {
@@ -173,9 +186,9 @@ export const PUT = withTenant(async (req, tenant, session) => {
         { status: 400 }
       );
     }
-    if (body.weight !== undefined && !isValidWeight(body.weight)) {
+    if (body.weight !== undefined && !isStandardTierWeight(body.weight)) {
       return NextResponse.json(
-        { success: false, error: "Weight must be a positive whole number" },
+        { success: false, error: "Weight must be a valid base tier" },
         { status: 400 }
       );
     }
@@ -208,10 +221,20 @@ export const PUT = withTenant(async (req, tenant, session) => {
       }
     }
 
+    const effectiveWeight = weight !== undefined ? Number(weight) : existing.weight;
     const update: Record<string, any> = {};
     if (name !== undefined) update.name = name;
-    if (weight !== undefined) update.weight = Number(weight);
+    if (weight !== undefined) update.weight = effectiveWeight;
     if (status !== undefined) update.status = status;
+    if (body.permissionOverrides !== undefined) {
+      update.permissionOverrides = sanitizeOverrides(effectiveWeight, body.permissionOverrides);
+    } else if (weight !== undefined) {
+      // The base tier changed but no explicit overrides were sent with
+      // this request - re-sanitize the existing overrides against the new
+      // tier so a permission that's now covered by the new tier's own
+      // defaults doesn't linger as a redundant override.
+      update.permissionOverrides = sanitizeOverrides(effectiveWeight, existing.permissionOverrides);
+    }
 
     const updated = await Role.findByIdAndUpdate(put_id, update, {
       new: true,
@@ -228,16 +251,9 @@ export const PUT = withTenant(async (req, tenant, session) => {
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
-    const duplicateField = isDuplicateKeyError(error);
-    if (duplicateField) {
+    if (isDuplicateNameError(error)) {
       return NextResponse.json(
-        {
-          success: false,
-          error:
-            duplicateField === "weight"
-              ? "Another role already uses that weight - each role needs a unique weight."
-              : "A role with that name already exists.",
-        },
+        { success: false, error: "A role with that name already exists." },
         { status: 400 }
       );
     }
@@ -252,7 +268,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (!MANAGE_WEIGHTS.includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "manageRoles")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   if (!getPlanLimits(tenant.organization).customRoles) {

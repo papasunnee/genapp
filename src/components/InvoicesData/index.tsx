@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import moment from "moment";
 import { fetcher } from "@/utils/fetcher";
@@ -9,6 +8,7 @@ import { formatCurrency } from "@/utils/functions";
 import { toast } from "@/components/ui/Toast";
 import { confirmDialog } from "@/components/ui/ConfirmDialog";
 import Pagination from "@/components/ui/Pagination";
+import ActionMenu from "@/components/ui/ActionMenu";
 import TableSkeleton from "@/components/PatientsData/TableSkeleton";
 import {
   TABLE_CARD_CLASS,
@@ -30,6 +30,7 @@ export default function InvoicesData() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [voidingId, setVoidingId] = useState<string | null>(null);
   const resPerPage = 10;
 
   const { data, isLoading, mutate }: any = useSWR(
@@ -71,8 +72,9 @@ export default function InvoicesData() {
       cancelLabel: "Cancel",
       danger: true,
     });
-    if (!confirmed) return;
+    if (!confirmed || voidingId) return;
 
+    setVoidingId(invoice._id);
     try {
       const res = await fetch("/api/invoices", {
         method: "PATCH",
@@ -89,6 +91,7 @@ export default function InvoicesData() {
     } catch (error: any) {
       toast.error(error.message);
     }
+    setVoidingId(null);
   };
 
   return (
@@ -204,22 +207,28 @@ export default function InvoicesData() {
                       <td className={TABLE_TD_CLASS}>
                         {moment(invoice.createdAt).format("Do MMM, YYYY")}
                       </td>
-                      <td className="px-6 align-middle text-sm p-3 text-right space-x-3 whitespace-nowrap">
-                        <Link
-                          href={`/print/invoice/${invoice._id}`}
-                          target="_blank"
-                          className="text-xs font-semibold uppercase text-brand-600 hover:text-brand-800"
-                        >
-                          Print
-                        </Link>
-                        {invoice.status === "Unpaid" && (
-                          <button
-                            onClick={() => handleVoid(invoice)}
-                            className="text-xs font-semibold uppercase text-slate-400 hover:text-red-700"
-                          >
-                            Void
-                          </button>
-                        )}
+                      <td className="px-6 align-middle text-sm p-3 text-right whitespace-nowrap">
+                        <ActionMenu
+                          items={[
+                            {
+                              label: "Print",
+                              icon: "fa-print",
+                              onClick: () =>
+                                window.open(`/print/invoice/${invoice._id}`, "_blank"),
+                            },
+                            ...(invoice.status === "Unpaid"
+                              ? [
+                                  {
+                                    label: "Void Invoice",
+                                    icon: "fa-ban",
+                                    danger: true,
+                                    disabled: voidingId === invoice._id,
+                                    onClick: () => handleVoid(invoice),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
                       </td>
                     </tr>
                   ))}

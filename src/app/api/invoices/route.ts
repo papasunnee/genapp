@@ -5,6 +5,7 @@ import { getPatientModel } from "@/models/Patient";
 import { getPaymentModel } from "@/models/Payment";
 import { getUserModel } from "@/models/User";
 import { withTenant } from "@/lib/apiTenant";
+import { hasPermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activityLog";
 import { formatCurrency } from "@/utils/functions";
 
@@ -41,7 +42,11 @@ export const GET = withTenant(async (req, tenant, session) => {
       .sort({ createdAt: -1 });
     return NextResponse.json({ success: true, data: invoices });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("Invoice request failed:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 });
 
@@ -56,7 +61,7 @@ export const PATCH = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "voidInvoices")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
@@ -118,6 +123,10 @@ export const PATCH = withTenant(async (req, tenant, session) => {
 
     return NextResponse.json({ success: true, data: invoice });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("Invoice request failed:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 });

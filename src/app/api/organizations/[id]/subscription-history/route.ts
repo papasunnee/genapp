@@ -18,6 +18,10 @@ export async function GET(
     const events = await SubscriptionEvent.find({ organization: id }).sort({ createdAt: -1 });
     return NextResponse.json({ success: true, data: events });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("Failed to load subscription history:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }

@@ -5,6 +5,7 @@ import { withTenant } from "@/lib/apiTenant";
 import { seedTestCatalog } from "@/lib/seedTestCatalog";
 import { getPlanLimits } from "@/lib/planLimits";
 import { logActivity } from "@/lib/activityLog";
+import { hasPermission } from "@/lib/permissions";
 
 const { ObjectId } = Types;
 
@@ -34,7 +35,7 @@ export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "manageCatalog")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   if (!getPlanLimits(tenant.organization).customCatalog) {
@@ -65,7 +66,7 @@ export const PUT = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "manageCatalog")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   if (!getPlanLimits(tenant.organization).customCatalog) {
@@ -110,7 +111,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "manageCatalog")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   if (!getPlanLimits(tenant.organization).customCatalog) {

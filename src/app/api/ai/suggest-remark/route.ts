@@ -3,14 +3,13 @@ import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
 import { generateResultRemark, RemarkParameter } from "@/lib/anthropic";
 import { logActivity } from "@/lib/activityLog";
-
-const ALLOWED_WEIGHTS = [100, 200, 300];
+import { hasPermission } from "@/lib/permissions";
 
 export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (!ALLOWED_WEIGHTS.includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "editResults")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   if (!getPlanLimits(tenant.organization).aiAssistance) {
@@ -48,6 +47,10 @@ export const POST = withTenant(async (req, tenant, session) => {
 
     return NextResponse.json({ success: true, data: { suggestion } });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("AI remark suggestion failed:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 });

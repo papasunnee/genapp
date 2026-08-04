@@ -10,7 +10,8 @@ import {
 type Handler = (
   req: NextRequest,
   tenant: TenantContext,
-  session: Session | null
+  session: Session | null,
+  routeContext: any
 ) => Promise<NextResponse>;
 
 /**
@@ -19,9 +20,13 @@ type Handler = (
  * org's database connection, and - as defense in depth against a stale
  * session being replayed against the wrong subdomain - rejects if the
  * caller's session belongs to a different organization.
+ *
+ * routeContext is Next.js's own second Route Handler argument
+ * (`{ params }` for a dynamic segment like `[id]`) - forwarded through
+ * untouched so a wrapped handler on a dynamic route can still read it.
  */
 export function withTenant(handler: Handler) {
-  return async function (req: NextRequest): Promise<NextResponse> {
+  return async function (req: NextRequest, routeContext?: any): Promise<NextResponse> {
     try {
       const session = await auth();
       const tenant = await resolveTenantForRequest(req.headers.get("host"), session);
@@ -36,7 +41,7 @@ export function withTenant(handler: Handler) {
         );
       }
 
-      return await handler(req, tenant, session);
+      return await handler(req, tenant, session, routeContext);
     } catch (error) {
       if (error instanceof TenantResolutionError) {
         const status = error.reason === "no-subdomain" ? 400 : 404;

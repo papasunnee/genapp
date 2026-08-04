@@ -10,6 +10,8 @@ import { fetcher } from "@/utils/fetcher";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/Toast";
 import { confirmDialog } from "@/components/ui/ConfirmDialog";
+import Modal from "@/components/ui/Modal";
+import ActionMenu from "@/components/ui/ActionMenu";
 import TableSkeleton from "@/components/PatientsData/TableSkeleton";
 import {
   TABLE_CARD_CLASS,
@@ -18,6 +20,24 @@ import {
   TABLE_TR_CLASS,
   TABLE_TD_CLASS,
 } from "@/components/ui/table";
+
+const INPUT_CLASS =
+  "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors";
+const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
+
+const STATUS_BADGE: Record<string, string> = {
+  Active: "bg-emerald-50 text-emerald-700",
+  Suspended: "bg-amber-50 text-amber-700",
+  Quit: "bg-slate-100 text-slate-500",
+  Sacked: "bg-red-50 text-red-700",
+};
+
+function generatePassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let out = "";
+  for (let i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
 
 type UserDataProps = {
   addButton?: boolean;
@@ -34,6 +54,11 @@ export default function UserData({ addButton }: UserDataProps) {
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(resPerPage);
   const [userDataList, setUserDataList] = useState<any>([]);
+
+  const [resetTarget, setResetTarget] = useState<{ _id: string; label: string } | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
 
   useEffect(() => {
     setUserDataList(userData?.data);
@@ -52,8 +77,8 @@ export default function UserData({ addButton }: UserDataProps) {
   const handleDelete = async (id: string, name: string) => {
     const confirmed = await confirmDialog({
       title: "Remove staff member",
-      message: `Remove "${name}" from staff? This cannot be undone.`,
-      confirmLabel: "Remove",
+      message: `Permanently remove "${name}"? This deletes their login credentials and cannot be undone - consider Suspend instead if you just want to block sign-in.`,
+      confirmLabel: "Remove permanently",
       cancelLabel: "Cancel",
       danger: true,
     });
@@ -74,6 +99,68 @@ export default function UserData({ addButton }: UserDataProps) {
     } catch (error: any) {
       toast.error(error.message);
     }
+  };
+
+  const handleToggleStatus = async (item: any) => {
+    const nextStatus = item.status === "Active" ? "Suspended" : "Active";
+    if (nextStatus === "Suspended") {
+      const confirmed = await confirmDialog({
+        title: "Suspend staff member",
+        message: `Suspend "${item.firstname} ${item.lastname}"? They won't be able to sign in until reactivated - nothing they've created is affected.`,
+        confirmLabel: "Suspend",
+        cancelLabel: "Cancel",
+        danger: true,
+      });
+      if (!confirmed) return;
+    }
+    try {
+      const res = await fetch(`/api/users/${item._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(nextStatus === "Active" ? "Staff member reactivated" : "Staff member suspended");
+        mutate();
+      } else {
+        toast.error(json.error || "Failed to update status");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const openResetPassword = (item: any) => {
+    setResetTarget({ _id: item._id, label: `${item.firstname} ${item.lastname}` });
+    setResetPassword(generatePassword());
+    setResetDone(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetTarget) return;
+    if (resetPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setResetting(true);
+    try {
+      const res = await fetch(`/api/users/${resetTarget._id}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword: resetPassword }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`Password reset for ${resetTarget.label}`);
+        setResetDone(true);
+      } else {
+        toast.error(json.error || "Failed to reset password");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+    setResetting(false);
   };
 
   return (
@@ -121,7 +208,7 @@ export default function UserData({ addButton }: UserDataProps) {
       </div>
 
       {isLoading ? (
-        <TableSkeleton columns={canManageStaff ? 4 : 3} />
+        <TableSkeleton columns={canManageStaff ? 5 : 4} />
       ) : userDataList?.length > 0 ? (
         <>
           <div className="block w-full overflow-x-auto">
@@ -132,6 +219,7 @@ export default function UserData({ addButton }: UserDataProps) {
                   <th className={TABLE_TH_CLASS}>Age | Gender</th>
                   <th className={TABLE_TH_CLASS}>Email</th>
                   <th className={TABLE_TH_CLASS}>Phone</th>
+                  <th className={TABLE_TH_CLASS}>Status</th>
                   {canManageStaff && (
                     <th className="px-6 align-middle border-b py-3 text-xs uppercase whitespace-nowrap font-semibold text-right tracking-wide bg-slate-50 text-slate-500 border-slate-100">
                       Action
@@ -167,17 +255,39 @@ export default function UserData({ addButton }: UserDataProps) {
                       </td>
                       <td className={TABLE_TD_CLASS}>{item?.email}</td>
                       <td className={TABLE_TD_CLASS}>{item?.phone}</td>
+                      <td className={TABLE_TD_CLASS}>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            STATUS_BADGE[item.status] || "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
                       {canManageStaff && (
                         <td className="px-6 align-middle text-sm whitespace-nowrap p-3 text-right">
                           {item._id !== data?.user?._id && (
-                            <button
-                              onClick={() =>
-                                handleDelete(item._id, `${item.firstname} ${item.lastname}`)
-                              }
-                              className="text-red-600 hover:text-red-800 text-xs font-semibold uppercase"
-                            >
-                              Remove
-                            </button>
+                            <ActionMenu
+                              items={[
+                                {
+                                  label: item.status === "Active" ? "Suspend" : "Reactivate",
+                                  icon: item.status === "Active" ? "fa-ban" : "fa-check-circle",
+                                  onClick: () => handleToggleStatus(item),
+                                },
+                                {
+                                  label: "Reset Password",
+                                  icon: "fa-key",
+                                  onClick: () => openResetPassword(item),
+                                },
+                                {
+                                  label: "Remove Permanently",
+                                  icon: "fa-trash-alt",
+                                  danger: true,
+                                  onClick: () =>
+                                    handleDelete(item._id, `${item.firstname} ${item.lastname}`),
+                                },
+                              ]}
+                            />
                           )}
                         </td>
                       )}
@@ -204,6 +314,65 @@ export default function UserData({ addButton }: UserDataProps) {
           </div>
         </div>
       )}
+
+      <Modal
+        open={!!resetTarget}
+        title={`Reset Password${resetTarget ? ` - ${resetTarget.label}` : ""}`}
+        onClose={() => setResetTarget(null)}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={LABEL_CLASS}>New Password</label>
+            <div className="flex gap-2">
+              <input
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                disabled={resetDone}
+                className={INPUT_CLASS}
+              />
+              {!resetDone && (
+                <button
+                  type="button"
+                  onClick={() => setResetPassword(generatePassword())}
+                  className="rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 px-3 text-sm flex-shrink-0"
+                  title="Generate a new random password"
+                >
+                  <i className="fas fa-sync-alt"></i>
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mt-1">At least 8 characters.</p>
+          </div>
+
+          {resetDone ? (
+            <>
+              <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+                <i className="fas fa-check-circle mr-1"></i>
+                Password reset. Share this with {resetTarget?.label} through a secure channel -
+                it won&apos;t be shown again after you close this.
+              </p>
+              <button
+                type="button"
+                onClick={() => setResetTarget(null)}
+                className="w-full rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 transition-colors"
+              >
+                Done
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              disabled={resetting}
+              onClick={handleResetPassword}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white text-sm font-semibold px-4 py-2 transition-colors"
+            >
+              {resetting && <i className="fas fa-spinner fa-spin"></i>}
+              {resetting ? "Resetting..." : "Reset Password"}
+            </button>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

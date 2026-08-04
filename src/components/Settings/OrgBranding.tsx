@@ -55,6 +55,10 @@ export default function OrgBranding() {
       toast.error("Please select an image file");
       return;
     }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Image is too large - please choose a file under 15MB");
+      return;
+    }
     setUploadingLogo(true);
     try {
       const dataUrl = await resizeImageToDataUrl(file, 240);

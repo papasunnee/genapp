@@ -23,9 +23,9 @@ export const PATCH = withTenant(async (req, tenant, session) => {
         { status: 400 }
       );
     }
-    if (String(newPassword).length < 6) {
+    if (String(newPassword).length < 6 || String(newPassword).length > 128) {
       return NextResponse.json(
-        { success: false, error: "New password must be at least 6 characters" },
+        { success: false, error: "New password must be between 6 and 128 characters" },
         { status: 400 }
       );
     }

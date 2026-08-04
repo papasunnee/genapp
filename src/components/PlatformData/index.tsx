@@ -7,6 +7,7 @@ import { fetcher } from "@/utils/fetcher";
 import { toast } from "@/components/ui/Toast";
 import { confirmDialog } from "@/components/ui/ConfirmDialog";
 import Modal from "@/components/ui/Modal";
+import ActionMenu from "@/components/ui/ActionMenu";
 import TableSkeleton from "@/components/PatientsData/TableSkeleton";
 import {
   TABLE_CARD_CLASS,
@@ -252,29 +253,30 @@ export default function PlatformData() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 align-middle text-sm p-3 text-right space-x-3 whitespace-nowrap">
-                      <Link
-                        href={`/platform/organizations/${org._id}`}
-                        className="text-xs font-semibold uppercase text-brand-600 hover:text-brand-800"
-                      >
-                        Manage
-                      </Link>
-                      <button
-                        onClick={() => handleToggleStatus(org)}
-                        className={`text-xs font-semibold uppercase ${
-                          org.status === "Active"
-                            ? "text-red-600 hover:text-red-800"
-                            : "text-emerald-600 hover:text-emerald-800"
-                        }`}
-                      >
-                        {org.status === "Active" ? "Suspend" : "Activate"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(org)}
-                        className="text-xs font-semibold uppercase text-slate-400 hover:text-red-700"
-                      >
-                        Delete
-                      </button>
+                    <td className="px-6 align-middle text-sm p-3 text-right whitespace-nowrap">
+                      <div className="inline-flex items-center gap-3">
+                        <Link
+                          href={`/platform/organizations/${org._id}`}
+                          className="text-xs font-semibold uppercase text-brand-600 hover:text-brand-800"
+                        >
+                          Manage
+                        </Link>
+                        <ActionMenu
+                          items={[
+                            {
+                              label: org.status === "Active" ? "Suspend" : "Activate",
+                              icon: org.status === "Active" ? "fa-ban" : "fa-check-circle",
+                              onClick: () => handleToggleStatus(org),
+                            },
+                            {
+                              label: "Delete",
+                              icon: "fa-trash-alt",
+                              danger: true,
+                              onClick: () => handleDelete(org),
+                            },
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}

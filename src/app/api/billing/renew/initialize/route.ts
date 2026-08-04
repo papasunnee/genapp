@@ -63,6 +63,10 @@ export const POST = withTenant(async (req, tenant, session) => {
 
     return NextResponse.json({ success: true, data: { authorizationUrl } });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("Billing renewal initialize failed:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 });

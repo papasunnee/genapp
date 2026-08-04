@@ -32,6 +32,10 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: logs });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("Failed to load activity log:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }

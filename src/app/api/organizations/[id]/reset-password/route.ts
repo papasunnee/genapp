@@ -33,9 +33,9 @@ export async function POST(
         { status: 400 }
       );
     }
-    if (String(newPassword).length < 8) {
+    if (String(newPassword).length < 8 || String(newPassword).length > 128) {
       return NextResponse.json(
-        { success: false, error: "Password must be at least 8 characters" },
+        { success: false, error: "Password must be between 8 and 128 characters" },
         { status: 400 }
       );
     }
@@ -82,6 +82,10 @@ export async function POST(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("Password reset failed:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }

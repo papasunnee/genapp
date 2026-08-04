@@ -6,8 +6,16 @@ import { fetcher } from "@/utils/fetcher";
 import { toast } from "@/components/ui/Toast";
 import { confirmDialog } from "@/components/ui/ConfirmDialog";
 import Modal from "@/components/ui/Modal";
+import ActionMenu from "@/components/ui/ActionMenu";
 import UpgradeNotice from "@/components/ui/UpgradeNotice";
 import TableSkeleton from "@/components/PatientsData/TableSkeleton";
+import {
+  ALL_PERMISSIONS,
+  PERMISSION_LABELS,
+  STANDARD_TIERS,
+  tierDefaultsForWeight,
+  Permission,
+} from "@/lib/permissions";
 import {
   TABLE_CARD_CLASS,
   TABLE_HEADER_CLASS,
@@ -20,15 +28,17 @@ const INPUT_CLASS =
   "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors";
 const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
 
-const STANDARD_WEIGHTS = [
-  { weight: 100, label: "100 - Super Admin" },
-  { weight: 200, label: "200 - Admin" },
-  { weight: 300, label: "300 - Lab Technician" },
-  { weight: 400, label: "400 - Accountant" },
-  { weight: 500, label: "500 - Front Desk" },
-];
+type RoleFormState = {
+  name: string;
+  weight: string;
+  permissionOverrides: Partial<Record<Permission, boolean>>;
+};
 
-const EMPTY_FORM = { name: "", weight: "" };
+const EMPTY_FORM: RoleFormState = { name: "", weight: "300", permissionOverrides: {} };
+
+function tierName(weight: number): string {
+  return STANDARD_TIERS.find((t) => t.weight === weight)?.name ?? `Weight ${weight}`;
+}
 
 function RoleForm({
   initial,
@@ -36,13 +46,13 @@ function RoleForm({
   loading,
   onSubmit,
 }: {
-  initial: { name: string; weight: string };
+  initial: RoleFormState;
   submitLabel: string;
   loading: boolean;
-  onSubmit: (form: { name: string; weight: string }) => void;
+  onSubmit: (form: RoleFormState) => void;
 }) {
   const [form, setForm] = useState(initial);
-  const isStandardWeight = STANDARD_WEIGHTS.some((w) => String(w.weight) === String(form.weight));
+  const tierDefaults = tierDefaultsForWeight(Number(form.weight) || 0);
 
   return (
     <div className="space-y-4">
@@ -55,36 +65,72 @@ function RoleForm({
           className={INPUT_CLASS}
         />
       </div>
+
       <div>
-        <label className={LABEL_CLASS}>Weight</label>
-        <input
-          type="number"
+        <label className={LABEL_CLASS}>Base Level</label>
+        <select
           value={form.weight}
           onChange={(e) => setForm((f) => ({ ...f, weight: e.target.value }))}
-          placeholder="e.g. 300"
           className={INPUT_CLASS}
-        />
-        <p className="text-xs text-slate-500 mt-1.5">
-          Weight controls what parts of the app this role can reach. Each role needs a unique
-          weight. The standard tiers are:
-        </p>
-        <ul className="text-xs text-slate-400 mt-1 space-y-0.5">
-          {STANDARD_WEIGHTS.map((w) => (
-            <li key={w.weight}>{w.label}</li>
+        >
+          {STANDARD_TIERS.map((tier) => (
+            <option key={tier.weight} value={tier.weight}>
+              {tier.name}
+            </option>
           ))}
-        </ul>
-        {form.weight && !isStandardWeight && (
-          <p className="text-xs text-amber-600 mt-1.5">
-            <i className="fas fa-exclamation-triangle mr-1"></i>
-            This weight doesn&apos;t match a standard tier - staff with this role will only reach
-            areas that aren&apos;t restricted to a specific role weight.
-          </p>
-        )}
+        </select>
+        <p className="text-xs text-slate-500 mt-1.5">
+          Every role starts from one of these standard levels. Add extra permissions below for
+          anything beyond what this level normally includes.
+        </p>
       </div>
+
+      <div>
+        <label className={LABEL_CLASS}>Permissions</label>
+        <div className="rounded-lg border border-slate-200 divide-y divide-slate-100">
+          {ALL_PERMISSIONS.map((permission) => {
+            const includedByTier = tierDefaults[permission];
+            const checked = includedByTier || !!form.permissionOverrides[permission];
+            return (
+              <label
+                key={permission}
+                className={`flex items-start gap-3 px-3 py-2.5 text-sm ${
+                  includedByTier ? "bg-slate-50 text-slate-400" : "text-slate-700 cursor-pointer"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={includedByTier}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      permissionOverrides: {
+                        ...f.permissionOverrides,
+                        [permission]: e.target.checked,
+                      },
+                    }))
+                  }
+                  className="mt-0.5"
+                />
+                <span>
+                  {PERMISSION_LABELS[permission]}
+                  {includedByTier && (
+                    <span className="block text-xs text-slate-400">
+                      Included in this level
+                    </span>
+                  )}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="pt-2 border-t border-slate-100 flex justify-end">
         <button
           type="button"
-          disabled={loading || !form.name.trim() || form.weight === ""}
+          disabled={loading || !form.name.trim()}
           onClick={() => onSubmit(form)}
           className="inline-flex items-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
         >
@@ -103,17 +149,22 @@ export default function RolesData() {
     null
   );
   const [loading, setLoading] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const roles = data?.data ?? [];
   const canManage = planData?.data?.limits?.customRoles ?? true;
 
-  const handleCreate = async (form: { name: string; weight: string }) => {
+  const handleCreate = async (form: RoleFormState) => {
     setLoading(true);
     try {
       const res = await fetch("/api/role", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, weight: form.weight }),
+        body: JSON.stringify({
+          name: form.name,
+          weight: form.weight,
+          permissionOverrides: form.permissionOverrides,
+        }),
       });
       const json = await res.json();
       if (json.success) {
@@ -129,13 +180,18 @@ export default function RolesData() {
     setLoading(false);
   };
 
-  const handleUpdate = async (id: string, form: { name: string; weight: string }) => {
+  const handleUpdate = async (id: string, form: RoleFormState) => {
     setLoading(true);
     try {
       const res = await fetch("/api/role", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ put_id: id, name: form.name, weight: form.weight }),
+        body: JSON.stringify({
+          put_id: id,
+          name: form.name,
+          weight: form.weight,
+          permissionOverrides: form.permissionOverrides,
+        }),
       });
       const json = await res.json();
       if (json.success) {
@@ -152,7 +208,9 @@ export default function RolesData() {
   };
 
   const handleToggleStatus = async (role: any) => {
+    if (togglingId) return;
     const nextStatus = role.status === "Disabled" ? "Active" : "Disabled";
+    setTogglingId(role._id);
     try {
       const res = await fetch("/api/role", {
         method: "PUT",
@@ -173,6 +231,7 @@ export default function RolesData() {
     } catch (error: any) {
       toast.error(error.message);
     }
+    setTogglingId(null);
   };
 
   const handleDelete = async (role: any) => {
@@ -214,7 +273,7 @@ export default function RolesData() {
             Roles ({roles.length})
           </h6>
           <span className="font-normal text-xs md:text-sm text-slate-400">
-            What each role can access is determined by its weight
+            Every role is based on a standard level, with optional extra permissions
           </span>
         </div>
         {canManage && (
@@ -232,7 +291,7 @@ export default function RolesData() {
         <div className="px-6 pt-4">
           <UpgradeNotice
             title="Custom roles are a Pro feature"
-            message="You're using the standard role set. Upgrade to Pro to rename roles, adjust weights, or add new ones."
+            message="You're using the standard role set. Upgrade to Pro to rename roles, adjust levels, or add new ones."
           />
         </div>
       )}
@@ -245,7 +304,7 @@ export default function RolesData() {
             <thead>
               <tr>
                 <th className={TABLE_TH_CLASS}>Role</th>
-                <th className={TABLE_TH_CLASS}>Weight</th>
+                <th className={TABLE_TH_CLASS}>Base Level</th>
                 <th className={TABLE_TH_CLASS}>Staff</th>
                 <th className={TABLE_TH_CLASS}>Status</th>
                 {canManage && (
@@ -256,48 +315,63 @@ export default function RolesData() {
               </tr>
             </thead>
             <tbody>
-              {roles.map((role: any) => (
-                <tr key={role._id} className={TABLE_TR_CLASS}>
-                  <th className="px-6 align-middle text-sm p-3 text-left font-semibold text-slate-700">
-                    {role.name}
-                  </th>
-                  <td className={TABLE_TD_CLASS}>{role.weight}</td>
-                  <td className={TABLE_TD_CLASS}>{role.staffCount}</td>
-                  <td className={TABLE_TD_CLASS}>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        role.status === "Disabled"
-                          ? "bg-slate-100 text-slate-500"
-                          : "bg-emerald-50 text-emerald-700"
-                      }`}
-                    >
-                      {role.status}
-                    </span>
-                  </td>
-                  {canManage && (
-                    <td className="px-6 align-middle text-sm p-3 text-right space-x-3 whitespace-nowrap">
-                      <button
-                        onClick={() => setModal({ mode: "edit", role })}
-                        className="text-xs font-semibold uppercase text-brand-600 hover:text-brand-800"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggleStatus(role)}
-                        className="text-xs font-semibold uppercase text-slate-500 hover:text-slate-700"
-                      >
-                        {role.status === "Disabled" ? "Enable" : "Disable"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(role)}
-                        className="text-xs font-semibold uppercase text-slate-400 hover:text-red-700"
-                      >
-                        Delete
-                      </button>
+              {roles.map((role: any) => {
+                const extraCount = Object.values(role.permissionOverrides || {}).filter(
+                  Boolean
+                ).length;
+                return (
+                  <tr key={role._id} className={TABLE_TR_CLASS}>
+                    <th className="px-6 align-middle text-sm p-3 text-left font-semibold text-slate-700">
+                      {role.name}
+                    </th>
+                    <td className={TABLE_TD_CLASS}>
+                      {tierName(role.weight)}
+                      {extraCount > 0 && (
+                        <span className="block text-xs text-brand-600 font-medium">
+                          +{extraCount} extra permission{extraCount === 1 ? "" : "s"}
+                        </span>
+                      )}
                     </td>
-                  )}
-                </tr>
-              ))}
+                    <td className={TABLE_TD_CLASS}>{role.staffCount}</td>
+                    <td className={TABLE_TD_CLASS}>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          role.status === "Disabled"
+                            ? "bg-slate-100 text-slate-500"
+                            : "bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
+                        {role.status}
+                      </span>
+                    </td>
+                    {canManage && (
+                      <td className="px-6 align-middle text-sm p-3 text-right whitespace-nowrap">
+                        <ActionMenu
+                          items={[
+                            {
+                              label: "Edit",
+                              icon: "fa-pen",
+                              onClick: () => setModal({ mode: "edit", role }),
+                            },
+                            {
+                              label: role.status === "Disabled" ? "Enable" : "Disable",
+                              icon: role.status === "Disabled" ? "fa-check-circle" : "fa-ban",
+                              disabled: togglingId === role._id,
+                              onClick: () => handleToggleStatus(role),
+                            },
+                            {
+                              label: "Delete",
+                              icon: "fa-trash-alt",
+                              danger: true,
+                              onClick: () => handleDelete(role),
+                            },
+                          ]}
+                        />
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -311,7 +385,11 @@ export default function RolesData() {
         {modal?.mode === "edit" && (
           <RoleForm
             key={modal.role._id}
-            initial={{ name: modal.role.name, weight: String(modal.role.weight) }}
+            initial={{
+              name: modal.role.name,
+              weight: String(modal.role.weight),
+              permissionOverrides: modal.role.permissionOverrides || {},
+            }}
             submitLabel="Save Changes"
             loading={loading}
             onSubmit={(form) => handleUpdate(modal.role._id, form)}

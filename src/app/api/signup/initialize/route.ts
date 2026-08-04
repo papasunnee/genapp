@@ -11,6 +11,7 @@ import {
   isValidSubdomainFormat,
   isReservedSubdomain,
 } from "@/lib/subdomainValidation";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 /**
  * Starts a self-serve signup: validates the org/admin details the visitor
@@ -20,6 +21,17 @@ import {
  */
 export async function POST(req: NextRequest) {
   try {
+    const rateLimit = await checkRateLimit(`signup:${getClientIp(req)}`, 8, 60 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many signup attempts. Try again in ${Math.ceil(rateLimit.retryAfterSeconds / 60)} minute(s).`,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const {
       organizationName,
@@ -80,9 +92,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (String(adminPassword).length < 8) {
+    if (String(adminPassword).length < 8 || String(adminPassword).length > 128) {
       return NextResponse.json(
-        { success: false, error: "Password must be at least 8 characters" },
+        { success: false, error: "Password must be between 8 and 128 characters" },
         { status: 400 }
       );
     }

@@ -9,6 +9,7 @@ import {
   isValidSubdomainFormat,
   isReservedSubdomain,
 } from "@/lib/subdomainValidation";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 /**
  * Free-plan signup skips Paystack entirely - there's nothing to pay, so
@@ -17,6 +18,17 @@ import {
  */
 export async function POST(req: NextRequest) {
   try {
+    const rateLimit = await checkRateLimit(`signup:${getClientIp(req)}`, 8, 60 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many signup attempts. Try again in ${Math.ceil(rateLimit.retryAfterSeconds / 60)} minute(s).`,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const {
       organizationName,
@@ -136,6 +148,10 @@ export async function POST(req: NextRequest) {
         { status: 409 }
       );
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("Free signup failed:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }

@@ -9,6 +9,7 @@ import { getRoleModel } from "@/models/Role";
 import { getInvoiceModel } from "@/models/Invoice";
 import { getTestCategoryModel } from "@/models/TestCategory";
 import { withTenant } from "@/lib/apiTenant";
+import { hasPermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activityLog";
 import { nextInvoiceNumber } from "@/lib/invoiceNumber";
 import { formatCurrency } from "@/utils/functions";
@@ -334,7 +335,7 @@ export const PUT = withTenant(async (req, tenant, session) => {
   // Editing results is a clinical action - Super Admin/Admin/Lab
   // Technician only, matching the same allow-list the AI remark-suggestion
   // endpoint already uses for this kind of work.
-  if (![100, 200, 300].includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "editResults")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
@@ -412,7 +413,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   }
   // Permanently deleting a test record is destructive and irreversible -
   // Super Admin/Admin only, same tier as voiding an invoice.
-  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "deleteRecords")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 

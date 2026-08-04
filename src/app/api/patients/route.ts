@@ -5,6 +5,7 @@ import { getTestModel } from "@/models/Test";
 import { getPaymentModel } from "@/models/Payment";
 import { getInvoiceModel } from "@/models/Invoice";
 import { withTenant } from "@/lib/apiTenant";
+import { hasPermission } from "@/lib/permissions";
 import { getPlanLimits } from "@/lib/planLimits";
 import { logActivity } from "@/lib/activityLog";
 
@@ -160,7 +161,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   }
   // Deleting a patient record (and, per the medical-records nature of this
   // app, everything referencing it) is destructive - Super Admin/Admin only.
-  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+  if (!hasPermission(session.user?.role, "deleteRecords")) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
