@@ -151,9 +151,20 @@ export default function LandingPage() {
       <footer className="border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
           <span>&copy; {new Date().getFullYear()} LabSuite. All rights reserved.</span>
-          <a href="mailto:hello@thelabsuite.com" className="hover:text-slate-600 transition-colors">
-            hello@thelabsuite.com
-          </a>
+          <div className="flex items-center gap-4">
+            <a href="/terms" className="hover:text-slate-600 transition-colors">
+              Terms
+            </a>
+            <a href="/privacy" className="hover:text-slate-600 transition-colors">
+              Privacy
+            </a>
+            <a href="/contact" className="hover:text-slate-600 transition-colors">
+              Contact
+            </a>
+            <a href="mailto:hello@thelabsuite.com" className="hover:text-slate-600 transition-colors">
+              hello@thelabsuite.com
+            </a>
+          </div>
         </div>
       </footer>
     </div>

@@ -1,5 +1,6 @@
 export const metadata = {
-  title: "Workspace Ready - LabSuite",
+  title: "Workspace Ready",
+  robots: { index: false, follow: false },
 };
 
 export default async function SignupSuccessPage({

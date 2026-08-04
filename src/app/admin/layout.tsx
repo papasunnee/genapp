@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -9,6 +10,12 @@ import {
 import { isPayablePlan } from "@/lib/pricing";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import FooterAdmin from "@/components/Footers/FooterAdmin";
+
+// Every tenant's private admin area - never indexed, regardless of what
+// any individual page under here does or doesn't set.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 function SubscriptionBanner({
   plan,

@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Unauthorized",
+  robots: { index: false, follow: false },
+};
+
 type Reason = "suspended" | "not-found" | "no-subdomain" | "forbidden" | undefined;
 
 const CONTENT: Record<

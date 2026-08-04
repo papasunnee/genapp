@@ -43,6 +43,16 @@ const FAQS = [
     answer:
       "Email hello@thelabsuite.com - for anything self-serve doesn't cover yet (plan changes outside Starter/Pro, Enterprise arrangements, account issues), a real person will help directly.",
   },
+  {
+    question: "Does LabSuite use AI, and is a diagnosis ever generated automatically?",
+    answer:
+      "On Pro, a lab scientist can request an AI-drafted clinical remark suggestion based on a test's recorded results. It's always shown as a draft that a human must review, edit, and explicitly approve before it's saved - LabSuite never records or submits an AI-generated remark on its own, and it's never a diagnosis.",
+  },
+  {
+    question: "Where can I read the Terms of Use and Privacy Policy?",
+    answer:
+      "Both are linked in the footer below - the Privacy Policy covers exactly what data we collect, which third parties (Paystack, Cloudinary, MongoDB Atlas, Anthropic) process it, and how organization data stays isolated.",
+  },
 ];
 
 export default function FAQSection() {

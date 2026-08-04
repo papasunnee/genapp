@@ -12,8 +12,30 @@ const roboto = Roboto({
   weight: ["100", "300", "400", "900"],
 });
 
+const rootDomain = process.env.ROOT_DOMAIN || "thelabsuite.com";
+
 export const metadata: Metadata = {
-  title: "LabSuite",
+  metadataBase: new URL(`https://${rootDomain}`),
+  title: {
+    default: "LabSuite - Run Your Diagnostic Lab From One Place",
+    template: "%s | LabSuite",
+  },
+  description:
+    "Patient records, test orders, results, payments, and branded reports - LabSuite gives every diagnostic lab its own private, isolated workspace to run day-to-day operations without spreadsheets.",
+  icons: { icon: "/icon.svg" },
+  openGraph: {
+    type: "website",
+    siteName: "LabSuite",
+    title: "LabSuite - Run Your Diagnostic Lab From One Place",
+    description:
+      "Patient records, test orders, results, payments, and branded reports - all in one private workspace per lab.",
+  },
+  twitter: {
+    card: "summary",
+    title: "LabSuite - Run Your Diagnostic Lab From One Place",
+    description:
+      "Patient records, test orders, results, payments, and branded reports - all in one private workspace per lab.",
+  },
 };
 
 export const viewport: Viewport = {

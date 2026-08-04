@@ -1,7 +1,8 @@
 import { provisionOrganizationFromReference } from "@/lib/provisionOrganization";
 
 export const metadata = {
-  title: "Confirming Payment - LabSuite",
+  title: "Confirming Payment",
+  robots: { index: false, follow: false },
 };
 
 async function resolveOutcome(reference: string | undefined) {

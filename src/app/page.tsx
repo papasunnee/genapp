@@ -1,10 +1,32 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/auth";
 import { resolveTenant, TenantResolutionError } from "@/lib/tenantContext";
+import { getSubdomainFromHost } from "@/lib/subdomain";
 import Auth from "@/components/Layout/Auth";
 import Login from "@/components/Form/Login";
 import LandingPage from "@/components/Marketing/LandingPage";
+
+// This one route serves two very different pages depending on the host:
+// the public marketing site on the bare root domain (should be indexed,
+// with real SEO metadata), or a specific tenant's private login page on a
+// subdomain (should never be indexed) - generateMetadata reads the host
+// per-request to tell them apart, since a static `metadata` export can't.
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const subdomain = getSubdomainFromHost(headersList.get("host"));
+
+  if (subdomain) {
+    return { robots: { index: false, follow: false } };
+  }
+
+  return {
+    title: "LabSuite - Run Your Diagnostic Lab From One Place",
+    description:
+      "Patient records, test orders, results, payments, and branded reports - LabSuite gives every diagnostic lab its own private, isolated workspace to run day-to-day operations without spreadsheets.",
+  };
+}
 
 export default async function IndexPage() {
   const headersList = await headers();
