@@ -54,11 +54,11 @@ export default function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white rounded-lg shadow-xl w-full ${SIZE_CLASS[size]} max-h-[90vh] overflow-y-auto transition-all duration-200 ${
+        className={`bg-white rounded-lg shadow-xl w-full ${SIZE_CLASS[size]} max-h-[90vh] flex flex-col transition-all duration-200 ${
           visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
+        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <h3 className="font-semibold text-lg">{title}</h3>
           <button
             onClick={onClose}
@@ -68,7 +68,7 @@ export default function Modal({
             &times;
           </button>
         </div>
-        <div className="p-4">{children}</div>
+        <div className="p-4 overflow-y-auto flex-1 min-h-0">{children}</div>
       </div>
     </div>,
     document.body
