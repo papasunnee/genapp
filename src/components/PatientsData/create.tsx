@@ -76,7 +76,7 @@ export default function Create() {
           );
         }
 
-        throw new Error("Something went wrong, please try again!");
+        throw new Error(data?.error || "Something went wrong, please try again!");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -113,6 +113,7 @@ export default function Create() {
                   id="patient-firstname"
                   type="text"
                   required
+                  maxLength={60}
                   ref={firstnameRef}
                   className={INPUT_CLASS}
                 />
@@ -125,6 +126,7 @@ export default function Create() {
                   id="patient-lastname"
                   type="text"
                   required
+                  maxLength={60}
                   ref={lastnameRef}
                   className={INPUT_CLASS}
                 />
@@ -173,6 +175,8 @@ export default function Create() {
                 <input
                   id="patient-address"
                   type="text"
+                  required
+                  maxLength={100}
                   ref={addressRef}
                   className={INPUT_CLASS}
                 />
@@ -184,6 +188,7 @@ export default function Create() {
                 <input
                   id="patient-email"
                   type="email"
+                  required
                   ref={emailRef}
                   className={INPUT_CLASS}
                 />
@@ -198,6 +203,7 @@ export default function Create() {
                 <input
                   id="patient-phone"
                   type="tel"
+                  required
                   pattern="[0-9]{11}"
                   ref={phoneRef}
                   className={INPUT_CLASS}
@@ -210,6 +216,8 @@ export default function Create() {
                 <input
                   id="patient-city"
                   type="text"
+                  required
+                  maxLength={60}
                   ref={cityRef}
                   className={INPUT_CLASS}
                 />
@@ -221,6 +229,8 @@ export default function Create() {
                 <input
                   id="patient-country"
                   type="text"
+                  required
+                  maxLength={60}
                   ref={countryRef}
                   className={INPUT_CLASS}
                 />
@@ -242,6 +252,7 @@ export default function Create() {
               ref={descriptionRef}
               className={INPUT_CLASS}
               rows={4}
+              maxLength={250}
             ></textarea>
           </div>
 

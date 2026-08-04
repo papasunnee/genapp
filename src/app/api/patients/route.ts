@@ -23,6 +23,12 @@ export const GET = withTenant(async (req, tenant, session) => {
 
   try {
     if (id) {
+      if (!ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid patient id" },
+          { status: 400 }
+        );
+      }
       const singlePatient = await Patient.findOne({
         _id: new ObjectId(id),
       }).populate([
@@ -53,6 +59,19 @@ export const GET = withTenant(async (req, tenant, session) => {
   }
 });
 
+const EDITABLE_PATIENT_FIELDS = [
+  "firstname",
+  "lastname",
+  "dob",
+  "gender",
+  "address",
+  "city",
+  "country",
+  "phone",
+  "description",
+  "email",
+] as const;
+
 export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -74,7 +93,11 @@ export const POST = withTenant(async (req, tenant, session) => {
     }
 
     const body = await req.json();
-    const newRecord = await Patient.create({ ...body });
+    const patientFields: Record<string, any> = {};
+    for (const field of EDITABLE_PATIENT_FIELDS) {
+      if (body[field] !== undefined) patientFields[field] = body[field];
+    }
+    const newRecord = await Patient.create(patientFields);
     await logActivity(
       tenant.connection,
       session,
@@ -100,18 +123,26 @@ export const PUT = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const put_id = body.put_id;
-    if (!put_id) {
+    if (typeof put_id !== "string" || !ObjectId.isValid(put_id)) {
       return NextResponse.json(
         { success: false, error: "unprocessed put_id" },
         { status: 400 }
       );
     }
 
-    delete body._id;
+    // Previously wrote { title, paragraphs } - fields that don't exist
+    // anywhere on the Patient schema, so this endpoint silently did
+    // nothing useful. Fixed to target the schema's real editable fields,
+    // the same allow-list POST uses.
+    const update: Record<string, any> = {};
+    for (const field of EDITABLE_PATIENT_FIELDS) {
+      if (body[field] !== undefined) update[field] = body[field];
+    }
+
     const updatePatient = await Patient.findOneAndUpdate(
       { _id: put_id },
-      { title: body.title, paragraphs: body.paragraphs },
-      { new: true }
+      update,
+      { new: true, runValidators: true }
     );
 
     return NextResponse.json({ success: true, data: updatePatient });
@@ -127,13 +158,18 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+  // Deleting a patient record (and, per the medical-records nature of this
+  // app, everything referencing it) is destructive - Super Admin/Admin only.
+  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
 
   const Patient = getPatientModel(tenant.connection);
 
   try {
     const body = await req.json();
     const delete_id = body.delete_id;
-    if (!delete_id) {
+    if (typeof delete_id !== "string" || !ObjectId.isValid(delete_id)) {
       return NextResponse.json(
         { success: false, error: "Unprocessed delete_id" },
         { status: 400 }

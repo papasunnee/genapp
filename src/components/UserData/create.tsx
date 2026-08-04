@@ -25,6 +25,7 @@ export default function Create() {
   const genderRef = useRef<HTMLSelectElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const roleRef = useRef<HTMLSelectElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +40,7 @@ export default function Create() {
     const country = countryRef.current?.value;
     const description = descriptionRef.current?.value;
     const role = roleRef.current?.value;
+    const password = passwordRef.current?.value;
     setLoading(true);
     try {
       const res = await fetch("/api/users", {
@@ -56,6 +58,7 @@ export default function Create() {
           description,
           gender,
           role,
+          password,
         }),
       });
       const data = await res.json();
@@ -72,15 +75,16 @@ export default function Create() {
         if (descriptionRef.current) descriptionRef.current.value = "";
         if (genderRef.current) genderRef.current.value = "Male";
         if (roleRef.current) roleRef.current.value = roleData?.data?.[0]?._id;
+        if (passwordRef.current) passwordRef.current.value = "";
         toast.success("New staff member created successfully");
       } else {
         throw new Error(data.error);
       }
     } catch (error: any) {
-      if (error.message.includes("dob")) {
+      if (error.message?.includes("dob")) {
         toast.error("Invalid Date of Birth");
       } else {
-        toast.error("Error creating staff member");
+        toast.error(error.message || "Error creating staff member");
       }
     }
     setLoading(false);
@@ -114,6 +118,7 @@ export default function Create() {
                   id="staff-firstname"
                   type="text"
                   required
+                  maxLength={60}
                   ref={firstnameRef}
                   className={INPUT_CLASS}
                 />
@@ -126,6 +131,7 @@ export default function Create() {
                   id="staff-lastname"
                   type="text"
                   required
+                  maxLength={60}
                   ref={lastnameRef}
                   className={INPUT_CLASS}
                 />
@@ -139,6 +145,7 @@ export default function Create() {
                   type="date"
                   ref={dobRef}
                   required
+                  max={new Date().toISOString().split("T")[0]}
                   className={INPUT_CLASS}
                 />
               </div>
@@ -146,7 +153,13 @@ export default function Create() {
                 <label className={LABEL_CLASS} htmlFor="staff-email">
                   Email address
                 </label>
-                <input id="staff-email" type="email" ref={emailRef} className={INPUT_CLASS} />
+                <input
+                  id="staff-email"
+                  type="email"
+                  required
+                  ref={emailRef}
+                  className={INPUT_CLASS}
+                />
               </div>
               <div>
                 <label className={LABEL_CLASS} htmlFor="staff-phone">
@@ -158,8 +171,23 @@ export default function Create() {
                 <input
                   id="staff-phone"
                   type="tel"
+                  required
                   pattern="[0-9]{11}"
                   ref={phoneRef}
+                  className={INPUT_CLASS}
+                />
+              </div>
+              <div>
+                <label className={LABEL_CLASS} htmlFor="staff-password">
+                  Temporary Password
+                </label>
+                <input
+                  id="staff-password"
+                  type="password"
+                  required
+                  minLength={8}
+                  placeholder="At least 8 characters"
+                  ref={passwordRef}
                   className={INPUT_CLASS}
                 />
               </div>
@@ -189,19 +217,37 @@ export default function Create() {
                 <label className={LABEL_CLASS} htmlFor="staff-address">
                   Address
                 </label>
-                <input id="staff-address" type="text" ref={addressRef} className={INPUT_CLASS} />
+                <input
+                  id="staff-address"
+                  type="text"
+                  maxLength={100}
+                  ref={addressRef}
+                  className={INPUT_CLASS}
+                />
               </div>
               <div>
                 <label className={LABEL_CLASS} htmlFor="staff-city">
                   City
                 </label>
-                <input id="staff-city" type="text" ref={cityRef} className={INPUT_CLASS} />
+                <input
+                  id="staff-city"
+                  type="text"
+                  maxLength={60}
+                  ref={cityRef}
+                  className={INPUT_CLASS}
+                />
               </div>
               <div>
                 <label className={LABEL_CLASS} htmlFor="staff-country">
                   Country
                 </label>
-                <input id="staff-country" type="text" ref={countryRef} className={INPUT_CLASS} />
+                <input
+                  id="staff-country"
+                  type="text"
+                  maxLength={60}
+                  ref={countryRef}
+                  className={INPUT_CLASS}
+                />
               </div>
             </div>
           </div>
@@ -220,6 +266,7 @@ export default function Create() {
               ref={descriptionRef}
               className={INPUT_CLASS}
               rows={4}
+              maxLength={500}
             ></textarea>
           </div>
 
@@ -232,7 +279,7 @@ export default function Create() {
             <label className={LABEL_CLASS} htmlFor="staff-role">
               Assign Role
             </label>
-            <select id="staff-role" ref={roleRef} className={INPUT_CLASS}>
+            <select id="staff-role" ref={roleRef} required className={INPUT_CLASS}>
               {roleData?.data?.map((item: any, index: number) => (
                 <option key={index} value={item._id}>
                   {item.name}

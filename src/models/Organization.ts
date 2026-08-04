@@ -1,6 +1,6 @@
 import { Connection, Document, Model, Schema } from "mongoose";
 
-export type OrganizationPlan = "Free" | "Pro" | "Enterprise";
+export type OrganizationPlan = "Free" | "Starter" | "Pro" | "Enterprise";
 export type SubscriptionStatus = "Trial" | "Active" | "Expired" | "Cancelled";
 
 export interface IOrganization extends Document {
@@ -53,7 +53,7 @@ const OrganizationSchema = new Schema<IOrganization>(
     plan: {
       type: String,
       default: "Free",
-      enum: ["Free", "Pro", "Enterprise"],
+      enum: ["Free", "Starter", "Pro", "Enterprise"],
     },
     subscriptionStatus: {
       type: String,

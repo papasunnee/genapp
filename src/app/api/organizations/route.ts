@@ -89,6 +89,23 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    // amount is written straight into an append-only financial audit
+    // trail (SubscriptionEvent) - reject anything that isn't a real,
+    // non-negative number rather than silently coercing a bad value
+    // (Number(amount) || 0 previously accepted negatives) into permanent
+    // revenue history.
+    let recordedAmount = 0;
+    if (amount !== undefined && amount !== null && amount !== "") {
+      const parsedAmount = Number(amount);
+      if (!Number.isFinite(parsedAmount) || parsedAmount < 0) {
+        return NextResponse.json(
+          { success: false, error: "Amount must be a non-negative number" },
+          { status: 400 }
+        );
+      }
+      recordedAmount = parsedAmount;
+    }
+
     const update: Record<string, any> = {};
     if (status !== undefined) update.status = status;
     if (plan !== undefined) update.plan = plan;
@@ -105,14 +122,17 @@ export async function PATCH(req: NextRequest) {
     const isSubscriptionChange =
       plan !== undefined || subscriptionStatus !== undefined || subscriptionRenewsAt !== undefined;
 
-    const organization = await Organization.findByIdAndUpdate(id, update, { new: true });
+    const organization = await Organization.findByIdAndUpdate(id, update, {
+      new: true,
+      runValidators: true,
+    });
 
     if (isSubscriptionChange) {
       await SubscriptionEvent.create({
         organization: id,
         plan: organization?.plan,
         subscriptionStatus: organization?.subscriptionStatus,
-        amount: Number(amount) || 0,
+        amount: recordedAmount,
         renewsAt: organization?.subscriptionRenewsAt,
         note,
       });
@@ -216,9 +236,19 @@ export async function POST(req: NextRequest) {
     const { name, subdomain, adminEmail, adminFirstname, adminLastname, adminPassword } =
       body;
 
-    if (!name || !subdomain || !adminEmail || !adminFirstname || !adminLastname || !adminPassword) {
+    if (
+      [name, subdomain, adminEmail, adminFirstname, adminLastname, adminPassword].some(
+        (field) => typeof field !== "string" || !field
+      )
+    ) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+    if (adminPassword.length < 8) {
+      return NextResponse.json(
+        { success: false, error: "Password must be at least 8 characters" },
         { status: 400 }
       );
     }

@@ -58,6 +58,19 @@ export default function ResultDetail({ id }: { id: string }) {
   };
 
   const handleSave = async () => {
+    // These inputs aren't inside a native <form> (there's no submit here,
+    // just this button's onClick), so HTML `required` attributes would
+    // never actually be enforced - matching the equivalent guard on the
+    // original result-entry form (test.tsx), which does the same check
+    // via a real <form>'s required inputs.
+    const hasBlankValue = parsedTestData.some(
+      (item: any) => !String(resultForm[item.parameter.id] ?? item.parameter.value ?? "").trim()
+    );
+    if (hasBlankValue) {
+      toast.error("Every result field must have a value before saving");
+      return;
+    }
+
     setSaving(true);
     try {
       const updated = parsedTestData.map((item: any) => ({

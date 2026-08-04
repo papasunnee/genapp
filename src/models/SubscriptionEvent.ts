@@ -28,7 +28,7 @@ const SubscriptionEventSchema = new Schema<ISubscriptionEvent>(
     plan: {
       type: String,
       required: true,
-      enum: ["Free", "Pro", "Enterprise"],
+      enum: ["Free", "Starter", "Pro", "Enterprise"],
     },
     subscriptionStatus: {
       type: String,

@@ -10,17 +10,26 @@ import { formatCurrency } from "@/utils/functions";
 import { toast } from "@/components/ui/Toast";
 import { confirmDialog } from "@/components/ui/ConfirmDialog";
 import Skeleton from "@/components/ui/Skeleton";
+import Modal from "@/components/ui/Modal";
 import { TABLE_CARD_CLASS, TABLE_HEADER_CLASS } from "@/components/ui/table";
+
+function generatePassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let out = "";
+  for (let i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
 
 const INPUT_CLASS =
   "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors";
 const LABEL_CLASS = "block text-sm font-medium text-slate-700 mb-1";
 
-const PLANS = ["Free", "Pro", "Enterprise"];
+const PLANS = ["Free", "Starter", "Pro", "Enterprise"];
 const SUBSCRIPTION_STATUSES = ["Trial", "Active", "Expired", "Cancelled"];
 
 const PLAN_BADGE: Record<string, string> = {
   Free: "bg-slate-100 text-slate-600",
+  Starter: "bg-sky-50 text-sky-700",
   Pro: "bg-brand-50 text-brand-700",
   Enterprise: "bg-violet-50 text-violet-700",
 };
@@ -57,7 +66,45 @@ export default function OrganizationDetail({ id }: { id: string }) {
 
   const organization = data?.data?.organization;
   const stats = data?.data?.stats;
+  const staff = data?.data?.staff ?? [];
   const history = historyData?.data ?? [];
+
+  const [resetTarget, setResetTarget] = useState<{ _id: string; label: string } | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
+
+  const openResetPassword = (user: any) => {
+    setResetTarget({ _id: user._id, label: `${user.firstname} ${user.lastname}` });
+    setResetPassword(generatePassword());
+    setResetDone(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetTarget) return;
+    if (resetPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setResetting(true);
+    try {
+      const res = await fetch(`/api/organizations/${id}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: resetTarget._id, newPassword: resetPassword }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`Password reset for ${resetTarget.label}`);
+        setResetDone(true);
+      } else {
+        toast.error(json.error || "Failed to reset password");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+    setResetting(false);
+  };
   const activityLog = activityData?.data ?? [];
 
   const [form, setForm] = useState({ plan: "", subscriptionStatus: "", renewsAt: "", amount: "", note: "" });
@@ -78,6 +125,10 @@ export default function OrganizationDetail({ id }: { id: string }) {
   };
 
   const handleSaveSubscription = async () => {
+    if (form.amount !== "" && (!Number.isFinite(Number(form.amount)) || Number(form.amount) < 0)) {
+      toast.error("Amount must be a non-negative number");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/organizations", {
@@ -459,6 +510,108 @@ export default function OrganizationDetail({ id }: { id: string }) {
           )}
         </div>
       </div>
+
+      <div className={TABLE_CARD_CLASS}>
+        <div className={TABLE_HEADER_CLASS}>
+          <h3 className="text-base font-semibold text-slate-800">Staff</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Every staff account in this organization - reset a password if someone's locked out.
+          </p>
+        </div>
+        {staff.length === 0 ? (
+          <p className="px-6 py-5 text-sm text-slate-400">No staff accounts yet.</p>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {staff.map((user: any) => (
+              <div
+                key={user._id}
+                className="px-6 py-3 flex flex-wrap items-center justify-between gap-3"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-700">
+                    {user.firstname} {user.lastname}
+                    {user.role?.weight === 100 && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-amber-50 text-amber-700">
+                        Super Admin
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {user.email} &middot; {user.role?.name || "No role"} &middot; {user.status}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openResetPassword(user)}
+                  className="text-xs font-semibold uppercase text-brand-600 hover:text-brand-800 flex-shrink-0"
+                >
+                  <i className="fas fa-key mr-1"></i>
+                  Reset Password
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Modal
+        open={!!resetTarget}
+        title={`Reset Password${resetTarget ? ` - ${resetTarget.label}` : ""}`}
+        onClose={() => setResetTarget(null)}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={LABEL_CLASS}>New Password</label>
+            <div className="flex gap-2">
+              <input
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                disabled={resetDone}
+                className={INPUT_CLASS}
+              />
+              {!resetDone && (
+                <button
+                  type="button"
+                  onClick={() => setResetPassword(generatePassword())}
+                  className="rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 px-3 text-sm flex-shrink-0"
+                  title="Generate a new random password"
+                >
+                  <i className="fas fa-sync-alt"></i>
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mt-1">At least 8 characters.</p>
+          </div>
+
+          {resetDone ? (
+            <>
+              <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+                <i className="fas fa-check-circle mr-1"></i>
+                Password reset. Share this with {resetTarget?.label} through a secure channel -
+                it won&apos;t be shown again after you close this.
+              </p>
+              <button
+                type="button"
+                onClick={() => setResetTarget(null)}
+                className="w-full rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 transition-colors"
+              >
+                Done
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              disabled={resetting}
+              onClick={handleResetPassword}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white text-sm font-semibold px-4 py-2 transition-colors"
+            >
+              {resetting && <i className="fas fa-spinner fa-spin"></i>}
+              {resetting ? "Resetting..." : "Reset Password"}
+            </button>
+          )}
+        </div>
+      </Modal>
 
       <div className={TABLE_CARD_CLASS}>
         <div className={TABLE_HEADER_CLASS}>

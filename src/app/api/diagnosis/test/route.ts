@@ -27,6 +27,9 @@ export const GET = withTenant(async (req, tenant, session) => {
 
   try {
     if (id) {
+      if (!ObjectId.isValid(id)) {
+        throw new Error("Invalid test id");
+      }
       const singleTest: any = await Test.findOne({
         _id: new ObjectId(id),
       }).populate([
@@ -44,9 +47,15 @@ export const GET = withTenant(async (req, tenant, session) => {
         },
         { path: "invoice" },
       ]);
+      if (!singleTest) {
+        throw new Error("Test not found");
+      }
       const resultArray = JSON.parse(singleTest.test_data);
       return NextResponse.json({ success: true, data: singleTest, resultArray });
     } else if (testId && patientId) {
+      if (!ObjectId.isValid(testId) || !ObjectId.isValid(patientId)) {
+        throw new Error("Invalid test or patient id");
+      }
       const singleTest: any = await Patient.findOne({
         _id: new ObjectId(patientId),
       }).populate({
@@ -54,6 +63,9 @@ export const GET = withTenant(async (req, tenant, session) => {
         match: { _id: new ObjectId(testId) },
         populate: [{ path: "payment" }, { path: "invoice" }],
       });
+      if (!singleTest || !singleTest.tests?.[0]) {
+        throw new Error("Test not found");
+      }
       const resultArray = JSON.parse(singleTest.tests[0].test_data);
       return NextResponse.json({ success: true, data: singleTest, resultArray });
     }

@@ -20,6 +20,12 @@ export const GET = withTenant(async (req, tenant, session) => {
 
   try {
     if (id) {
+      if (!ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid user id" },
+          { status: 400 }
+        );
+      }
       const singleUser = await User.findOne({ _id: id }).populate([
         { path: "role" },
       ]);
@@ -48,13 +54,35 @@ export const GET = withTenant(async (req, tenant, session) => {
   }
 });
 
+const CREATABLE_STAFF_FIELDS = [
+  "firstname",
+  "lastname",
+  "email",
+  "dob",
+  "phone",
+  "lab_no",
+  "gender",
+  "address",
+  "city",
+  "country",
+  "description",
+] as const;
+
 export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+  // Only Super Admin/Admin may add staff - without this check any signed-in
+  // account (e.g. a Front Desk user) could create new accounts, and could
+  // hand them any role at all (see the weight check below).
+  const requesterWeight = session.user?.role?.weight;
+  if (![100, 200].includes(requesterWeight as number)) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
 
   const User = getUserModel(tenant.connection);
   const Access = getAccessModel(tenant.connection);
+  const Role = getRoleModel(tenant.connection);
   const conn = tenant.connection;
 
   try {
@@ -71,15 +99,45 @@ export const POST = withTenant(async (req, tenant, session) => {
     }
 
     const body = await req.json();
+
+    if (typeof body.role !== "string" || !ObjectId.isValid(body.role)) {
+      return NextResponse.json(
+        { success: false, error: "A valid role must be selected" },
+        { status: 400 }
+      );
+    }
+    const targetRole = await Role.findById(body.role);
+    if (!targetRole) {
+      return NextResponse.json({ success: false, error: "Role not found" }, { status: 400 });
+    }
+    // Same rule enforced on DELETE: a requester can never grant a role more
+    // privileged than their own (lower weight = higher privilege).
+    if (targetRole.weight < (requesterWeight ?? 0)) {
+      return NextResponse.json(
+        { success: false, error: "Not authorized to assign this role" },
+        { status: 403 }
+      );
+    }
+
+    const password = body.password;
+    if (typeof password !== "string" || password.length < 8) {
+      return NextResponse.json(
+        { success: false, error: "Password must be at least 8 characters" },
+        { status: 400 }
+      );
+    }
+
+    const userFields: Record<string, any> = { role: targetRole._id };
+    for (const field of CREATABLE_STAFF_FIELDS) {
+      if (body[field] !== undefined) userFields[field] = body[field];
+    }
+
     let userData: any[] = [];
     const mongooseSession = await conn.startSession();
     await mongooseSession.withTransaction(async () => {
-      userData = await User.create(
-        [{ ...body, role: new ObjectId(body.role) }],
-        { session: mongooseSession }
-      );
+      userData = await User.create([userFields], { session: mongooseSession });
       await Access.create(
-        [{ password: "password", user: userData[0]._id }],
+        [{ password, user: userData[0]._id }],
         { session: mongooseSession }
       );
     });
@@ -162,7 +220,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const delete_id = body.delete_id;
-    if (!delete_id) {
+    if (typeof delete_id !== "string" || !ObjectId.isValid(delete_id)) {
       return NextResponse.json(
         { success: false, error: "Unprocessed delete_id" },
         { status: 400 }

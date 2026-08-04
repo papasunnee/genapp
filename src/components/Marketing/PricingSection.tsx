@@ -1,9 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { formatCurrency } from "@/utils/functions";
+import { PLAN_PRICES } from "@/lib/pricing";
 
-const PRO_MONTHLY = 35000;
+// The full formatCurrency output ("NGN150,000.00") overflows a narrow
+// 4-column pricing card at a headline size - compact to "150K" for this
+// specific display only. Every other money display in the app (invoices,
+// payments, etc) keeps the full formatCurrency precision.
+function formatCompactAmount(amount: number): string {
+  if (amount < 1000) return String(amount);
+  const inThousands = amount / 1000;
+  const rounded = Number.isInteger(inThousands) ? inThousands : Math.round(inThousands * 10) / 10;
+  return `${rounded}K`;
+}
 
 const TIERS = [
   {
@@ -12,6 +23,7 @@ const TIERS = [
     yearly: 0,
     tagline: "For a single lab trying LabSuite out.",
     cta: "Start Free",
+    href: "/signup?plan=Free",
     highlighted: false,
     features: [
       "1 organization",
@@ -24,11 +36,30 @@ const TIERS = [
     ],
   },
   {
+    name: "Starter",
+    monthly: PLAN_PRICES.Starter.monthly,
+    yearly: PLAN_PRICES.Starter.yearly,
+    tagline: "For a small lab ready to grow past the basics.",
+    cta: "Get Started",
+    href: "/signup?plan=Starter",
+    highlighted: false,
+    features: [
+      "1 organization",
+      "Up to 3 staff accounts",
+      "Up to 50 patient records",
+      "Organization branding & letterhead",
+      "Digital invoicing & printable reports",
+      "3 months analytics history",
+      "Standard role set (fixed)",
+    ],
+  },
+  {
     name: "Pro",
-    monthly: PRO_MONTHLY,
-    yearly: PRO_MONTHLY * 10, // 2 months free vs. paying monthly
+    monthly: PLAN_PRICES.Pro.monthly,
+    yearly: PLAN_PRICES.Pro.yearly,
     tagline: "For a growing lab that needs the full toolkit.",
-    cta: "Talk to Sales",
+    cta: "Get Started",
+    href: "/signup?plan=Pro",
     highlighted: true,
     features: [
       "Unlimited staff accounts",
@@ -47,6 +78,7 @@ const TIERS = [
     yearly: null,
     tagline: "For multi-branch labs and networks.",
     cta: "Contact Us",
+    href: "mailto:hello@thelabsuite.com",
     highlighted: false,
     features: [
       "Everything in Pro",
@@ -96,7 +128,7 @@ export default function PricingSection() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           {TIERS.map((tier) => {
             const price = yearly ? tier.yearly : tier.monthly;
             const isCustom = price === null;
@@ -120,13 +152,20 @@ export default function PricingSection() {
                 <h3 className="text-lg font-bold text-slate-900">{tier.name}</h3>
                 <p className="text-sm text-slate-500 mt-1">{tier.tagline}</p>
 
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-slate-900">
-                    {isCustom ? "Custom" : formatCurrency(price!)}
-                  </span>
-                  {!isCustom && (
+                <div className="mt-4 flex items-baseline gap-1 flex-wrap">
+                  {isCustom ? (
+                    <span className="text-3xl font-black text-slate-900">Custom</span>
+                  ) : price === 0 ? (
+                    <span className="text-3xl font-black text-slate-900">Free</span>
+                  ) : (
+                    <span className="text-3xl font-black text-slate-900">
+                      <span className="text-lg align-top mr-0.5">₦</span>
+                      {formatCompactAmount(price!)}
+                    </span>
+                  )}
+                  {!isCustom && price !== 0 && (
                     <span className="text-sm text-slate-400">
-                      {tier.monthly === 0 ? "/month" : yearly ? "/year" : "/month"}
+                      {yearly ? "/year" : "/month"}
                     </span>
                   )}
                 </div>
@@ -144,8 +183,8 @@ export default function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="mailto:hello@thelabsuite.com"
+                <Link
+                  href={tier.href}
                   className={`mt-6 block text-center rounded-lg text-sm font-semibold px-4 py-2.5 transition-colors ${
                     tier.highlighted
                       ? "bg-brand-600 hover:bg-brand-700 text-white"
@@ -153,7 +192,7 @@ export default function PricingSection() {
                   }`}
                 >
                   {tier.cta}
-                </a>
+                </Link>
               </div>
             );
           })}

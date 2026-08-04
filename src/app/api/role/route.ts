@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { Types } from "mongoose";
 import { getRoleModel } from "@/models/Role";
 import { getUserModel } from "@/models/User";
 import { withTenant } from "@/lib/apiTenant";
 import { getPlanLimits } from "@/lib/planLimits";
 import { logActivity } from "@/lib/activityLog";
+
+const { ObjectId } = Types;
 
 const MANAGE_WEIGHTS = [100, 200];
 const UPGRADE_ERROR = "Custom role management requires a Pro plan or higher.";
@@ -12,6 +15,19 @@ function isDuplicateKeyError(error: any): "name" | "weight" | null {
   if (error?.code !== 11000) return null;
   const key = Object.keys(error.keyPattern || {})[0];
   return key === "weight" ? "weight" : "name";
+}
+
+/**
+ * Every weight-based check elsewhere in this app (sidebar visibility, API
+ * gates) assumes weights are positive whole numbers spaced out like the
+ * standard tiers (100/200/300/400/500) - a negative, zero, or fractional
+ * weight wouldn't break any single check, but could produce incoherent
+ * access-tier boundaries wherever a comparison sits between two hardcoded
+ * values.
+ */
+function isValidWeight(weight: unknown): boolean {
+  const n = Number(weight);
+  return Number.isInteger(n) && n > 0;
 }
 
 export const GET = withTenant(async (req, tenant, session) => {
@@ -24,6 +40,12 @@ export const GET = withTenant(async (req, tenant, session) => {
 
   try {
     if (id) {
+      if (!ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid role id" },
+          { status: 400 }
+        );
+      }
       const singleRole = await Role.findOne({ _id: id });
       return NextResponse.json({ success: true, data: singleRole });
     }
@@ -93,9 +115,9 @@ export const POST = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const { name, weight } = body;
-    if (!name || weight === undefined || weight === null || weight === "") {
+    if (typeof name !== "string" || !name.trim() || !isValidWeight(weight)) {
       return NextResponse.json(
-        { success: false, error: "Name and weight are required" },
+        { success: false, error: "Name and a positive whole-number weight are required" },
         { status: 400 }
       );
     }
@@ -145,9 +167,15 @@ export const PUT = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const put_id = body.put_id;
-    if (!put_id) {
+    if (typeof put_id !== "string" || !ObjectId.isValid(put_id)) {
       return NextResponse.json(
         { success: false, error: "unprocessed put_id" },
+        { status: 400 }
+      );
+    }
+    if (body.weight !== undefined && !isValidWeight(body.weight)) {
+      return NextResponse.json(
+        { success: false, error: "Weight must be a positive whole number" },
         { status: 400 }
       );
     }
@@ -237,7 +265,7 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const delete_id = body.delete_id;
-    if (!delete_id) {
+    if (typeof delete_id !== "string" || !ObjectId.isValid(delete_id)) {
       return NextResponse.json(
         { success: false, error: "Unprocessed delete_id" },
         { status: 400 }

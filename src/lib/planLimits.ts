@@ -1,7 +1,7 @@
 // Deliberately self-contained (no import from models/Organization) so this
 // can be imported from client components too without dragging Mongoose
 // into the browser bundle.
-export type OrganizationPlan = "Free" | "Pro" | "Enterprise";
+export type OrganizationPlan = "Free" | "Starter" | "Pro" | "Enterprise";
 export type SubscriptionStatus = "Trial" | "Active" | "Expired" | "Cancelled";
 
 export interface PlanLimits {
@@ -28,6 +28,15 @@ export const PLAN_LIMITS: Record<OrganizationPlan, PlanLimits> = {
     branding: false,
     customRoles: false,
     analyticsHistoryMonths: 1,
+    aiAssistance: false,
+  },
+  Starter: {
+    maxStaff: 3,
+    maxPatients: 50,
+    customCatalog: false,
+    branding: true,
+    customRoles: false,
+    analyticsHistoryMonths: 3,
     aiAssistance: false,
   },
   Pro: {

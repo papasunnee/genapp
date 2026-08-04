@@ -238,6 +238,15 @@ function CategoryForm({
     ? form.types.reduce((sum, t) => sum + t.parameters.length, 0)
     : form.parameters.length;
 
+  // Nothing here runs inside a native <form> (every action is a button
+  // onClick, not a submit), so HTML `required` attributes on the nested
+  // parameter/sub-section name inputs would never actually be enforced -
+  // this mirrors the same disabled-button guard already used for the
+  // category name itself.
+  const hasBlankNestedName = form.grouped
+    ? form.types.some((t) => !t.name.trim() || t.parameters.some((p) => !p.name.trim()))
+    : form.parameters.some((p) => !p.name.trim());
+
   return (
     <div className="space-y-5">
       <div className="flex items-end justify-between">
@@ -245,6 +254,7 @@ function CategoryForm({
           <label className={FIELD_LABEL_CLASS}>Category name</label>
           <input
             type="text"
+            maxLength={60}
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             className="border rounded px-2 py-1 w-full mt-1"
@@ -379,7 +389,7 @@ function CategoryForm({
       <div className="pt-2 border-t">
         <button
           type="button"
-          disabled={loading || !form.name.trim()}
+          disabled={loading || !form.name.trim() || hasBlankNestedName}
           onClick={() => onSubmit(form)}
           className="mt-3 bg-emerald-600 disabled:bg-gray-400 text-white px-4 py-2 rounded text-sm transition-colors"
         >

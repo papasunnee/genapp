@@ -1,4 +1,5 @@
 import PricingSection from "./PricingSection";
+import FAQSection from "./FAQSection";
 
 const FEATURES = [
   {
@@ -144,6 +145,8 @@ export default function LandingPage() {
       </section>
 
       <PricingSection />
+
+      <FAQSection />
 
       <footer className="border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">

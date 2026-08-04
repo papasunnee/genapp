@@ -394,6 +394,7 @@ export default function OrderTest() {
                   <label className={LABEL_CLASS}>First Name</label>
                   <input
                     required
+                    maxLength={60}
                     value={newPatient.firstname}
                     onChange={(e) =>
                       setNewPatient((f) => ({ ...f, firstname: e.target.value }))
@@ -405,6 +406,7 @@ export default function OrderTest() {
                   <label className={LABEL_CLASS}>Last Name</label>
                   <input
                     required
+                    maxLength={60}
                     value={newPatient.lastname}
                     onChange={(e) =>
                       setNewPatient((f) => ({ ...f, lastname: e.target.value }))
@@ -419,6 +421,7 @@ export default function OrderTest() {
                   onChange={setNewPatientDob}
                   value={newPatientDob}
                   maxDate={new Date()}
+                  required
                   format="dd-MM-yyyy"
                   className={INPUT_CLASS}
                 />
@@ -449,6 +452,7 @@ export default function OrderTest() {
                 <label className={LABEL_CLASS}>Phone</label>
                 <input
                   required
+                  pattern="[0-9]{11}"
                   value={newPatient.phone}
                   onChange={(e) => setNewPatient((f) => ({ ...f, phone: e.target.value }))}
                   className={INPUT_CLASS}
@@ -458,6 +462,7 @@ export default function OrderTest() {
                 <label className={LABEL_CLASS}>Address</label>
                 <input
                   required
+                  maxLength={100}
                   value={newPatient.address}
                   onChange={(e) => setNewPatient((f) => ({ ...f, address: e.target.value }))}
                   className={INPUT_CLASS}
@@ -468,6 +473,7 @@ export default function OrderTest() {
                   <label className={LABEL_CLASS}>City</label>
                   <input
                     required
+                    maxLength={60}
                     value={newPatient.city}
                     onChange={(e) => setNewPatient((f) => ({ ...f, city: e.target.value }))}
                     className={INPUT_CLASS}
@@ -477,6 +483,7 @@ export default function OrderTest() {
                   <label className={LABEL_CLASS}>Country</label>
                   <input
                     required
+                    maxLength={60}
                     value={newPatient.country}
                     onChange={(e) =>
                       setNewPatient((f) => ({ ...f, country: e.target.value }))
@@ -498,6 +505,7 @@ export default function OrderTest() {
               <label className={LABEL_CLASS}>Test Title</label>
               <input
                 required
+                maxLength={200}
                 value={testTitle}
                 onChange={(e) => setTestTitle(e.target.value)}
                 placeholder="e.g. Routine Checkup Panel"
@@ -507,6 +515,7 @@ export default function OrderTest() {
             <div>
               <label className={LABEL_CLASS}>Nature of Specimen</label>
               <input
+                maxLength={60}
                 value={specimen}
                 onChange={(e) => setSpecimen(e.target.value)}
                 className={INPUT_CLASS}
@@ -515,6 +524,7 @@ export default function OrderTest() {
             <div>
               <label className={LABEL_CLASS}>Clinical Address</label>
               <input
+                maxLength={100}
                 value={clinicalAddress}
                 onChange={(e) => setClinicalAddress(e.target.value)}
                 className={INPUT_CLASS}
@@ -523,6 +533,7 @@ export default function OrderTest() {
             <div>
               <label className={LABEL_CLASS}>Clinical Diagnosis</label>
               <input
+                maxLength={100}
                 value={clinicalDiagnosis}
                 onChange={(e) => setClinicalDiagnosis(e.target.value)}
                 className={INPUT_CLASS}

@@ -17,14 +17,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     CredentialsProvider({
       credentials: {},
       async authorize(credentials, request) {
+        // Every field pulled off `credentials` is attacker-controlled JSON,
+        // not a validated shape - a raw TypeScript cast (the old code:
+        // `credentials as { email: string }`) doesn't check anything at
+        // runtime, so a client could send `{"email": {"$ne": null}}` and
+        // have that object handed straight to Mongoose as a query operator
+        // instead of a string. Every value used below is verified to
+        // actually be a string first.
+        const rawEmail = (credentials as any)?.email;
+        const rawPassword = (credentials as any)?.password;
+        const rawSubdomain = (credentials as any)?.subdomain;
+
+        if (typeof rawEmail !== "string" || typeof rawPassword !== "string") {
+          throw new Error("Invalid Login Credentials");
+        }
+        if (rawSubdomain !== undefined && typeof rawSubdomain !== "string") {
+          throw new Error("This organization could not be found.");
+        }
+
+        const email = rawEmail;
+        const password = rawPassword;
+
         // The subdomain is normally read from the Host header - but a
         // deployment with no wildcard DNS yet (or the public demo) has no
         // subdomain to read there at all, so it can be passed explicitly
         // instead. Real logins never send this; only the demo entry point
         // does.
-        const explicitSubdomain = (credentials as any)?.subdomain as
-          | string
-          | undefined;
+        const explicitSubdomain = rawSubdomain;
 
         let tenant;
         try {
@@ -45,10 +64,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         getRoleModel(tenant.connection);
         const Access = getAccessModel(tenant.connection);
 
-        const { email, password } = credentials as {
-          email: string;
-          password: string;
-        };
         const user = await User.findOne({ email }).populate("role");
         if (!user) {
           throw new Error("Invalid Login Credentials");

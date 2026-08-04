@@ -37,6 +37,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/payments", label: "Payments", icon: "fa-fingerprint", weights: [100, 200, 400] },
       { href: "/admin/invoices", label: "Invoices", icon: "fa-file-invoice-dollar", weights: [100, 200, 400] },
+      { href: "/admin/billing", label: "Subscription", icon: "fa-credit-card", weights: [100, 200] },
     ],
   },
   {

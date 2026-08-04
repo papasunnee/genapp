@@ -296,6 +296,7 @@ export default function PlatformData() {
             <label className={LABEL_CLASS}>Organization Name</label>
             <input
               required
+              maxLength={120}
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               className={INPUT_CLASS}
@@ -310,7 +311,9 @@ export default function PlatformData() {
             </label>
             <input
               required
-              pattern="[a-z0-9-]+"
+              maxLength={63}
+              pattern="[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?"
+              title="Lowercase letters, digits, and hyphens - must start and end with a letter or digit"
               value={form.subdomain}
               onChange={(e) =>
                 setForm((f) => ({ ...f, subdomain: e.target.value.toLowerCase() }))
@@ -327,6 +330,7 @@ export default function PlatformData() {
               <label className={LABEL_CLASS}>First Name</label>
               <input
                 required
+                maxLength={60}
                 value={form.adminFirstname}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, adminFirstname: e.target.value }))
@@ -338,6 +342,7 @@ export default function PlatformData() {
               <label className={LABEL_CLASS}>Last Name</label>
               <input
                 required
+                maxLength={60}
                 value={form.adminLastname}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, adminLastname: e.target.value }))
@@ -361,6 +366,8 @@ export default function PlatformData() {
             <input
               type="password"
               required
+              minLength={8}
+              placeholder="At least 8 characters"
               value={form.adminPassword}
               onChange={(e) =>
                 setForm((f) => ({ ...f, adminPassword: e.target.value }))

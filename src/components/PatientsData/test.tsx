@@ -308,7 +308,7 @@ export default function Test({ id }: { id?: string }) {
           );
         }
 
-        throw new Error("Something went wrong, please try again!");
+        throw new Error(data?.error || "Something went wrong, please try again!");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -442,12 +442,13 @@ export default function Test({ id }: { id?: string }) {
           ...data.data,
           test_data: JSON.parse(data.data.test_data),
         });
+        toast.success("Result saved");
         // handleCancelModal(e);
       } else {
-        console.log({ data });
+        toast.error(data.error || "Failed to save result");
       }
     } catch (error: any) {
-      console.log(error.message);
+      toast.error(error.message || "Failed to save result");
     }
     setLoading(false);
   };
@@ -700,6 +701,7 @@ export default function Test({ id }: { id?: string }) {
                 id="test-title"
                 type="text"
                 required
+                maxLength={200}
                 ref={testTitleRef}
                 className={MODAL_INPUT_CLASS}
               />
@@ -711,6 +713,7 @@ export default function Test({ id }: { id?: string }) {
               <input
                 id="test-specimen"
                 type="text"
+                maxLength={60}
                 ref={specimenRef}
                 className={MODAL_INPUT_CLASS}
               />
@@ -722,6 +725,7 @@ export default function Test({ id }: { id?: string }) {
               <input
                 id="test-clinical-address"
                 type="text"
+                maxLength={100}
                 ref={clinicalAddressRef}
                 className={MODAL_INPUT_CLASS}
               />
@@ -733,6 +737,7 @@ export default function Test({ id }: { id?: string }) {
               <input
                 id="test-clinical-diagnosis"
                 type="text"
+                maxLength={100}
                 ref={clinicalDiagnosisRef}
                 className={MODAL_INPUT_CLASS}
               />
@@ -1205,6 +1210,7 @@ export default function Test({ id }: { id?: string }) {
                     setRemark(e.target.value);
                   }}
                   rows={3}
+                  maxLength={1000}
                   placeholder="Add your own interpretation, or generate a draft to review and edit"
                   className={MODAL_INPUT_CLASS}
                 />

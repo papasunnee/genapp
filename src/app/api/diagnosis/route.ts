@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Types } from "mongoose";
+import { Types, Connection } from "mongoose";
 import moment from "moment";
 import { getTestModel } from "@/models/Test";
 import { getPatientModel } from "@/models/Patient";
@@ -7,6 +7,7 @@ import { getUserModel } from "@/models/User";
 import { getPaymentModel } from "@/models/Payment";
 import { getRoleModel } from "@/models/Role";
 import { getInvoiceModel } from "@/models/Invoice";
+import { getTestCategoryModel } from "@/models/TestCategory";
 import { withTenant } from "@/lib/apiTenant";
 import { logActivity } from "@/lib/activityLog";
 import { nextInvoiceNumber } from "@/lib/invoiceNumber";
@@ -30,6 +31,12 @@ export const GET = withTenant(async (req, tenant, session) => {
 
   try {
     if (id) {
+      if (!ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid test id" },
+          { status: 400 }
+        );
+      }
       const singleTest = await Test.findOne({
         _id: new ObjectId(id),
       }).populate([
@@ -50,12 +57,15 @@ export const GET = withTenant(async (req, tenant, session) => {
     }
 
     if (filterFlag) {
-      const queryFilter: Record<string, any> = Object.fromEntries(
-        req.nextUrl.searchParams.entries()
-      );
-      delete queryFilter.filter;
-
-      const filteredData = await Test.find(queryFilter)
+      // No caller passes any filter fields beyond `filter` itself - the
+      // previous version of this branch built its Mongo filter straight
+      // from `Object.fromEntries(searchParams.entries())`, which would
+      // hand a raw query operator (e.g. `?$where=...`) directly to
+      // `Test.find()` if a caller ever sent one. Since this branch only
+      // exists to compute the month-over-month revenue stats below (which
+      // need every test, not a filtered subset), it never needed a filter
+      // object at all.
+      const filteredData = await Test.find()
         .populate([
           { path: "patient" },
           { path: "user" },
@@ -168,6 +178,59 @@ export const GET = withTenant(async (req, tenant, session) => {
   }
 });
 
+const CREATABLE_TEST_FIELDS = [
+  "test_title",
+  "specimen",
+  "clinical_address",
+  "clinical_diagnosis",
+  "test_data",
+] as const;
+
+/**
+ * The client computes a total_cost for display (summing catalog prices for
+ * whatever it has selected) and used to send that number straight through
+ * into both the Test record and its Invoice - meaning any direct API call
+ * could set an invoice to any amount at all, including 0 or negative. The
+ * authoritative price is always looked up here from the tenant's own test
+ * catalog by parameter id, never trusted from the request body.
+ */
+async function computeAuthoritativeCost(
+  connection: Connection,
+  testDataJson: unknown
+): Promise<number> {
+  if (typeof testDataJson !== "string") return 0;
+
+  let items: any[];
+  try {
+    items = JSON.parse(testDataJson);
+  } catch {
+    return 0;
+  }
+  if (!Array.isArray(items)) return 0;
+
+  const parameterIds = items
+    .map((item) => item?.parameter?.id)
+    .filter((id): id is string => typeof id === "string");
+  if (parameterIds.length === 0) return 0;
+
+  const TestCategory = getTestCategoryModel(connection);
+  const categories = await TestCategory.find();
+
+  const costById = new Map<string, number>();
+  for (const category of categories) {
+    for (const parameter of category.parameters || []) {
+      costById.set(parameter.id, parameter.cost || 0);
+    }
+    for (const type of category.type || []) {
+      for (const parameter of type.parameters || []) {
+        costById.set(parameter.id, parameter.cost || 0);
+      }
+    }
+  }
+
+  return parameterIds.reduce((sum, id) => sum + (costById.get(id) || 0), 0);
+}
+
 export const POST = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -180,6 +243,29 @@ export const POST = withTenant(async (req, tenant, session) => {
 
   try {
     const body = await req.json();
+
+    if (typeof body.patient !== "string" || !ObjectId.isValid(body.patient)) {
+      return NextResponse.json(
+        { success: false, error: "A valid patient must be selected" },
+        { status: 400 }
+      );
+    }
+    if (typeof body.test_title !== "string" || !body.test_title.trim()) {
+      return NextResponse.json(
+        { success: false, error: "Test title is required" },
+        { status: 400 }
+      );
+    }
+
+    const testFields: Record<string, any> = { user: session.user?._id };
+    for (const field of CREATABLE_TEST_FIELDS) {
+      if (body[field] !== undefined) testFields[field] = body[field];
+    }
+    testFields.total_cost = await computeAuthoritativeCost(
+      tenant.connection,
+      body.test_data
+    );
+
     const transactionSession = await conn.startSession();
     const testProcess = await transactionSession.withTransaction(async () => {
       // Every operation below must pass {session: transactionSession}
@@ -190,7 +276,7 @@ export const POST = withTenant(async (req, tenant, session) => {
       // update. That's a real correctness gap now that a third write
       // (the invoice) has to succeed or fail together with the other two.
       const [testData] = await Test.create(
-        [{ ...body, user: session.user?._id }],
+        [{ ...testFields, patient: new ObjectId(body.patient) }],
         { session: transactionSession }
       );
 
@@ -245,13 +331,19 @@ export const PUT = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+  // Editing results is a clinical action - Super Admin/Admin/Lab
+  // Technician only, matching the same allow-list the AI remark-suggestion
+  // endpoint already uses for this kind of work.
+  if (![100, 200, 300].includes((session.user as any)?.role?.weight)) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
 
   const Test = getTestModel(tenant.connection);
 
   try {
     const body = await req.json();
     const put_id = body.put_id;
-    if (!put_id) {
+    if (typeof put_id !== "string" || !ObjectId.isValid(put_id)) {
       return NextResponse.json(
         { success: false, error: "unprocessed put_id" },
         { status: 400 }
@@ -318,13 +410,18 @@ export const DELETE = withTenant(async (req, tenant, session) => {
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+  // Permanently deleting a test record is destructive and irreversible -
+  // Super Admin/Admin only, same tier as voiding an invoice.
+  if (![100, 200].includes((session.user as any)?.role?.weight)) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
 
   const Test = getTestModel(tenant.connection);
 
   try {
     const body = await req.json();
     const delete_id = body.delete_id;
-    if (!delete_id) {
+    if (typeof delete_id !== "string" || !ObjectId.isValid(delete_id)) {
       return NextResponse.json(
         { success: false, error: "Unprocessed delete_id" },
         { status: 400 }

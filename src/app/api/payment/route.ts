@@ -26,11 +26,23 @@ export const GET = withTenant(async (req, tenant, session) => {
 
   try {
     if (id) {
+      if (!ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid payment id" },
+          { status: 400 }
+        );
+      }
       const singlePayment = await Payment.findOne({
         _id: new ObjectId(id),
       }).populate(["user", "test", "invoice"]);
       return NextResponse.json({ success: true, data: singlePayment });
     } else if (test_id) {
+      if (!ObjectId.isValid(test_id)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid test id" },
+          { status: 400 }
+        );
+      }
       const singlePaymentByTestId = await Payment.findOne({
         test: new ObjectId(test_id),
       }).populate(["user", "test", "invoice"]);
@@ -80,6 +92,19 @@ export const POST = withTenant(async (req, tenant, session) => {
   try {
     const body = await req.json();
     const { test: testId, amount_paid, payment_option } = body;
+
+    if (typeof testId !== "string" || !ObjectId.isValid(testId)) {
+      return NextResponse.json(
+        { success: false, error: "A valid test must be specified" },
+        { status: 400 }
+      );
+    }
+    if (payment_option !== "cash" && payment_option !== "card") {
+      return NextResponse.json(
+        { success: false, error: "Invalid payment method" },
+        { status: 400 }
+      );
+    }
 
     const invoice = await Invoice.findOne({ test: testId });
     if (!invoice) {
